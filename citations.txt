@@ -1,2 +1,3 @@
 [1] https://cmake.org/cmake/help/latest/command/install.html#directory
 [2] https://stackoverflow.com/questions/11096471/how-can-i-install-a-hierarchy-of-files-using-cmake
+[3] https://wiki.ros.org/xacro

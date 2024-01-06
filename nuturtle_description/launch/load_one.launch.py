@@ -1,8 +1,8 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, Shutdown, RegisterEventHandler
-from launch.substitutions import PathJoinSubstitution
-from launch_ros.substitutions import FindPackageShare
+from launch.actions import DeclareLaunchArgument, Shutdown
+from launch.substitutions import PathJoinSubstitution, Command
+from launch_ros.substitutions import FindPackageShare, ExecutableInPackage
 from launch.conditions import LaunchConfigurationEquals
 
 
@@ -33,8 +33,16 @@ def generate_launch_description():
             executable="joint_state_publisher",
             condition=LaunchConfigurationEquals("use_jsp", "true")
         ),
-        RegisterEventHandler(
-
+        Node(
+            package="robot_state_publisher",
+            executable="robot_state_publisher",
+            parameters=[
+                {"robot_description":
+                 Command([ExecutableInPackage("xacro", "xacro"), " ",
+                          PathJoinSubstitution(
+                              [FindPackageShare(
+                                  "nuturtle_description"), "turtlebot3_burger.urdf.xacro"])])}
+            ]
         )
 
     ])
