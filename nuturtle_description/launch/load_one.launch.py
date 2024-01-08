@@ -1,7 +1,7 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.substitutions import PythonExpression
-from launch.actions import DeclareLaunchArgument, Shutdown
+from launch.actions import DeclareLaunchArgument, Shutdown, SetLaunchConfiguration
 from launch.substitutions import PathJoinSubstitution, Command, LaunchConfiguration, EqualsSubstitution
 from launch_ros.substitutions import FindPackageShare, ExecutableInPackage
 from launch.conditions import IfCondition
@@ -22,6 +22,9 @@ def generate_launch_description():
             description="determines the color of the turtlebot in rviz",
             choices=["red", "green", "blue", "purple"]
         ),
+        SetLaunchConfiguration("rviz_file", PythonExpression(
+            ["'basic_", LaunchConfiguration("color"), ".rviz'"])),
+
         Node(
             package="robot_state_publisher",
             executable="robot_state_publisher",
@@ -31,7 +34,7 @@ def generate_launch_description():
                  Command([ExecutableInPackage("xacro", "xacro"), " ",
                           PathJoinSubstitution(
                               [FindPackageShare(
-                                  "nuturtle_description"), "urdf", "turtlebot3_burger.urdf.xacro"])]),
+                                  "nuturtle_description"), "urdf", "turtlebot3_burger.urdf.xacro"]), " ", PythonExpression(["'color:=", LaunchConfiguration("color"), "'"])]),
                  # I tried so many things, this was hard to figure out
                  "frame_prefix": PythonExpression(["'", LaunchConfiguration('color'), "/'"])
                  }
@@ -47,7 +50,7 @@ def generate_launch_description():
             arguments=["-d",
                        PathJoinSubstitution(
                            [FindPackageShare(
-                            "nuturtle_description"), "rviz", "basic_purple.rviz"]
+                            "nuturtle_description"), "rviz", LaunchConfiguration("rviz_file")]
                        ),
                        "-f", PythonExpression(
                            ["'", LaunchConfiguration('color'), "/base_link'"])

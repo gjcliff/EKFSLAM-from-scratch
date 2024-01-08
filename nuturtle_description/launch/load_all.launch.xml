@@ -1,0 +1,43 @@
+<launch>
+    <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <arg name="color" value="red"/>
+    </include>
+    <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <arg name="color" value="green"/>
+    </include>
+    <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <arg name="color" value="blue"/>
+    </include>
+    <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <arg name="color" value="purple"/>
+    </include>
+
+
+
+
+
+
+
+</launch>
+
+  <!-- <arg name="world" default="$(find-pkg-share diff_drive)/ddrive.sdf" />
+  <include file="$(find-pkg-share ros_gz_sim)/launch/gz_sim.launch.py">
+    <arg name="gz_args" value="-r $(var world)"/>
+  </include>
+
+  <include file="$(find-pkg-share diff_drive)/ddrive_rviz.launch.py" />
+
+  <node pkg="ros_gz_bridge" exec="parameter_bridge"
+        args="/model/dbot/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry
+              /model/dbot/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V
+              /model/dbot/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist
+              /world/empty/model/dbot/joint_state@sensor_msgs/msg/JointState[gz.msgs.Model" >
+    <remap from="/model/dbot/odometry" to="/odom" />
+    <remap from="/model/dbot/cmd_vel" to="/cmd_vel" />
+    <remap from="/model/dbot/tf" to="/tf" />
+    <remap from="/world/empty/model/dbot/joint_state" to="/joint_states"/>
+  </node>
+  <node pkg="ros_gz_sim" exec="create" args="-topic /robot_description -z 3" /> <!-- -x 0 -z 0.3-->
+  <node pkg="diff_drive" exec="flip" name="flip"/> -->
+
+  

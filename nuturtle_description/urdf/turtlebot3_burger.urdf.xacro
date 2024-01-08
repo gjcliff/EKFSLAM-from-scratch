@@ -14,6 +14,7 @@
   <xacro:property name="collision_radius" value="${params['collision_radius']}"/>
 
   <xacro:arg name="color" default="purple"/>
+  <xacro:property name="color" value="$(arg color)"/>
 
   <!-- Init colour -->
   <material name="black">
@@ -74,17 +75,17 @@
       <geometry>
         <mesh filename="package://nuturtle_description/meshes/burger_base.stl" scale="0.001 0.001 0.001"/>
       </geometry>
-      <xacro:if value = "${'color' == 'red'}">
-        <material name="red"/>
+      <xacro:if value="${color == 'blue'}">
+        <material name="${color}"/>
       </xacro:if>
-      <xacro:if value = "${'color' == 'green'}">
-        <material name="green"/>
+      <xacro:if value = "${color == 'green'}">
+        <material name="${color}"/>
       </xacro:if>
-      <xacro:if value = "${'color' == 'blue'}">
-        <material name="blue"/>
+      <xacro:if value = "${color == 'blue'}">
+        <material name="${color}"/>
       </xacro:if>
-      <xacro:if value = "${'color' == 'purple'}">
-        <material name="purple"/>
+      <xacro:if value = "${color == 'purple'}">
+        <material name="${color}"/>
       </xacro:if>
 
     </visual>
