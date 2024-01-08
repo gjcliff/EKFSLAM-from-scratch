@@ -34,7 +34,7 @@ def generate_launch_description():
                  Command([ExecutableInPackage("xacro", "xacro"), " ",
                           PathJoinSubstitution(
                               [FindPackageShare(
-                                  "nuturtle_description"), "urdf", "turtlebot3_burger.urdf.xacro"]), " ", PythonExpression(["'color:=", LaunchConfiguration("color"), "'"])]),
+                                  "nuturtle_description"), "config", "turtlebot3_burger.urdf.xacro"]), " ", PythonExpression(["'color:=", LaunchConfiguration("color"), "'"])]),
                  # I tried so many things, this was hard to figure out
                  "frame_prefix": PythonExpression(["'", LaunchConfiguration('color'), "/'"])
                  }
@@ -50,7 +50,7 @@ def generate_launch_description():
             arguments=["-d",
                        PathJoinSubstitution(
                            [FindPackageShare(
-                            "nuturtle_description"), "rviz", LaunchConfiguration("rviz_file")]
+                            "nuturtle_description"), "config", LaunchConfiguration("rviz_file")]
                        ),
                        "-f", PythonExpression(
                            ["'", LaunchConfiguration('color'), "/base_link'"])

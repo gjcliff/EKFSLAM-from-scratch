@@ -20,7 +20,7 @@ find_package(rclcpp REQUIRED)
 # install launch files
 install(
   DIRECTORY launch/
-  DESTINATION share/${PROJECT_NAME}
+  DESTINATION share/${PROJECT_NAME}/launch
 )
 
 # install config directory
@@ -29,21 +29,7 @@ install(
   DESTINATION share/${PROJECT_NAME}/config
 )
 
-# install .stl, .urdf.xacro, and .rviz files
-install(
-  DIRECTORY meshes/
-  DESTINATION share/${PROJECT_NAME}/meshes
-)
 
-install(
-  DIRECTORY rviz/
-  DESTINATION share/${PROJECT_NAME}/rviz
-)
-
-install(
-  DIRECTORY urdf/
-  DESTINATION share/${PROJECT_NAME}/urdf
-)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

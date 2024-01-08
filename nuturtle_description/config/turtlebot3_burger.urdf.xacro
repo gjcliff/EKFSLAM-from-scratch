@@ -78,13 +78,13 @@
       <xacro:if value="${color == 'blue'}">
         <material name="${color}"/>
       </xacro:if>
-      <xacro:if value = "${color == 'green'}">
+      <xacro:if value="${color == 'green'}">
         <material name="${color}"/>
       </xacro:if>
-      <xacro:if value = "${color == 'blue'}">
+      <xacro:if value="${color == 'blue'}">
         <material name="${color}"/>
       </xacro:if>
-      <xacro:if value = "${color == 'purple'}">
+      <xacro:if value="${color == 'purple'}">
         <material name="${color}"/>
       </xacro:if>
 
