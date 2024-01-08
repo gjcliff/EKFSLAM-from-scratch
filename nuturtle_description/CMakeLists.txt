@@ -9,24 +9,40 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
-ament_target_dependencies(rclcpp)
+# ament_target_dependencies(rclcpp)
 
 # install targets
-install(
-  TARGETS
-  DESTINATION lib/${PROJECT_NAME}
-)
+# install(
+#   TARGETS
+#   DESTINATION lib/${PROJECT_NAME}
+# )
 
 # install launch files
 install(
   DIRECTORY launch/
-  DESTINATION share/launch/${PROJECT_NAME}
+  DESTINATION share/${PROJECT_NAME}
+)
+
+# install config directory
+install(
+  DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
 )
 
 # install .stl, .urdf.xacro, and .rviz files
 install(
-  DIRECTORY config/
-  DESTINATION share/config/${PROJECT_NAME}
+  DIRECTORY meshes/
+  DESTINATION share/${PROJECT_NAME}/meshes
+)
+
+install(
+  DIRECTORY rviz/
+  DESTINATION share/${PROJECT_NAME}/rviz
+)
+
+install(
+  DIRECTORY urdf/
+  DESTINATION share/${PROJECT_NAME}/urdf
 )
 
 if(BUILD_TESTING)

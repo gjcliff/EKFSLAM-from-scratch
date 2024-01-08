@@ -1,5 +1,5 @@
 /**:
-  ros_parameters:
+  ros__parameters:
     wheel_radius: 0.033 # m
     track_width: 0.160 # m
     motor_cmd_max: 265
