@@ -1,0 +1,4 @@
+.vscode
+pycache
+build/
+test.log
