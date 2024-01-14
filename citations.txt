@@ -6,3 +6,4 @@
 [6] "Professional C++, Marc Gregoire" pg. 486
 [7] https://en.cppreference.com/w/cpp/io/basic_istream/peek
 [8] https://stackoverflow.com/questions/4421706/what-are-the-basic-rules-and-idioms-for-operator-overloading/4421715
+[9] https://github.com/catchorg/Catch2/blob/devel/docs/tutorial.md#top
