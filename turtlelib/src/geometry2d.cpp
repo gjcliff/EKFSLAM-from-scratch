@@ -1,7 +1,6 @@
 #include "turtlelib/geometry2d.hpp"
 #include <iosfwd> // contains forward definitions for iostream objects
 #include <iostream>
-#include <vector>
 
 namespace turtlelib
 {
@@ -24,7 +23,6 @@ namespace turtlelib
 
     
     std::istream & operator>>(std::istream & is, Point2D & p){
-
         if (is.peek() == '['){
             is.ignore();
         } 

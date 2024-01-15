@@ -9,8 +9,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-
 # Find your dependencies.
 find_package(Doxygen)
 
@@ -35,6 +33,7 @@ endif()
 # name is the name of the library without the extension or lib prefix
 # name creates a cmake "target"
 add_library(geometry2d src/geometry2d.cpp)
+add_library(se2d src/se2d.cpp)
 
 # Use target_include_directories so that #include"mylibrary/header.hpp" works
 # The use of the <BUILD_INTERFACE> and <INSTALL_INTERFACE> is because when
@@ -46,16 +45,22 @@ target_include_directories(geometry2d
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
     $<INSTALL_INTERFACE:include/>)
+target_include_directories(se2d
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+    $<INSTALL_INTERFACE:include/>)
 
 # specify additional compilation flags for the library
 # Public causes the flags to propagate to anything
 # that links against this library
 target_compile_options(geometry2d PUBLIC -Wall -Wextra -pedantic)
+target_compile_options(se2d PUBLIC -Wall -Wextra -pedantic)
 
 # Enable c++17 support.
 # Public causes the features to propagate to anything
 # that links against this library
 target_compile_features(geometry2d PUBLIC cxx_std_17)
+target_compile_features(se2d PUBLIC cxx_std_17)
 
 # Create an executable from the following source code files
 # The Name of the executable creates a cmake "target"
@@ -66,7 +71,7 @@ add_executable(turtlelib src/main.cpp)
 # This will automatically add all required library files
 # that need to be linked
 # and paths to th locations of header files
-target_link_libraries(turtlelib Eigen3::Eigen geometry2d)
+target_link_libraries(turtlelib geometry2d se2d)
 
 # install the include files by copying the whole include directory
 install(DIRECTORY include/turtlelib DESTINATION include)
@@ -75,7 +80,8 @@ install(DIRECTORY include/turtlelib DESTINATION include)
 # Also create CMake Export called projet_name-targets
 # The CMake Export contains files that allow other CMake projects
 # to find this project. It must be installed separately.
-install(TARGETS turtlelib geometry2d EXPORT turtlelib-targets)
+install(TARGETS turtlelib geometry2d se2d EXPORT turtlelib-targets)
+# install(TARGETS turtlelib se2d EXPORT turtlelib-targets)
 
 # The project_name-targets created by install(TARGETS) needs to be installed.
 # install(EXPORT ...) will generate a file called project_name-config.cmake
@@ -100,5 +106,9 @@ if(BUILD_TESTING)
     target_link_libraries(test_geometry2D Catch2::Catch2WithMain geometry2d)
 
     # register the test with CTest, telling it what executable to run
-    add_test(NAME wtf_test COMMAND test_geometry2D)
+    add_test(NAME geometry2D_test COMMAND test_geometry2D)
+
+    add_executable(test_se2d tests/test_se2d.cpp)
+    target_link_libraries(test_se2d Catch2::Catch2WithMain se2d)
+    add_test(NAME se2d_test COMMAND test_se2d)
 endif()
