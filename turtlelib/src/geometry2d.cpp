@@ -17,7 +17,6 @@ namespace turtlelib
     }
 
     std::ostream & operator<<(std::ostream & os, const Point2D & p){
-        os.precision(1);
         os << "["<< p.x << " " << p.y << "]";
         
         return os;
@@ -28,30 +27,43 @@ namespace turtlelib
 
         if (is.peek() == '['){
             is.ignore();
-            is >> p.x;
-            is >> p.y;
-            is.ignore();
-        } else {
-            is >> p.x >> p.y;
-        }
+        } 
+
+        is >> p.x >> p.y;
         
         return is;
     }
 
-    // Vector2D operator-(const Point2D & head, const Point2D & tail){
+    Vector2D operator-(const Point2D & head, const Point2D & tail){
+        Vector2D vec;
+        vec.x = head.x - tail.x;
+        vec.y = head.y - tail.y;
+
+        return vec;
+    }
+
+    Point2D operator+(const Point2D & tail, const Vector2D & disp){
+        Point2D head;
+        head.x = tail.x + disp.x;
+        head.y = tail.y + disp.y;
         
-    // }
+        return head;
 
-    // Point2D operator+(const Point2D & tail, const Vector2D & disp){
+    }
 
-    // }
+    std::ostream & operator<<(std::ostream & os, const Vector2D & v){
+        os << "[" << v.x << " " << v.y << "]";
+        return os;
+    }
 
-    // std::ostream & operator<<(std::ostream & os, const Vector2D & v){
+    std::istream & operator>>(std::istream & is, Vector2D & v){
+        if(is.peek() == '['){
+            is.ignore();
+        }
 
-    // }
-
-    // std::istream & operator>>(std::istream & is, Vector2D & v){
-
-    // }
+        is >> v.x >> v.y;
+        
+        return is;
+    }
 
 } // namespace turtlelib
