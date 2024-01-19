@@ -100,9 +100,9 @@ namespace turtlelib
     
     private:
         vector<vector<double>> t;
-        double rad = 0;
-        double x = 0;
-        double y = 0;
+        double rad = 0.0;
+        double x = 0.0;
+        double y = 0.0;
 
     };
 
