@@ -76,12 +76,12 @@ namespace turtlelib
         vector<vector<double>> tmp_t = t;
         tmp_t[0][2] = 0; // set the x translation portion of the transformatoin matrix equal to 0
         tmp_t[1][2] = 0; // set the y translation portion of the transformation matrix equal to 0
-
+        // this might not be the right way to do this
         vector<double> mat_v = {v.x, v.y, 1};
         vector<double> output(3,0);
 
-        for (unsigned int i = 0; i < tmp_t[0].size(); i++){
-            for (unsigned int j = 0; j < tmp_t.size(); j++){
+        for (unsigned int i = 0; i < tmp_t.size(); i++){
+            for (unsigned int j = 0; j < tmp_t[0].size(); j++){
                 output[i] += t[i][j] * mat_v[j];
             }
         }
@@ -97,8 +97,8 @@ namespace turtlelib
         vector<double> mat_v = {v.omega, v.x, v.y};
         vector<double> output(3,0);
 
-        for (unsigned int i = 0; i < t[0].size(); i++){
-            for (unsigned int j = 0; j < t.size(); j++){
+        for (unsigned int i = 0; i < t.size(); i++){
+            for (unsigned int j = 0; j < t[0].size(); j++){
                 output[i] += t[i][j] * mat_v[j];
             }
         }
@@ -109,31 +109,67 @@ namespace turtlelib
         return out_v;
     }
 
-    // Transform2D Transform2D::inv() const{
+    Transform2D Transform2D::inv() const{
+        // using the formula from ME449 the inverse of a transformation matrix
+        vector<vector<double>> R_T = {{t[0][0], t[1][0]}, {t[0][1], t[1][1]}};
+        vector<double> neg_R_TP(2,0);
 
-    // }
+        for (int i = 0; i < R_T.size(); i++){
+            for (int j = 0; j < R_T[0].size(); j++){
+                neg_R_TP[i] += R_T[i][j] * t[j][2];
+            }
+        }
 
-    // Transform2D & Transform2D::operator*=(const Transform2D & rhs){
+        Transform2D t_T = *this;
+        t_T.t[0][1] = t[1][0];
+        t_T.t[1][0] = t[0][1];
+        t_T.t[0][2] = neg_R_TP[0];
+        t_T.t[1][2] = neg_R_TP[1];
 
-    // }
+        return t_T;
 
-    // Vector2D Transform2D::translation() const{
+    }
 
-    // }
+    Transform2D & Transform2D::operator*=(const Transform2D & rhs){
+        vector<vector<double>> output(3, vector<double>(3,0));
 
-    // double Transform2D::rotation() const{
+        for (int i = 0; i < t.size(); i ++){
+            for (int j = 0; j < t.size(); j++){
+                t[i][j] *= rhs.t[j][i];
+            }
+        }
 
-    // }
+        return *this;
+    }
 
-    // std::ostream & operator<<(std::ostream & os, const Transform2D & tf){
+    Vector2D Transform2D::translation() const{
+        Vector2D trans = {t[0][2], t[1][2]};
+        return trans;
+    }
 
-    // }
+    double Transform2D::rotation() const{
+        double radians = std::asin(t[0][0]);
+        return radians;
+    }
 
-    // std::istream & operator>>(std::istream & is, Transform2D & tf){
+    std::ostream & operator<<(std::ostream & os, const Transform2D & tf){
+        os << "deg: " << tf.rotation() << " x: " << tf.translation().x << " y: " << tf.translation().y;
+        return os;
+    }
 
-    // }
+    std::istream & operator>>(std::istream & is, Transform2D & tf){
+        double radians;
+        Vector2D trans;
 
-    // Transform2D operator*(Transform2D lhs, const Transform2D & rhs){
+        is >> radians >> trans.x >> trans.y;
 
-    // }
+        Transform2D temp(trans, radians);
+        tf = temp;
+
+        return is;
+    }
+
+    Transform2D operator*(Transform2D lhs, const Transform2D & rhs){
+        return lhs*=rhs;
+    }
 }
