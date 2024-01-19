@@ -165,10 +165,7 @@ namespace turtlelib
     }
 
     std::ostream & operator<<(std::ostream & os, const Transform2D & tf){
-        os << "deg: " << tf.rotation() << " x: " << tf.translation().x << " y: " << tf.translation().y << std::endl;
-        os << "[" << tf.t[0][0] << " " << tf.t[0][1] << " " <<tf.t[0][2] << "]" << std::endl;
-        os << "[" << tf.t[1][0] << " " << tf.t[1][1] << " " <<tf.t[1][2] << "]" << std::endl;
-        os << "[" << tf.t[2][0] << " " << tf.t[2][1] << " " <<tf.t[2][2] << "]" << std::endl;
+        os << "deg: " << tf.rotation() << " x: " << tf.translation().x << " y: " << tf.translation().y;
         return os;
     }
 
