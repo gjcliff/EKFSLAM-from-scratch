@@ -107,8 +107,9 @@ namespace turtlelib
         svgFile << "</g>" << std::endl;
     }
 
-    void Svg::draw_coordiante_frame(Point2D p)
+    void Svg::draw_coordiante_frame(Transform2D t)
     {
+        Point2D p = {t.translation().x, t.translation().y};
         left_to_right(p);
 
         p = fixed_frame(p * ppi);
@@ -122,13 +123,20 @@ namespace turtlelib
         svgFile << "</g>" << std::endl;
     }
 
-    void Svg::draw_coordiante_frame(Point2D p, std::string text)
+    void Svg::draw_coordiante_frame(Transform2D t, std::string text)
     {
+        // something wrong here... maybe try transforming t by fixed_frame
+        Transform2D t_new = fixed_frame * t;
+        Point2D p = {t.translation().x, t.translation().y};
         left_to_right(p);
 
-        p = fixed_frame(p * ppi);
-        Point2D headx = p + x_axis;
-        Point2D heady = p + y_axis;
+        p = t_new(p * ppi);
+        Point2D headx = p + t_new(x_axis);
+        Point2D heady = p + t_new(y_axis);
+
+        p = p;
+        headx = headx;
+        heady = heady;
 
         svgFile << "<g>" << std::endl;
         svgFile << "<line x1=\"" << headx.x << "\" x2=\"" << p.x << "\" y1=\"" << headx.y << "\" y2=\"" << p.y << "\" stroke=\"red\" stroke-width=\"5\" marker-start=\"url(#Arrow1Sstart)\" />" << std::endl;
@@ -144,17 +152,17 @@ namespace turtlelib
                          // for testing.
     }
 
-    Point2D operator*(Point2D lhs, const double & rhs)
-    {
-        lhs.x *= rhs;
-        lhs.y *= rhs;
-        return lhs;
-    }
+    // Point2D operator*(Point2D lhs, const double & rhs)
+    // {
+    //     lhs.x *= rhs;
+    //     lhs.y *= rhs;
+    //     return lhs;
+    // }
 
-    Vector2D operator*(Vector2D lhs, const double & rhs)
-    {
-        lhs.x *= rhs;
-        lhs.y *= rhs;
-        return lhs;
-    }
+    // Vector2D operator*(Vector2D lhs, const double & rhs)
+    // {
+    //     lhs.x *= rhs;
+    //     lhs.y *= rhs;
+    //     return lhs;
+    // }
 }

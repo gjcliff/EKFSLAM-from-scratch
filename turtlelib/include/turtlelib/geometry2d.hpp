@@ -129,6 +129,22 @@ namespace turtlelib
     /// peek looks at the next unprocessed character in the buffer without removing it
     /// get removes the next unprocessed character from the buffer.
     std::istream & operator>>(std::istream & is, Vector2D & v);
+
+    /// \brief normalize a 2D vector
+    /// \param v - the vector to be normalized
+    Vector2D normalize_vector(Vector2D v);
+
+    /// @brief allow a 2D point to be multiplied by a scalar
+    /// @param lhs - a 2D point
+    /// @param rhs - a scalar
+    /// @return - a 2D point
+    Point2D operator*(Point2D lhs, const double & rhs);
+
+    /// @brief allow a 2D vector to be multiplied by a scalar
+    /// @param lhs - a 2D vector
+    /// @param rhs - a scalar
+    /// @return - a 2D vector
+    Vector2D operator*(Vector2D lhs, const double & rhs);
 }
 
 #endif

@@ -64,4 +64,23 @@ namespace turtlelib
         return is;
     }
 
+    Vector2D normalize_vector(Vector2D v)
+    {
+        return v * (1/(std::sqrt(std::pow(v.x, 2) + std::pow(v.y, 2))));
+    }
+
+    Point2D operator*(Point2D lhs, const double & rhs)
+    {
+        lhs.x *= rhs;
+        lhs.y *= rhs;
+        return lhs;
+    }
+
+    Vector2D operator*(Vector2D lhs, const double & rhs)
+    {
+        lhs.x *= rhs;
+        lhs.y *= rhs;
+        return lhs;
+    }
+
 } // namespace turtlelib

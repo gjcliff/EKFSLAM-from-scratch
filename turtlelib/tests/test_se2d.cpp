@@ -143,23 +143,25 @@ namespace turtlelib{
         }
 
         TEST_CASE("Test the >> operator", "[operator>>]"){
-            double radians;
+            double degrees;
             Vector2D trans;
 
             SECTION("Test with spaces"){
                 std::istringstream iss("1.5708 1 1");
-                iss >> radians >> trans.x >> trans.y;
-                REQUIRE(radians == 1.5708);
-                REQUIRE(trans.x == 1);
-                REQUIRE(trans.y == 1);
+                iss >> degrees >> trans.x >> trans.y;
+                Transform2D t(trans, degrees);
+                REQUIRE(t.rotation() == 1.5708);
+                REQUIRE(t.translation().x == 1);
+                REQUIRE(t.translation().y == 1);
             }
 
             SECTION("Test with newline characters"){
                 std::istringstream iss("1.5708\n1\n1\n");
-                iss >> radians >> trans.x >> trans.y;
-                REQUIRE(radians == 1.5708);
-                REQUIRE(trans.x == 1);
-                REQUIRE(trans.y == 1);
+                iss >> degrees >> trans.x >> trans.y;
+                Transform2D t(trans, degrees);
+                REQUIRE(t.rotation() == 1.5708);
+                REQUIRE(t.translation().x == 1);
+                REQUIRE(t.translation().y == 1);
             }
         }
 

@@ -28,6 +28,9 @@ if(${DOXYGEN_FOUND} AND ${BUILD_DOCS})
     # The main page is build/html/index.html
 endif()
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/exercises/B6_frame_input.txt
+    ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+
 # Create a library.  Can specify if it is shared or static but usually
 # you don't need or want to.
 # name is the name of the library without the extension or lib prefix
@@ -71,14 +74,14 @@ target_compile_features(svg PUBLIC cxx_std_17)
 
 # Create an executable from the following source code files
 # The Name of the executable creates a cmake "target"
-add_executable(turtlelib src/main.cpp)
+add_executable(frame_main src/frame_main.cpp)
 
 # Use target_link_libraries to add dependencies to a "target"
 # (e.g., a library or executable)
 # This will automatically add all required library files
 # that need to be linked
 # and paths to th locations of header files
-target_link_libraries(turtlelib geometry2d se2d svg)
+target_link_libraries(frame_main geometry2d se2d svg)
 
 # install the include files by copying the whole include directory
 install(DIRECTORY include/turtlelib DESTINATION include)
@@ -87,7 +90,7 @@ install(DIRECTORY include/turtlelib DESTINATION include)
 # Also create CMake Export called projet_name-targets
 # The CMake Export contains files that allow other CMake projects
 # to find this project. It must be installed separately.
-install(TARGETS turtlelib geometry2d se2d svg EXPORT turtlelib-targets)
+install(TARGETS frame_main geometry2d se2d svg EXPORT turtlelib-targets)
 # install(TARGETS turtlelib se2d EXPORT turtlelib-targets)
 
 # The project_name-targets created by install(TARGETS) needs to be installed.

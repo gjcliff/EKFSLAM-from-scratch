@@ -55,15 +55,15 @@ namespace turtlelib
 
         /// \brief draw a default coordinate frame in the svg file at the
         /// center of the page with axes length "v". The name will be "{a}"
-        /// \param p - the origin of the coordinate axis
-        void draw_coordiante_frame(Point2D p);
+        /// \param t - the origin of the coordinate axis
+        void draw_coordiante_frame(Transform2D t);
 
         /// \brief draw a default coordinate frame in the svg file at the
         /// center of the page with axes length "v". The name will be "{a}"
-        /// \param p - the origin of the coordinate axis
+        /// \param t - the origin of the coordinate axis
         /// \param text - the name of the coordinate axis, this text will be surrounded by
         /// curly brackets
-        void draw_coordiante_frame(Point2D p, std::string text);
+        void draw_coordiante_frame(Transform2D t, std::string text);
 
 
         void close();
@@ -80,12 +80,12 @@ namespace turtlelib
         double fixed_frame_rad = deg2rad(180);
         Transform2D fixed_frame;
 
-        Vector2D x_axis = {1,0};
-        Vector2D y_axis = {0,1};
+        Vector2D x_axis = {0.5,0};
+        Vector2D y_axis = {0,0.5};
     };
 
-    Point2D operator*(Point2D lhs, const double & rhs);
-    Vector2D operator*(Vector2D lhs, const double & rhs);
+    // Point2D operator*(Point2D lhs, const double & rhs);
+    // Vector2D operator*(Vector2D lhs, const double & rhs);
 
 
 

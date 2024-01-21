@@ -12,3 +12,6 @@
 [13] "Professional C++, Marc Gregoire" pg. 426-432
 [14] https://en.cppreference.com/w/cpp/io/basic_fstream
 [15] "Professional C++, Marc Gregoire" pg. 451
+[16] https://stackoverflow.com/questions/46995733/how-to-set-cmake-in-order-to-add-txt-files-into-working-directory-as-resource
+[17] https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
+[18] https://en.wikipedia.org/wiki/Rotation_matrix
