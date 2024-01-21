@@ -126,17 +126,14 @@ namespace turtlelib
     void Svg::draw_coordiante_frame(Transform2D t, std::string text)
     {
         // something wrong here... maybe try transforming t by fixed_frame
-        Transform2D t_new = fixed_frame * t;
+        
         Point2D p = {t.translation().x, t.translation().y};
-        left_to_right(p);
+        p = fixed_frame(p * ppi);
+        // left_to_right(p);
 
-        p = t_new(p * ppi);
-        Point2D headx = p + t_new(x_axis);
-        Point2D heady = p + t_new(y_axis);
-
-        p = p;
-        headx = headx;
-        heady = heady;
+        
+        Point2D headx = p + t(x_axis);
+        Point2D heady = p + t(y_axis);
 
         svgFile << "<g>" << std::endl;
         svgFile << "<line x1=\"" << headx.x << "\" x2=\"" << p.x << "\" y1=\"" << headx.y << "\" y2=\"" << p.y << "\" stroke=\"red\" stroke-width=\"5\" marker-start=\"url(#Arrow1Sstart)\" />" << std::endl;
