@@ -6,8 +6,9 @@
 
 #include<iosfwd> // contains forward definitions for iostream objects
 #include"turtlelib/geometry2d.hpp"
-#include <cmath>
-#include <vector>
+#include<cmath>
+#include<vector>
+#include<fstream>
 
 using std::vector;
 

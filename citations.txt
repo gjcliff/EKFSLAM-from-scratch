@@ -2,7 +2,6 @@
 [2] https://stackoverflow.com/questions/11096471/how-can-i-install-a-hierarchy-of-files-using-cmake
 [3] https://wiki.ros.org/xacro
 [4] https://index.ros.org/p/robot_state_publisher/
-[5] https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md
 [6] "Professional C++, Marc Gregoire" pg. 486
 [7] https://en.cppreference.com/w/cpp/io/basic_istream/peek
 [8] https://stackoverflow.com/questions/4421706/what-are-the-basic-rules-and-idioms-for-operator-overloading/4421715
@@ -10,3 +9,5 @@
 [10] "Professional C++, Marc Gregoire" pg. 267
 [11] https://stackoverflow.com/questions/27340220/column-size-and-row-size-of-a-2d-vector-in-c#:~:text=1-,vector_name.,2D%20vector%20in%20C%2B%2B.
 [12] "Professional C++, Marc Gregoire" pg. 270
+[13] "Professional C++, Marc Gregoire" pg 426-432
+[14] https://en.cppreference.com/w/cpp/io/basic_fstream

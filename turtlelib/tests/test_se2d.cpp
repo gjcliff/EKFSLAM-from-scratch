@@ -64,9 +64,6 @@ namespace turtlelib{
             Transform2D t_inv = t.inv();
 
             Transform2D identity = t * t_inv;
-            std::cout << t;
-            std::cout << t_inv;
-            std::cout << identity;
 
             REQUIRE_THAT(identity.translation().x, Catch::Matchers::WithinAbs(0.0, 0.001));
             REQUIRE_THAT(identity.translation().y, Catch::Matchers::WithinAbs(0.0, 0.001));
