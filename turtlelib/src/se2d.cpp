@@ -45,8 +45,6 @@ namespace turtlelib
              {0.0,0.0,1.0}};
     }
 
-
-
     Transform2D::Transform2D(Vector2D trans, double radians){
         rad = radians;
         x = trans.x;
@@ -83,7 +81,7 @@ namespace turtlelib
 
         for (unsigned int i = 0; i < tmp_t.size(); i++){
             for (unsigned int j = 0; j < tmp_t[0].size(); j++){
-                output[i] += t[i][j] * mat_v[j];
+                output[i] += tmp_t[i][j] * mat_v[j];
             }
         }
 

@@ -8,6 +8,38 @@
 #include <iostream>
 
 namespace turtlelib{
+        TEST_CASE("Test the default constructor", "[default_constructor]"){
+            Transform2D t;
+            REQUIRE_THAT(t.rotation(), Catch::Matchers::WithinAbs(0, 0.001));
+            REQUIRE_THAT(t.translation().x, Catch::Matchers::WithinAbs(0, 0.001));
+            REQUIRE_THAT(t.translation().y, Catch::Matchers::WithinAbs(0, 0.001));
+        }
+
+        TEST_CASE("Test the constructor with only a Vector2D argument", "[Vector2D_constructor]"){
+            Vector2D v = {1, 1};
+            Transform2D t(v);
+            REQUIRE_THAT(t.rotation(), Catch::Matchers::WithinAbs(0, 0.001));
+            REQUIRE_THAT(t.translation().x, Catch::Matchers::WithinAbs(1, 0.001));
+            REQUIRE_THAT(t.translation().y, Catch::Matchers::WithinAbs(1, 0.001));
+        }
+
+        TEST_CASE("Test the constructor with only a double argument", "[double_constructor]"){
+            double radians = deg2rad(180);
+            Transform2D t(radians);
+            REQUIRE_THAT(t.rotation(), Catch::Matchers::WithinAbs(3.1415, 0.0001));
+            REQUIRE_THAT(t.translation().x, Catch::Matchers::WithinAbs(0, 0.001));
+            REQUIRE_THAT(t.translation().y, Catch::Matchers::WithinAbs(0, 0.001));
+        }
+
+        TEST_CASE("Test the constructor with both double and Vector2D arguments.", "[double_Vector2D_constructor]"){
+            Vector2D v = {1, 1};
+            double radians = deg2rad(180);
+            Transform2D t(v, radians);
+            REQUIRE_THAT(t.rotation(), Catch::Matchers::WithinAbs(3.1415, 0.0001));
+            REQUIRE_THAT(t.translation().x, Catch::Matchers::WithinAbs(1, 0.001));
+            REQUIRE_THAT(t.translation().y, Catch::Matchers::WithinAbs(1, 0.001));
+        }
+
         TEST_CASE("Test the () operator on Point2D objects", "[operator() Point2D]"){
             Point2D p = {0,1};
 
@@ -94,12 +126,13 @@ namespace turtlelib{
         }
 
         TEST_CASE("Test the rotation() function", "[rotation]"){
-            double degrees = 90;
+            double degrees = 180;
             double radians = deg2rad(degrees);
+            Vector2D v = {1,1};
 
-            Transform2D t(radians);
+            Transform2D t(v, radians);
 
-            REQUIRE_THAT(t.rotation(), Catch::Matchers::WithinAbs(radians, 0.001));
+            REQUIRE_THAT(t.rotation(), Catch::Matchers::WithinAbs(3.1415, 0.001));
         }
 
         TEST_CASE("Test the << operator","[operator<<]"){

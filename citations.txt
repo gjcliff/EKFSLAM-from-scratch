@@ -9,5 +9,6 @@
 [10] "Professional C++, Marc Gregoire" pg. 267
 [11] https://stackoverflow.com/questions/27340220/column-size-and-row-size-of-a-2d-vector-in-c#:~:text=1-,vector_name.,2D%20vector%20in%20C%2B%2B.
 [12] "Professional C++, Marc Gregoire" pg. 270
-[13] "Professional C++, Marc Gregoire" pg 426-432
+[13] "Professional C++, Marc Gregoire" pg. 426-432
 [14] https://en.cppreference.com/w/cpp/io/basic_fstream
+[15] "Professional C++, Marc Gregoire" pg. 451

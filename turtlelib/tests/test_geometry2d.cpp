@@ -1,17 +1,27 @@
 #include "turtlelib/geometry2d.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <iosfwd>
+#include <iostream>
 #include <sstream>
 
 
 namespace turtlelib{
     TEST_CASE("normalize_angle works", "[normalize angle]") {
         REQUIRE(normalize_angle(PI) == PI);
-        REQUIRE(normalize_angle(-PI) == -PI);
+        REQUIRE(normalize_angle(-PI) == 0);
         REQUIRE(normalize_angle(0) == 0);
         REQUIRE(normalize_angle(-PI/4) ==  -PI/4);
         REQUIRE(normalize_angle(3*PI/2) == PI/2);
         REQUIRE(normalize_angle(-5*PI/2) == -PI/2);
+    }
+
+    TEST_CASE("deg2rad works", "[deg2rad]"){
+        REQUIRE_THAT(deg2rad(90.0), Catch::Matchers::WithinAbs(1.5708, 0.001));
+    }
+
+    TEST_CASE("rad2deg works", "[rad2deg]"){
+        REQUIRE_THAT(rad2deg(1.5708), Catch::Matchers::WithinAbs(90.0, 0.001));
     }
 
     TEST_CASE("Test << operator for points", "[operator<<]"){

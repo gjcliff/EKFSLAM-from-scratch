@@ -25,25 +25,68 @@ namespace turtlelib
         /// \param fileName - the file name. MUST append .svg
         Svg(std::string fileName);
 
+        /// \brief flip from a left-handed coordinate system to a
+        /// right-handed coordinate system
+
+        constexpr void left_to_right(Vector2D & v){
+            v.x *= -1;
+        }
+
+        constexpr void left_to_right(Point2D & p){
+            p.x *= -1;
+        }
+
         /// \brief draw a point in the svg file
         /// \param p - the coordinates of the point that will be drawn
         void draw_point(Point2D p);
 
-        /// \brief draw a vector in the svg file
+        /// \brief draw a vector in the svg file from the origin
         /// \param v - the vector that will be drawn
+        void draw_vector(Vector2D v);
+
+        /// \brief draw a vector in the svg file starting from a point
+        /// \param v - the vector that will be drawn
+        /// \param tail - the point the vector will start from
         void draw_vector(Vector2D v, Point2D tail);
 
-        /// \brief draw a coordinate frame in the svg file
-        /// \param t - the coordinate frame that will be drawn
-        void draw_coordiante_frame(Vector2D x, Vector2D y, Point2D p, std::string text);
+        /// \brief draw a default coordinate frame in the svg file at the
+        /// center of the page. The name will be "{a}"
+        void draw_coordiante_frame();
+
+        /// \brief draw a default coordinate frame in the svg file at the
+        /// center of the page with axes length "v". The name will be "{a}"
+        /// \param p - the origin of the coordinate axis
+        void draw_coordiante_frame(Point2D p);
+
+        /// \brief draw a default coordinate frame in the svg file at the
+        /// center of the page with axes length "v". The name will be "{a}"
+        /// \param p - the origin of the coordinate axis
+        /// \param text - the name of the coordinate axis, this text will be surrounded by
+        /// curly brackets
+        void draw_coordiante_frame(Point2D p, std::string text);
+
 
         void close();
 
 
     private:
         std::ofstream svgFile;
-        Transform2D viewboxOrigin;
+
+        int ppi = 96; // pixels per inch
+        double page_width = 8.5;
+        double page_height = 11.0;
+        Vector2D page_center = {page_width/2*ppi, page_height/2*ppi};\
+
+        double fixed_frame_rad = deg2rad(180);
+        Transform2D fixed_frame;
+
+        Vector2D x_axis = {1,0};
+        Vector2D y_axis = {0,1};
     };
+
+    Point2D operator*(Point2D lhs, const double & rhs);
+    Vector2D operator*(Vector2D lhs, const double & rhs);
+
 
 
 }

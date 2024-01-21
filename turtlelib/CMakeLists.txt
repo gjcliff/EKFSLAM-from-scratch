@@ -78,7 +78,7 @@ add_executable(turtlelib src/main.cpp)
 # This will automatically add all required library files
 # that need to be linked
 # and paths to th locations of header files
-target_link_libraries(turtlelib geometry2d se2d)
+target_link_libraries(turtlelib geometry2d se2d svg)
 
 # install the include files by copying the whole include directory
 install(DIRECTORY include/turtlelib DESTINATION include)
@@ -116,10 +116,10 @@ if(BUILD_TESTING)
     add_test(NAME geometry2D_test COMMAND test_geometry2D)
 
     add_executable(test_se2d tests/test_se2d.cpp)
-    target_link_libraries(test_se2d Catch2::Catch2WithMain se2d)
+    target_link_libraries(test_se2d Catch2::Catch2WithMain se2d geometry2d)
     add_test(NAME se2d_test COMMAND test_se2d)
 
     add_executable(test_svg tests/test_svg.cpp)
-    target_link_libraries(test_svg Catch2::Catch2WithMain svg)
+    target_link_libraries(test_svg Catch2::Catch2WithMain svg se2d geometry2d)
     add_test(NAME svg_test COMMAND test_svg)
 endif()
