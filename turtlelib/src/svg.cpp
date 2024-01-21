@@ -65,6 +65,14 @@ namespace turtlelib
         svgFile << "<circle cx=\"" << p.x << "\" cy=\"" << p.y << "\" r=\"3\" stroke=\"purple\" fill=\"purple\" stroke-width=\"1\"/>" << std::endl;
     }
 
+    void Svg::draw_point(Point2D p, std::string color)
+    {
+        left_to_right(p);
+        p = fixed_frame(p * ppi);
+   
+        svgFile << "<circle cx=\"" << p.x << "\" cy=\"" << p.y << "\" r=\"3\" stroke=\"" << color << "\" fill=\"" << color << "\" stroke-width=\"1\"/>" << std::endl;
+    }
+
     void Svg::draw_vector(Vector2D v)
     {   
         left_to_right(v);
@@ -79,6 +87,20 @@ namespace turtlelib
         svgFile << "<line x1=\"" << head.x << "\" x2=\"" << tail.x << "\" y1=\"" << head.y << "\" y2=\"" << tail.y << "\" stroke=\"purple\" stroke-width=\"5\" marker-start=\"url(#Arrow1Sstart)\" />" << std::endl;
     }
 
+    void Svg::draw_vector(Vector2D v, std::string color)
+    {
+        left_to_right(v);
+
+        Point2D tail = {0,0};
+        tail =  fixed_frame(tail * ppi);
+
+        v = fixed_frame(v * ppi);
+
+        Point2D head = tail + v;
+
+        svgFile << "<line x1=\"" << head.x << "\" x2=\"" << tail.x << "\" y1=\"" << head.y << "\" y2=\"" << tail.y << "\" stroke=\"" << color << "\" stroke-width=\"5\" marker-start=\"url(#Arrow1Sstart)\" />" << std::endl;
+    }
+
     void Svg::draw_vector(Vector2D v, Point2D tail)
     {
         left_to_right(v);
@@ -91,6 +113,18 @@ namespace turtlelib
         
 
         svgFile << "<line x1=\"" << head.x << "\" x2=\"" << tail.x << "\" y1=\"" << head.y << "\" y2=\"" << tail.y << "\" stroke=\"purple\" stroke-width=\"5\" marker-start=\"url(#Arrow1Sstart)\" />" << std::endl;
+    }
+
+    void Svg::draw_vector(Vector2D v, Point2D tail, std::string color)
+    {
+        left_to_right(v);
+        left_to_right(tail);
+
+        tail = fixed_frame(tail * ppi);
+        v = fixed_frame(v * ppi);
+        Point2D head = tail + v;
+
+        svgFile << "<line x1=\"" << head.x << "\" x2=\"" << tail.x << "\" y1=\"" << head.y << "\" y2=\"" << tail.y << "\" stroke=\"" << color << "\" stroke-width=\"5\" marker-start=\"url(#Arrow1Sstart)\" />" << std::endl;
     }
 
     void Svg::draw_coordiante_frame()
@@ -125,15 +159,16 @@ namespace turtlelib
 
     void Svg::draw_coordiante_frame(Transform2D t, std::string text)
     {
-        // something wrong here... maybe try transforming t by fixed_frame
+        // Here I am translating first, THEN rotating
         
         Point2D p = {t.translation().x, t.translation().y};
         p = fixed_frame(p * ppi);
-        // left_to_right(p);
 
-        
-        Point2D headx = p + t(x_axis);
-        Point2D heady = p + t(y_axis);
+        double radians = -t.rotation();
+        Transform2D t_new(radians);
+
+        Point2D headx = p + t_new(x_axis);
+        Point2D heady = p + t_new(y_axis);
 
         svgFile << "<g>" << std::endl;
         svgFile << "<line x1=\"" << headx.x << "\" x2=\"" << p.x << "\" y1=\"" << headx.y << "\" y2=\"" << p.y << "\" stroke=\"red\" stroke-width=\"5\" marker-start=\"url(#Arrow1Sstart)\" />" << std::endl;
@@ -148,18 +183,4 @@ namespace turtlelib
                          // is deconstructed, however I need the file to close earlier than this
                          // for testing.
     }
-
-    // Point2D operator*(Point2D lhs, const double & rhs)
-    // {
-    //     lhs.x *= rhs;
-    //     lhs.y *= rhs;
-    //     return lhs;
-    // }
-
-    // Vector2D operator*(Vector2D lhs, const double & rhs)
-    // {
-    //     lhs.x *= rhs;
-    //     lhs.y *= rhs;
-    //     return lhs;
-    // }
 }

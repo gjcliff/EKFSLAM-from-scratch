@@ -40,9 +40,25 @@ namespace turtlelib
         /// \param p - the coordinates of the point that will be drawn
         void draw_point(Point2D p);
 
+        /// @brief draw a point in the svg file of a certain color
+        /// @param p  - the coordaites of the point that will be drawn
+        /// @param color - the color of the point that will be draw
+        void draw_point(Point2D p, std::string color);
+
         /// \brief draw a vector in the svg file from the origin
         /// \param v - the vector that will be drawn
         void draw_vector(Vector2D v);
+
+        /// @brief draw a vector in the svg file from the origin in a specific color
+        /// @param v - the vector to be drawn
+        /// @param color - the color the vector will be
+        void draw_vector(Vector2D v, std::string color);
+
+        /// \brief draw a vector in the svg file starting from a point
+        /// \param v - the vector that will be drawn
+        /// \param tail - the point the vector will start from
+        /// \param color - the color the vector will be
+        void draw_vector(Vector2D v, Point2D tail, std::string color);
 
         /// \brief draw a vector in the svg file starting from a point
         /// \param v - the vector that will be drawn
