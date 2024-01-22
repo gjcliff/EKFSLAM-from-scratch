@@ -28,31 +28,31 @@ int main()
 
     // compute T_{a,b}
     std::cout << "T_{a,b}: " << T_ab << std::endl;
-    svg.draw_coordiante_frame(T_ab, "T_{a,b}");
+    svg.draw_coordinate_frame(T_ab, "T_{a,b}");
 
     // compute T_{b,a}
     Transform2D T_ba = T_ab.inv();
     std::cout << "T_{b,a}: " << T_ba << std::endl;
-    svg.draw_coordiante_frame(T_ab * T_ba, "T_{b,a}");
+    svg.draw_coordinate_frame(T_ab * T_ba, "T_{b,a}");
 
     // compute T_{b,c}
     std::cout << "T_{b,c}: " << T_bc << std::endl;
-    svg.draw_coordiante_frame(T_ab * T_bc, "T_{b,c}");
+    svg.draw_coordinate_frame(T_ab * T_bc, "T_{b,c}");
 
     // compute T_{c,b}
     Transform2D T_cb = T_bc.inv();
     std::cout << "T_{c,b}: " << T_cb << std::endl;
-    svg.draw_coordiante_frame(T_ab * T_bc * T_cb, "T_{c,b}");
+    svg.draw_coordinate_frame(T_ab * T_bc * T_cb, "T_{c,b}");
 
     // compute T_{a,c}
     Transform2D T_ac = T_ab * T_bc;
     std::cout << "T_{a,c}: " << T_ac << std::endl;
-    svg.draw_coordiante_frame(T_ac, "T_{a,c}");
+    svg.draw_coordinate_frame(T_ac, "T_{a,c}");
 
     //compute T_{c,a}
     Transform2D T_ca = T_ac.inv();
     std::cout << "T_{c,a}: " << T_ca << std::endl;
-    svg.draw_coordiante_frame(T_ac * T_ca, "T_{c,a}");
+    svg.draw_coordinate_frame(T_ac * T_ca, "T_{c,a}");
 
     // POINTS
     // retrieve the point p_a

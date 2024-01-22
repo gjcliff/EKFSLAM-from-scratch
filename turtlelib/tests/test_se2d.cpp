@@ -8,6 +8,35 @@
 #include <iostream>
 
 namespace turtlelib{
+        TEST_CASE("Test the << operator for twists", "[operator<<_twist]")
+        {
+            Twist2D twi;
+            std::ostringstream oss;
+            oss << twi;
+            REQUIRE(oss.str() == "[0 0 0]");
+        }
+
+        TEST_CASE("Test the >> operator for twists", "[operator>>_twist]")
+        {
+            Twist2D twi;
+
+            SECTION("Test with spaces"){
+                std::istringstream iss("1.0 1.0 1.0");
+                iss >> twi.omega >> twi.x >> twi.y;
+                REQUIRE_THAT(twi.omega, Catch::Matchers::WithinAbs(1.0, 0.0001));
+                REQUIRE_THAT(twi.x, Catch::Matchers::WithinAbs(1.0, 0.0001));
+                REQUIRE_THAT(twi.y, Catch::Matchers::WithinAbs(1.0, 0.0001));
+            }
+
+            SECTION("Test with newline characters"){
+                std::istringstream iss("1.0\n1.0\n1.0\n");
+                iss >> twi.omega >> twi.x >> twi.y;
+                REQUIRE_THAT(twi.omega, Catch::Matchers::WithinAbs(1.0, 0.0001));
+                REQUIRE_THAT(twi.x, Catch::Matchers::WithinAbs(1.0, 0.0001));
+                REQUIRE_THAT(twi.y, Catch::Matchers::WithinAbs(1.0, 0.0001));
+            }
+        }
+
         TEST_CASE("Test the default constructor", "[default_constructor]"){
             Transform2D t;
             REQUIRE_THAT(t.rotation(), Catch::Matchers::WithinAbs(0, 0.001));
@@ -69,20 +98,20 @@ namespace turtlelib{
         }
 
         TEST_CASE("Test the () operator on Twist2D object", "[operator() Twist2D]"){
-            Twist2D t = {1,1,1};
+            Twist2D twist = {1,1,1};
 
-            double degrees = -90;
+            double degrees = 90;
             double radians = deg2rad(degrees);
             Vector2D trans = {0, 1};
 
             Transform2D transform(trans, radians);
-            // notice that this is the first test case demo'd in task B.6
+            // this is the first test case demo'd in task B.6
 
-            t = transform(t);
+            twist = transform(twist);
 
-            REQUIRE_THAT(t.omega, Catch::Matchers::WithinAbs(1, 0.001));
-            REQUIRE_THAT(t.x, Catch::Matchers::WithinAbs(0, 0.001));
-            REQUIRE_THAT(t.y, Catch::Matchers::WithinAbs(1, 0.001));
+            REQUIRE_THAT(twist.omega, Catch::Matchers::WithinAbs(1, 0.001));
+            REQUIRE_THAT(twist.x, Catch::Matchers::WithinAbs(0, 0.001));
+            REQUIRE_THAT(twist.y, Catch::Matchers::WithinAbs(1, 0.001));
         }
 
         TEST_CASE("TEST the inv() function", "[inv]"){

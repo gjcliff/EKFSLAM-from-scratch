@@ -31,6 +31,10 @@ endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/exercises/B6_frame_input.txt
     ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
+# Copy over the test_case_files directory to the build directory
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_CURRENT_SOURCE_DIR}/test_case_files" "${CMAKE_CURRENT_BINARY_DIR}")
+
 # Create a library.  Can specify if it is shared or static but usually
 # you don't need or want to.
 # name is the name of the library without the extension or lib prefix

@@ -27,11 +27,13 @@ namespace turtlelib
 
         /// \brief flip from a left-handed coordinate system to a
         /// right-handed coordinate system
-
+        /// \param v - the vector to be flipped
         constexpr void left_to_right(Vector2D & v){
             v.x *= -1;
         }
-
+        /// @brief flip the point from a left-handed coordinate system to a
+        /// right-handed coordinate system
+        /// @param p 
         constexpr void left_to_right(Point2D & p){
             p.x *= -1;
         }
@@ -57,31 +59,31 @@ namespace turtlelib
         /// \brief draw a vector in the svg file starting from a point
         /// \param v - the vector that will be drawn
         /// \param tail - the point the vector will start from
-        /// \param color - the color the vector will be
-        void draw_vector(Vector2D v, Point2D tail, std::string color);
+        void draw_vector(Vector2D v, Point2D tail);
 
         /// \brief draw a vector in the svg file starting from a point
         /// \param v - the vector that will be drawn
         /// \param tail - the point the vector will start from
-        void draw_vector(Vector2D v, Point2D tail);
+        /// \param color - the color the vector will be
+        void draw_vector(Vector2D v, Point2D tail, std::string color);
 
         /// \brief draw a default coordinate frame in the svg file at the
         /// center of the page. The name will be "{a}"
-        void draw_coordiante_frame();
+        void draw_coordinate_frame();
 
         /// \brief draw a default coordinate frame in the svg file at the
         /// center of the page with axes length "v". The name will be "{a}"
         /// \param t - the origin of the coordinate axis
-        void draw_coordiante_frame(Transform2D t);
+        void draw_coordinate_frame(Transform2D t);
 
         /// \brief draw a default coordinate frame in the svg file at the
         /// center of the page with axes length "v". The name will be "{a}"
         /// \param t - the origin of the coordinate axis
         /// \param text - the name of the coordinate axis, this text will be surrounded by
         /// curly brackets
-        void draw_coordiante_frame(Transform2D t, std::string text);
+        void draw_coordinate_frame(Transform2D t, std::string text);
 
-
+        /// @brief write the closing </svg> tag to file, and close the file
         void close();
 
 
@@ -99,11 +101,5 @@ namespace turtlelib
         Vector2D x_axis = {0.5,0};
         Vector2D y_axis = {0,0.5};
     };
-
-    // Point2D operator*(Point2D lhs, const double & rhs);
-    // Vector2D operator*(Vector2D lhs, const double & rhs);
-
-
-
 }
 #endif

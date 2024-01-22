@@ -39,14 +39,14 @@ namespace turtlelib
     }
 
     Transform2D::Transform2D(double radians){
-        rad = radians;
+        rad = normalize_angle(radians);
         t = {{std::cos(rad),-std::sin(rad),x},
              {std::sin(rad),std::cos(rad),y},
              {0.0,0.0,1.0}};
     }
 
     Transform2D::Transform2D(Vector2D trans, double radians){
-        rad = radians;
+        rad = normalize_angle(radians);
         x = trans.x;
         y = trans.y;
         t = {{std::cos(rad),-std::sin(rad),x},
@@ -93,13 +93,11 @@ namespace turtlelib
 
 
     Twist2D Transform2D::operator()(Twist2D v) const{
-
         vector<double> mat_v = {0, 0, v.omega, v.x, v.y, 0};
         vector<vector<double>> R = {{t[0][0], t[0][1], 0},
                                     {t[1][0], t[1][1], 0},
                                     {0, 0, 1}};
         
-
         vector<vector<double>> p_skew = {{0, 0, t[1][2]},
                                          {0, 0, -t[0][2]},
                                          {-t[1][2], t[0][2], 0}};

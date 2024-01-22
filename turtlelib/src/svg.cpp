@@ -127,9 +127,10 @@ namespace turtlelib
         svgFile << "<line x1=\"" << head.x << "\" x2=\"" << tail.x << "\" y1=\"" << head.y << "\" y2=\"" << tail.y << "\" stroke=\"" << color << "\" stroke-width=\"5\" marker-start=\"url(#Arrow1Sstart)\" />" << std::endl;
     }
 
-    void Svg::draw_coordiante_frame()
+    void Svg::draw_coordinate_frame()
     {
         Point2D p = {0,0};
+        p = fixed_frame(p);
 
         Point2D headx = p + x_axis;
         Point2D heady = p + y_axis;
@@ -141,7 +142,7 @@ namespace turtlelib
         svgFile << "</g>" << std::endl;
     }
 
-    void Svg::draw_coordiante_frame(Transform2D t)
+    void Svg::draw_coordinate_frame(Transform2D t)
     {
         Point2D p = {t.translation().x, t.translation().y};
         left_to_right(p);
@@ -157,7 +158,7 @@ namespace turtlelib
         svgFile << "</g>" << std::endl;
     }
 
-    void Svg::draw_coordiante_frame(Transform2D t, std::string text)
+    void Svg::draw_coordinate_frame(Transform2D t, std::string text)
     {
         // Here I am translating first, THEN rotating
         
