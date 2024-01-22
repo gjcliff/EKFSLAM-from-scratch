@@ -11,4 +11,4 @@ Task B.3: Complete 1/18/2024
 Task B.4: Complete 1/19/2024
 Task B.5: Complete 1/20/2024
 Task B.6: Complete 1/21/2024
-Task B.7: 
+Task B.7: Complete 1/21/2024
