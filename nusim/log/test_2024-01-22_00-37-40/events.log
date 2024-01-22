@@ -1,0 +1,6 @@
+[0.000000] (-) TimerEvent: {}
+[0.000158] (nusim) JobQueued: {'identifier': 'nusim', 'dependencies': OrderedDict([('nusim', '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/nusim/install/nusim')])}
+[0.000185] (nusim) JobStarted: {'identifier': 'nusim'}
+[0.000975] (nusim) StderrLine: {'line': b'Traceback (most recent call last):\n  File "/usr/lib/python3/dist-packages/colcon_core/executor/__init__.py", line 91, in __call__\n    rc = await self.task(*args, **kwargs)\n  File "/usr/lib/python3/dist-packages/colcon_core/task/__init__.py", line 93, in __call__\n    return await task_method(*args, **kwargs)\n  File "/usr/lib/python3/dist-packages/colcon_ros/task/ament_cmake/test.py", line 29, in test\n    return await extension.test()\n  File "/usr/lib/python3/dist-packages/colcon_cmake/task/cmake/test.py", line 45, in test\n    assert os.path.exists(args.build_base), \\\nAssertionError: Has this package been built before?\n'}
+[0.001292] (nusim) JobEnded: {'identifier': 'nusim', 'rc': 1}
+[0.011439] (-) EventReactorShutdown: {}
