@@ -93,40 +93,17 @@ namespace turtlelib
 
 
     Twist2D Transform2D::operator()(Twist2D v) const{
-        vector<double> mat_v = {0, 0, v.omega, v.x, v.y, 0};
-        vector<vector<double>> R = {{t[0][0], t[0][1], 0},
-                                    {t[1][0], t[1][1], 0},
-                                    {0, 0, 1}};
         
-        vector<vector<double>> p_skew = {{0, 0, t[1][2]},
-                                         {0, 0, -t[0][2]},
-                                         {-t[1][2], t[0][2], 0}};
-
-        vector<vector<double>> p_skewR(3, vector<double>(3, 0.0));
-        for (unsigned int i = 0; i < p_skew.size(); i++){
-            for (unsigned int j = 0; j < p_skew.size(); j++){
-                for (unsigned int k = 0; k < p_skew.size(); k++){
-                    p_skewR[i][j] += p_skew[i][k] * R[k][j];
-                }
+        vector<double> v_mat = {v.omega, v.x, v.y};
+        vector<double> output(3, 0.0);
+        vector<vector<double>> adj = {{1,0,0},{t[1][2],t[0][0],t[0][1]},{-t[0][2],t[1][0],t[1][1]}};
+        for (int i = 0; i < (int)adj.size(); i++){
+            for (int j = 0; j < (int)adj.size(); j++){
+                output[i] += adj[i][j] * v_mat[j];
             }
         }
 
-        vector<vector<double>> adj = {{R[0][0], R[0][1], R[0][2], 0, 0, 0},
-                                      {R[1][0], R[1][1], R[1][2], 0, 0, 0},
-                                      {R[2][0], R[2][1], R[2][2], 0, 0, 0},
-                                      {p_skewR[0][0], p_skewR[0][1], p_skewR[0][2], R[0][0], R[0][1], R[0][2]},
-                                      {p_skewR[1][0], p_skewR[1][1], p_skewR[1][2], R[1][0], R[1][1], R[1][2]},
-                                      {p_skewR[2][0], p_skewR[2][1], p_skewR[2][2], R[2][0], R[2][1], R[2][2]}};
-
-
-        vector<double> output(6,0.0);
-        for (unsigned int i = 0; i < mat_v.size(); i++){
-            for (unsigned int j = 0; j < mat_v.size(); j++){
-                output[i] += adj[i][j] * mat_v[j];
-            }
-        }
-
-        Twist2D out_v = {output[2], output[3], output[4]};
+        Twist2D out_v = {output[0], output[1], output[2]};
 
         return out_v;
     }
