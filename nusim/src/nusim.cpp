@@ -40,18 +40,23 @@ public:
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
     // declare services
-    reset_service_ = this->create_service<std_srvs::srv::Empty>("reset", std::bind(&TurtleSimulation::reset_callback, this, _1, _2));
-    teleport_service_ = this->create_service<nusim::srv::Teleport>("reset", std::bind(&TurtleSimulation::teleport_callback, this, _1, _2));
+    reset_service_ =
+      this->create_service<std_srvs::srv::Empty>(
+      "reset",
+      std::bind(&TurtleSimulation::reset_callback, this, _1, _2));
+    teleport_service_ =
+      this->create_service<nusim::srv::Teleport>(
+      "reset",
+      std::bind(&TurtleSimulation::teleport_callback, this, _1, _2));
     // teleport_service_ = this->create_service<geometry_msgs::srv::
 
     // initialize the transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     tf_broadcaster_->sendTransform(construct_transform_msg(x_, y_, theta_));
     timer_ = this->create_wall_timer(
-      (std::chrono::milliseconds)this->get_parameter("rate").as_int(), std::bind(&TurtleSimulation::timer_callback, this));
+      (std::chrono::milliseconds)this->get_parameter("rate").as_int(),
+      std::bind(&TurtleSimulation::timer_callback, this));
   }
-
-  
 
 private:
   geometry_msgs::msg::TransformStamped construct_transform_msg(double x, double y, double theta)
@@ -61,13 +66,13 @@ private:
     t.header.stamp = this->get_clock()->now();
     t.header.frame_id = "nusim/world";
     t.child_frame_id = "red/base_footprint";
-    
+
     t.transform.translation.x = x;
     t.transform.translation.y = y;
     t.transform.translation.z = 0.0;
 
     tf2::Quaternion q;
-    q.setRPY(0,0,theta);
+    q.setRPY(0, 0, theta);
     t.transform.rotation.x = q.x();
     t.transform.rotation.y = q.y();
     t.transform.rotation.z = q.z();
@@ -80,9 +85,11 @@ private:
     const std::shared_ptr<nusim::srv::Teleport::Request> request,
     std::shared_ptr<nusim::srv::Teleport::Response> response)
   {
-    geometry_msgs::msg::TransformStamped t = construct_transform_msg(request->x, request->y, request->theta);
-    tf_broadcaster_->sendTransform(t);
+    geometry_msgs::msg::TransformStamped t = construct_transform_msg(
+      request->x, request->y,
+      request->theta);
 
+    tf_broadcaster_->sendTransform(t);
     (void) response;
   }
 
