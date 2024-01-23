@@ -16,7 +16,7 @@ def generate_launch_description():
             description="determines whether or not rviz is launched"
         ),
         DeclareLaunchArgument(
-            "use_jsp", default_value="true",
+            "use_jsp", default_value="false",
             description="determines whether ot not the joint_state_publisher\
                 is used to publish joint states"
         ),

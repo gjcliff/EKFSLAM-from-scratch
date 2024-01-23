@@ -34,6 +34,8 @@ public:
     this->declare_parameter("arena_length_y", 1.0);
     this->declare_parameter("obstacles/x", std::vector<double>({0.0, 0.0}));
     this->declare_parameter("obstacles/y", std::vector<double>({0.0, 0.0}));
+    this->declare_parameter("obstacles/height", 0.25);
+    this->declare_parameter("obstacles/r", 0.25);
 
     // set parameters
     rate_ = this->get_parameter("rate").as_int();
@@ -44,12 +46,21 @@ public:
     arena_y_length_ = this->get_parameter("arena_length_y").as_double();
     obstacles_x = this->get_parameter("obstacles/x").as_double_array();
     obstacles_y = this->get_parameter("obstacles/y").as_double_array();
+    obstacle_height_ = this->get_parameter("obstacles/height").as_double();
+    obstacle_radius_ = this->get_parameter("obstacles/r").as_double();
+
+    if (obstacles_x.size() != obstacles_y.size())
+    {
+      RCLCPP_ERROR(this->get_logger(), "obstacles_x and obstacles_y are not the same size");
+      rclcpp::shutdown();
+    }
 
     auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local();
 
     // declare publisher
     timestep_publisher_ = this->create_publisher<std_msgs::msg::UInt64>("~/timestep", qos);
     walls_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/walls", qos);
+    obstacles_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/obstacles", qos);
 
     // declare static transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
@@ -72,12 +83,42 @@ public:
       (std::chrono::milliseconds)this->get_parameter("rate").as_int(),
       std::bind(&TurtleSimulation::timer_callback, this));
 
-    visualization_msgs::msg::MarkerArray marker_array = construct_marker_array();
-    walls_publisher_->publish(marker_array);
+    visualization_msgs::msg::MarkerArray wall_array = construct_wall_array();
+    walls_publisher_->publish(wall_array);
 
   }
 
 private:
+  visualization_msgs::msg::MarkerArray construct_obstacle_array()
+  {
+    visualization_msgs::msg::MarkerArray arr;
+    for (int i = 0; i < (int)obstacles_x.size(); i++)
+    {
+      visualization_msgs::msg::Marker marker;
+      marker.header.frame_id = "nusim/world";
+      marker.header.stamp = this->get_clock()->now();
+      marker.id = i;
+      marker.type = visualization_msgs::msg::Marker::CYLINDER;
+      marker.action = visualization_msgs::msg::Marker::ADD;
+      marker.pose.position.x = obstacles_x[i];
+      marker.pose.position.y = obstacles_y[i];
+      marker.pose.position.z = wall_height_/2;
+      marker.pose.orientation.x = 0;
+      marker.pose.orientation.y = 0;
+      marker.pose.orientation.z = 0;
+      marker.pose.orientation.w = 1.0;
+      marker.scale.x = obstacle_radius_;
+      marker.scale.y = obstacle_radius_;
+      marker.scale.z = obstacle_height_;
+      marker.color.a = 1.0;
+      marker.color.r = 1.0;
+      
+      arr.markers.push_back(marker);
+    }
+
+    return arr;
+  }
+
   visualization_msgs::msg::Marker construct_marker(double pos_x, double pos_y, double scale_x, double scale_y, int id)
   {
     visualization_msgs::msg::Marker marker;
@@ -101,19 +142,19 @@ private:
     return marker;
   }
 
-  visualization_msgs::msg::MarkerArray construct_marker_array()
+  visualization_msgs::msg::MarkerArray construct_wall_array()
   {
-    visualization_msgs::msg::MarkerArray marker_array;
+    visualization_msgs::msg::MarkerArray wall_array;
     
     double x_length = (arena_x_length_ + wall_thickness_);
     double y_length = (arena_y_length_ + wall_thickness_);
 
-    marker_array.markers.push_back(construct_marker(arena_x_length_/2, 0.0, wall_thickness_, x_length, 0));
-    marker_array.markers.push_back(construct_marker(0.0, arena_y_length_/2, y_length, wall_thickness_, 1));
-    marker_array.markers.push_back(construct_marker(-arena_x_length_/2, 0.0, wall_thickness_, x_length, 2));
-    marker_array.markers.push_back(construct_marker(0.0, -arena_y_length_/2, y_length, wall_thickness_, 3));
+    wall_array.markers.push_back(construct_marker(arena_x_length_/2, 0.0, wall_thickness_, x_length, 0));
+    wall_array.markers.push_back(construct_marker(0.0, arena_y_length_/2, y_length, wall_thickness_, 1));
+    wall_array.markers.push_back(construct_marker(-arena_x_length_/2, 0.0, wall_thickness_, x_length, 2));
+    wall_array.markers.push_back(construct_marker(0.0, -arena_y_length_/2, y_length, wall_thickness_, 3));
 
-    return marker_array;
+    return wall_array;
   }
 
   geometry_msgs::msg::TransformStamped construct_transform_msg(double x, double y, double theta)
@@ -174,12 +215,16 @@ private:
     timestep_message.data = current_timestep_;
     timestep_publisher_->publish(timestep_message);
 
-    visualization_msgs::msg::MarkerArray marker_array = construct_marker_array();
-    walls_publisher_->publish(marker_array);
+    visualization_msgs::msg::MarkerArray wall_array = construct_wall_array();
+    walls_publisher_->publish(wall_array);
+
+    visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array();
+    obstacles_publisher_->publish(obstacle_array);
   }
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr walls_publisher_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_publisher_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_service_;
   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_service_;
@@ -191,9 +236,11 @@ private:
   double arena_x_length_;
   double arena_y_length_;
   double wall_height_ = 0.25;
-  double wall_thickness_ = wall_height_;
+  double wall_thickness_ = 0.05;
   std::vector<double> obstacles_x;
   std::vector<double> obstacles_y;
+  double obstacle_radius_;
+  double obstacle_height_ = 0.25;
   size_t count_;
   unsigned int current_timestep_ = 0;
 };

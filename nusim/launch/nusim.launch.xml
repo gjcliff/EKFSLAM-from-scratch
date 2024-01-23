@@ -1,9 +1,6 @@
 <launch>
     <arg name="rate" default="5" description="the period of the timer callback in nusim in milliseconds (ms)"/>
     <arg name="config_file" default="basic_world.yaml" description="select the file to configure the simulator with"/>
-    <!-- <arg name="x0" default="0.0" description="the initial x position of the robot"/>
-    <arg name="y0" default="0.0" description="the initial y position of the robot"/>
-    <arg name="theta0" default="0.0" description="the initial theta value of the robot"/> -->
     <arg name="arena_length_x" default="3.0" description="the length of the arena in the x direction"/>
     <arg name="arena_length_y" default="3.0" description="the length of the arena in the y direction"/>
     <arg name="obstacles/r" default="0.038" description="the default radius of all columns"/>
@@ -17,7 +14,7 @@
     <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nusim)/config/nusim.rviz"/>
     <node pkg="nusim" exec="nusim_exec">
         <param name="rate" value="$(var rate)"/>
-        <param from="$(find-pkg-share nusim)/config/basic_world.yaml"/>
+        <param from="$(find-pkg-share nusim)/config/$(var config_file)"/>
         <param name="arena_length_x" value="$(var arena_length_x)"/>
         <param name="arena_length_y" value="$(var arena_length_y)"/>
         <param name="obstacles/r" value="$(var obstacles/r)"/>
