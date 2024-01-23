@@ -23,7 +23,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "color", default_value="purple",
             description="determines the color of the turtlebot in rviz",
-            choices=["red", "green", "blue", "purple"]
+            choices=["red", "green", "blue", "purple", ""]
         ),
         SetLaunchConfiguration("rviz_file", PythonExpression(
             ["'basic_", LaunchConfiguration("color"), ".rviz'"])),
