@@ -2,6 +2,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/transform_broadcaster.h"
@@ -12,6 +13,8 @@
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "std_srvs/srv/empty.hpp"
 #include "nusim/srv/teleport.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
+#include "visualization_msgs/msg/marker.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1, std::placeholders::_2;
@@ -20,21 +23,33 @@ class TurtleSimulation : public rclcpp::Node
 {
 public:
   TurtleSimulation()
-  : Node("minimal_publisher"), count_(0)
+  : Node("nusim"), count_(0)
   {
     // declare parameters
     this->declare_parameter("rate", 5);
     this->declare_parameter("x0", 0.0);
     this->declare_parameter("y0", 0.0);
     this->declare_parameter("theta0", 0.0);
+    this->declare_parameter("arena_length_x", 1.0);
+    this->declare_parameter("arena_length_y", 1.0);
+    this->declare_parameter("obstacles/x", std::vector<double>({0.0, 0.0}));
+    this->declare_parameter("obstacles/y", std::vector<double>({0.0, 0.0}));
 
     // set parameters
+    rate_ = this->get_parameter("rate").as_int();
     x_ = this->get_parameter("x0").as_double();
     y_ = this->get_parameter("y0").as_double();
     theta_ = this->get_parameter("theta0").as_double();
+    arena_x_length_ = this->get_parameter("arena_length_x").as_double();
+    arena_y_length_ = this->get_parameter("arena_length_y").as_double();
+    obstacles_x = this->get_parameter("obstacles/x").as_double_array();
+    obstacles_y = this->get_parameter("obstacles/y").as_double_array();
+
+    auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local();
 
     // declare publisher
-    timestep_publisher_ = this->create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
+    timestep_publisher_ = this->create_publisher<std_msgs::msg::UInt64>("~/timestep", qos);
+    walls_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/walls", qos);
 
     // declare static transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
@@ -46,7 +61,7 @@ public:
       std::bind(&TurtleSimulation::reset_callback, this, _1, _2));
     teleport_service_ =
       this->create_service<nusim::srv::Teleport>(
-      "reset",
+      "teleport",
       std::bind(&TurtleSimulation::teleport_callback, this, _1, _2));
     // teleport_service_ = this->create_service<geometry_msgs::srv::
 
@@ -56,9 +71,51 @@ public:
     timer_ = this->create_wall_timer(
       (std::chrono::milliseconds)this->get_parameter("rate").as_int(),
       std::bind(&TurtleSimulation::timer_callback, this));
+
+    visualization_msgs::msg::MarkerArray marker_array = construct_marker_array();
+    walls_publisher_->publish(marker_array);
+
   }
 
 private:
+  visualization_msgs::msg::Marker construct_marker(double pos_x, double pos_y, double scale_x, double scale_y, int id)
+  {
+    visualization_msgs::msg::Marker marker;
+    marker.header.frame_id = "nusim/world";
+    marker.header.stamp = this->get_clock()->now();
+    marker.id = id;
+    marker.type = visualization_msgs::msg::Marker::CUBE;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.pose.position.x = pos_x;
+    marker.pose.position.y = pos_y;
+    marker.pose.position.z = wall_height_/2;
+    marker.pose.orientation.x = 0;
+    marker.pose.orientation.y = 0;
+    marker.pose.orientation.z = 0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = scale_x;
+    marker.scale.y = scale_y;
+    marker.scale.z = wall_height_;
+    marker.color.a = 1.0;
+    marker.color.r = 1.0;
+    return marker;
+  }
+
+  visualization_msgs::msg::MarkerArray construct_marker_array()
+  {
+    visualization_msgs::msg::MarkerArray marker_array;
+    
+    double x_length = (arena_x_length_ + wall_thickness_);
+    double y_length = (arena_y_length_ + wall_thickness_);
+
+    marker_array.markers.push_back(construct_marker(arena_x_length_/2, 0.0, wall_thickness_, x_length, 0));
+    marker_array.markers.push_back(construct_marker(0.0, arena_y_length_/2, y_length, wall_thickness_, 1));
+    marker_array.markers.push_back(construct_marker(-arena_x_length_/2, 0.0, wall_thickness_, x_length, 2));
+    marker_array.markers.push_back(construct_marker(0.0, -arena_y_length_/2, y_length, wall_thickness_, 3));
+
+    return marker_array;
+  }
+
   geometry_msgs::msg::TransformStamped construct_transform_msg(double x, double y, double theta)
   {
     geometry_msgs::msg::TransformStamped t;
@@ -116,16 +173,27 @@ private:
     auto timestep_message = std_msgs::msg::UInt64();
     timestep_message.data = current_timestep_;
     timestep_publisher_->publish(timestep_message);
+
+    visualization_msgs::msg::MarkerArray marker_array = construct_marker_array();
+    walls_publisher_->publish(marker_array);
   }
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_publisher_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr walls_publisher_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_service_;
   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_service_;
 
+  int rate_ = 0;
   double x_ = 0.0;
   double y_ = 0.0;
   double theta_ = 0.0;
+  double arena_x_length_;
+  double arena_y_length_;
+  double wall_height_ = 0.25;
+  double wall_thickness_ = wall_height_;
+  std::vector<double> obstacles_x;
+  std::vector<double> obstacles_y;
   size_t count_;
   unsigned int current_timestep_ = 0;
 };

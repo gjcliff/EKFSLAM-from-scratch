@@ -18,3 +18,4 @@
 [19] https://stackoverflow.com/questions/71807676/use-cmake-configure-file-to-copy-recursive-files
 [20] https://design.ros2.org/articles/topic_and_service_names.html
 [21] https://stackoverflow.com/questions/39553008/how-to-read-a-python-tuple-using-pyyaml
+[22] https://answers.ros.org/question/295518/how-to-get-an-array-of-parameters-with-rclcpp/

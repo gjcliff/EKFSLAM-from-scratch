@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <robot name="nuturtle_burger"
   xmlns:xacro="http://ros.org/wiki/xacro">
-  <!-- <xacro:include filename="$(find nuturtle_description)/urdf/common_properties.urdf"/> -->
 
   <xacro:property name="yaml_file" value="$(find nuturtle_description)/config/diff_params.yaml"/>
   <xacro:property name="params" value="${xacro.load_yaml(yaml_file)['/**']['ros__parameters']}"/>
@@ -13,7 +12,6 @@
   <xacro:property name="encoder_ticks_per_rad" value="${params['encoder_ticks_per_rad']}"/>
   <xacro:property name="collision_radius" value="${params['collision_radius']}"/>
 
-  <xacro:arg name="color" default="purple"/>
   <xacro:property name="color" value="$(arg color)"/>
 
   <!-- Init colour -->
@@ -73,7 +71,7 @@
     <visual>
       <origin xyz="-0.032 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://nuturtle_description/meshes/burger_base.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://nuturtle_description/config/burger_base.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <xacro:if value="${color == 'blue'}">
         <material name="${color}"/>
@@ -120,7 +118,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="1.57 0 0"/>
       <geometry>
-        <mesh filename="package://nuturtle_description/meshes/left_tire.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://nuturtle_description/config/left_tire.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
@@ -150,7 +148,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="1.57 0 0"/>
       <geometry>
-        <mesh filename="package://nuturtle_description/meshes/right_tire.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://nuturtle_description/config/right_tire.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
@@ -208,7 +206,7 @@
     <visual>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://nuturtle_description/meshes/lds.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://nuturtle_description/config/lds.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>

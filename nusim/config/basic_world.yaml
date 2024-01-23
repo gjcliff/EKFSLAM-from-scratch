@@ -1,7 +1,7 @@
 /nusim:
   ros__parameters:
-    cylinder_radius: 0.038
-    cylinder1_pos: [-0.5,-0.7]
-    cylinder2_pos: [0.8,-0.8]
-    cylinder3_pos: [0.4,0.8]
-    robot_pos: [-0.5,0.7,1.28]
+    obstacles/x: [1.0, 0.0]
+    obstacles/y: [1.0, 0.0]
+    x0: -0.5
+    y0: 0.7
+    theta0: 1.28
