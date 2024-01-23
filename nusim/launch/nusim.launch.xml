@@ -1,0 +1,21 @@
+<launch>
+    <arg name="rate" default="5" description="the period of the timer callback in nusim in milliseconds (ms)"/>
+    <arg name="config_file" default="basic_world.yaml" description="select the file to configure the simulator with"/>
+    <arg name="x0" default="0.0" description="the initial x position of the robot"/>
+    <arg name="y0" default="0.0" description="the initial y position of the robot"/>
+    <arg name="theta0" default="0.0" description="the initial theta value of the robot"/>
+
+    <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <arg name="use_rviz" value="false"/>
+        <arg name="use_jsp" value="false"/>
+        <arg name="color" value="red"/>
+    </include>
+
+    <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share numsim)/config/nusim.rviz"/>
+    <node pkg="nusim" exec="nusim" namespace="nusim">
+        <param name="rate" value="$(var rate)"/>
+        <param name="x0" value="$(var x0)"/>
+        <param name="y0" value="$(var y0)"/>
+        <param name="theta0" value="$(var theta0)"/>
+    </node>
+</launch>

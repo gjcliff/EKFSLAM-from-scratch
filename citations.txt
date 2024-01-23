@@ -16,3 +16,5 @@
 [17] https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
 [18] https://en.wikipedia.org/wiki/Rotation_matrix
 [19] https://stackoverflow.com/questions/71807676/use-cmake-configure-file-to-copy-recursive-files
+[20] https://design.ros2.org/articles/topic_and_service_names.html
+[21] https://stackoverflow.com/questions/39553008/how-to-read-a-python-tuple-using-pyyaml
