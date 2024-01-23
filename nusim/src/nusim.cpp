@@ -49,6 +49,12 @@ public:
     obstacle_height_ = this->get_parameter("obstacles/height").as_double();
     obstacle_radius_ = this->get_parameter("obstacles/r").as_double();
 
+    // set miscellaneous variables
+    og_x_ = x_;
+    og_y_ = y_;
+    og_theta_ = theta_;
+
+    // check whether or not the obstacle arrays are the same size
     if (obstacles_x.size() != obstacles_y.size())
     {
       RCLCPP_ERROR(this->get_logger(), "obstacles_x and obstacles_y are not the same size");
@@ -183,12 +189,20 @@ private:
     const std::shared_ptr<nusim::srv::Teleport::Request> request,
     std::shared_ptr<nusim::srv::Teleport::Response> response)
   {
+    
+    RCLCPP_INFO(this->get_logger(), "request->x: '%f'", request->x);
+    RCLCPP_INFO(this->get_logger(), "request->y: '%f'", request->y);
+    RCLCPP_INFO(this->get_logger(), "request->theta: '%f'", request->theta);
     geometry_msgs::msg::TransformStamped t = construct_transform_msg(
       request->x, request->y,
       request->theta);
 
     tf_broadcaster_->sendTransform(t);
     (void) response;
+
+    x_ = request->x;
+    y_ = request->y;
+    theta_ = request->theta;
   }
 
   void reset_callback(
@@ -198,9 +212,9 @@ private:
     (void) request; // is this good practice????
     (void) response; // found here: https://docs.ros.org/en/humble/p/rclcpp/generated/program_listing_file_include_rclcpp_any_subscription_callback.hpp.html
     current_timestep_ = 0;
-    x_ = 0.0;
-    y_ = 0.0;
-    theta_ = 0.0;
+    x_ = og_x_;
+    y_ = og_y_;
+    theta_ = og_theta_;
   }
 
   void timer_callback()
@@ -233,6 +247,9 @@ private:
   double x_ = 0.0;
   double y_ = 0.0;
   double theta_ = 0.0;
+  double og_x_;
+  double og_y_;
+  double og_theta_;
   double arena_x_length_;
   double arena_y_length_;
   double wall_height_ = 0.25;
