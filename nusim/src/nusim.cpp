@@ -55,8 +55,7 @@ public:
     og_theta_ = theta_;
 
     // check whether or not the obstacle arrays are the same size
-    if (obstacles_x.size() != obstacles_y.size())
-    {
+    if (obstacles_x.size() != obstacles_y.size()) {
       RCLCPP_ERROR(this->get_logger(), "obstacles_x and obstacles_y are not the same size");
       rclcpp::shutdown();
     }
@@ -66,7 +65,8 @@ public:
     // declare publisher
     timestep_publisher_ = this->create_publisher<std_msgs::msg::UInt64>("~/timestep", qos);
     walls_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/walls", qos);
-    obstacles_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/obstacles", qos);
+    obstacles_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+      "~/obstacles", qos);
 
     // declare static transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
@@ -98,8 +98,7 @@ private:
   visualization_msgs::msg::MarkerArray construct_obstacle_array()
   {
     visualization_msgs::msg::MarkerArray arr;
-    for (int i = 0; i < (int)obstacles_x.size(); i++)
-    {
+    for (int i = 0; i < (int)obstacles_x.size(); i++) {
       visualization_msgs::msg::Marker marker;
       marker.header.frame_id = "nusim/world";
       marker.header.stamp = this->get_clock()->now();
@@ -108,7 +107,7 @@ private:
       marker.action = visualization_msgs::msg::Marker::ADD;
       marker.pose.position.x = obstacles_x[i];
       marker.pose.position.y = obstacles_y[i];
-      marker.pose.position.z = wall_height_/2;
+      marker.pose.position.z = wall_height_ / 2;
       marker.pose.orientation.x = 0;
       marker.pose.orientation.y = 0;
       marker.pose.orientation.z = 0;
@@ -118,14 +117,16 @@ private:
       marker.scale.z = obstacle_height_;
       marker.color.a = 1.0;
       marker.color.r = 1.0;
-      
+
       arr.markers.push_back(marker);
     }
 
     return arr;
   }
 
-  visualization_msgs::msg::Marker construct_marker(double pos_x, double pos_y, double scale_x, double scale_y, int id)
+  visualization_msgs::msg::Marker construct_marker(
+    double pos_x, double pos_y, double scale_x,
+    double scale_y, int id)
   {
     visualization_msgs::msg::Marker marker;
     marker.header.frame_id = "nusim/world";
@@ -135,7 +136,7 @@ private:
     marker.action = visualization_msgs::msg::Marker::ADD;
     marker.pose.position.x = pos_x;
     marker.pose.position.y = pos_y;
-    marker.pose.position.z = wall_height_/2;
+    marker.pose.position.z = wall_height_ / 2;
     marker.pose.orientation.x = 0;
     marker.pose.orientation.y = 0;
     marker.pose.orientation.z = 0;
@@ -151,14 +152,26 @@ private:
   visualization_msgs::msg::MarkerArray construct_wall_array()
   {
     visualization_msgs::msg::MarkerArray wall_array;
-    
+
     double x_length = (arena_x_length_ + wall_thickness_);
     double y_length = (arena_y_length_ + wall_thickness_);
 
-    wall_array.markers.push_back(construct_marker(arena_x_length_/2, 0.0, wall_thickness_, x_length, 0));
-    wall_array.markers.push_back(construct_marker(0.0, arena_y_length_/2, y_length, wall_thickness_, 1));
-    wall_array.markers.push_back(construct_marker(-arena_x_length_/2, 0.0, wall_thickness_, x_length, 2));
-    wall_array.markers.push_back(construct_marker(0.0, -arena_y_length_/2, y_length, wall_thickness_, 3));
+    wall_array.markers.push_back(
+      construct_marker(
+        arena_x_length_ / 2, 0.0, wall_thickness_,
+        x_length, 0));
+    wall_array.markers.push_back(
+      construct_marker(
+        0.0, arena_y_length_ / 2, y_length,
+        wall_thickness_, 1));
+    wall_array.markers.push_back(
+      construct_marker(
+        -arena_x_length_ / 2, 0.0, wall_thickness_,
+        x_length, 2));
+    wall_array.markers.push_back(
+      construct_marker(
+        0.0, -arena_y_length_ / 2, y_length,
+        wall_thickness_, 3));
 
     return wall_array;
   }
@@ -189,10 +202,6 @@ private:
     const std::shared_ptr<nusim::srv::Teleport::Request> request,
     std::shared_ptr<nusim::srv::Teleport::Response> response)
   {
-    
-    RCLCPP_INFO(this->get_logger(), "request->x: '%f'", request->x);
-    RCLCPP_INFO(this->get_logger(), "request->y: '%f'", request->y);
-    RCLCPP_INFO(this->get_logger(), "request->theta: '%f'", request->theta);
     geometry_msgs::msg::TransformStamped t = construct_transform_msg(
       request->x, request->y,
       request->theta);
