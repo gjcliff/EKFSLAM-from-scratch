@@ -20,3 +20,6 @@ Task C.4: Complete 1/22/2024
 Task C.5: Complete 1/22/2024
 Task C.6: Complete 1/22/2024
 Task C.7: Complete 1/23/2024
+
+Task B.8: Complete 1/29/2024
+Task B.9:
