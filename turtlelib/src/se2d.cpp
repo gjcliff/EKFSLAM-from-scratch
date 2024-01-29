@@ -205,4 +205,9 @@ Transform2D operator*(Transform2D lhs, const Transform2D & rhs)
 {
   return lhs *= rhs;
 }
+
+Transform2D integrate_twist(Twist2D t)
+{
+  return Transform2D({t.x, t.y}, t.omega);
+}
 }

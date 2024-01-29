@@ -127,6 +127,12 @@ std::istream & operator>>(std::istream & is, Transform2D & tf);
 /// HINT: This function should be implemented in terms of *=
 Transform2D operator*(Transform2D lhs, const Transform2D & rhs);
 
+/// @brief compute the transformation corresponding to a rigid body following
+/// a constant twist in its original body frame for one time-unit
+/// @param t - the constant twist to be followed
+/// @return the transform corresponding to following the twist for one time unit
+Transform2D integrate_twist(Twist2D t);
+
 
 }
 
