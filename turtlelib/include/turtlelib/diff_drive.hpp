@@ -58,6 +58,8 @@ public:
   /// @return -
   vector<vector<double>> construct_H_matrix();
 
+  vector<vector<double>> construct_H_pseudo_matrix();
+
   /// @brief a robot configuration in the world frame
   struct Configuration
   {

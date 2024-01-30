@@ -91,21 +91,26 @@ void DiffDrive::FK(double phi_r_p, double phi_l_p)
 
 void IK(Twist2D twist)
 {
-
+  vector<double> phi_delta(2, 0.0);
+  for (int i = 0; i <)
 }
 
 vector<vector<double>> DiffDrive::construct_H_matrix()
 {
-  vector<vector<double>> H_tmp = {{-1 / (D + L), 1 / (D + L)},
-    {1, 1},
-    {-1, 1}};
+  vector<vector<double>> H_tmp = {{-D, 1, 0},
+    {D, 1, 0}};
 
   for (int i = 0; i < (int)H_tmp.size(); i++) {
     for (int j = 0; j < (int)H_tmp.size(); j++) {
-      H_tmp[i][j] *= r / 3;
+      H_tmp[i][j] *= r; // r/3???
     }
   }
 
   return H_tmp;
+}
+
+vector<vector<double>> DiffDrive::construct_H_pseudo_matrix()
+{
+  vector<vector<double>> H_pseudo_tmp = {}
 }
 }
