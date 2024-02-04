@@ -54,10 +54,17 @@ public:
   /// @param phi_l_p
   void FK(double phi_r_p, double phi_l_p);
 
+  /// @brief compute the wheel velocities required to make the robot move
+  /// at a given body twist
+  /// @param twist
+  void IK(Twist2D twist);
+
   /// @brief - construct the H matrix
-  /// @return -
+  /// @return - a 2x3 H matrix
   vector<vector<double>> construct_H_matrix();
 
+  /// @brief construct the pseudo H matrix
+  /// @return - a 3x2 pseudo H matrix
   vector<vector<double>> construct_H_pseudo_matrix();
 
   /// @brief a robot configuration in the world frame
@@ -82,6 +89,7 @@ private:
   Transform2D Tb1 = Transform2D({L, D}, 0.0);
   Transform2D Tb2 = Transform2D({L, -D}, 0.0);
   Configuration q;
+  vector<vector<double>> H;
   vector<vector<double>> H_pseudo;
 };
 }
