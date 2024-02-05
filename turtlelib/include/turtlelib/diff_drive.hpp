@@ -24,6 +24,13 @@ struct Configuration
   double theta = 0.0;
 };
 
+struct RobotDimensions
+{
+  double L = 1.0;
+  double D = 1.0;
+  double r = 0.1;
+};
+
 class DiffDrive
 {
 public:
@@ -32,17 +39,16 @@ public:
 
   /// @brief create a model of the kinematics of a differential drive robot
   /// that specifies the initial positions of the robot's wheels
-  /// @param phi_right - the position of the robot's right wheel
   /// @param phi_left - the position of the robot's left wheel
-  DiffDrive(double phi_right, double phi_left);
+  /// @param phi_right - the position of the robot's right wheel
+  DiffDrive(double phi_left, double phi_right);
 
   /// @brief create the model of the kinematics of a differential drive robot
-  /// that specifies the positions of the robot's wheels in relation to its
-  /// body frame at the center of the robot
-  /// @param length - the length of the robot, divided by two
-  /// @param width - the width of the robot, divided by two
-  /// @param r - the radius of the wheels of the robot
-  DiffDrive(double length, double width, double radius);
+  /// that specifies the positions of the robot's wheels in relation to is
+  /// bodyf frame at the center of the robot.
+  /// @param rd - the dimensions of the robot including x and y positions of the
+  /// robot's wheels from it's center, and the wheel radius
+  DiffDrive(RobotDimensions rd);
 
   /// @brief create a model of the kinematics of a differential drive robot
   /// that specifies the initial configuration of the robot
@@ -54,15 +60,13 @@ public:
   /// the positions of the robot's wheels in relation to its body frame at the
   /// center of the robot
   /// @param q_orig - the original configuration of the robot
-  /// @param L - the length of the robot, divided by two
-  /// @param D - the width of the robot, divided by two
-  /// @param r - the radius of the wheels of the robot
-  DiffDrive(Configuration q_orig, double length, double width, double radius);
+  /// @param rd - the dimensions of the robot
+  DiffDrive(Configuration q_orig, RobotDimensions rd);
 
   /// @brief given new wheel positions, update the configuration
   /// @param phi_r_p
   /// @param phi_l_p
-  void FK(double phi_r_p, double phi_l_p);
+  void FK(double phi_l_p, double phi_r_p);
 
   /// @brief compute the wheel velocities required to make the robot move
   /// at a given body twist
@@ -73,6 +77,10 @@ public:
   /// @return the robot's current configuration
   Configuration get_current_configuration();
 
+  /// @brief retrieve the robot's current dimensions
+  /// @return the robot's current dimensions
+  RobotDimensions get_robot_dimensions();
+
   /// @brief construct the H matrix
   /// @return a 2x3 H matrix
   vector<vector<double>> construct_H_matrix();
@@ -82,14 +90,12 @@ public:
   vector<vector<double>> construct_H_pseudo_matrix();
 
 private:
-  double phi_r = 0.0;
   double phi_l = 0.0;
-  double L = 1.0;
-  double D = 1.0;
-  double r = 0.1;
-  Transform2D Tb1 = Transform2D({L, D}, 0.0);
-  Transform2D Tb2 = Transform2D({L, -D}, 0.0);
+  double phi_r = 0.0;
+  RobotDimensions rd;
   Configuration q;
+  Transform2D Tb1 = Transform2D({rd.L, rd.D}, 0.0);
+  Transform2D Tb2 = Transform2D({rd.L, -rd.D}, 0.0);
   vector<vector<double>> H;
   vector<vector<double>> H_pseudo;
 };

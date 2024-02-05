@@ -20,11 +20,11 @@ DiffDrive::DiffDrive(double phi_right, double phi_left)
   H_pseudo = construct_H_pseudo_matrix();
 }
 
-DiffDrive::DiffDrive(double length, double width, double radius)
+DiffDrive::DiffDrive(RobotDimensions rd)
 {
-  L = length;
-  D = width;
-  r = radius;
+  rd.L = rd.L;
+  rd.D = rd.D;
+  rd.r = rd.r;
   H = construct_H_matrix();
   H_pseudo = construct_H_pseudo_matrix();
 }
@@ -36,21 +36,21 @@ DiffDrive::DiffDrive(Configuration q_orig)
   H_pseudo = construct_H_pseudo_matrix();
 }
 
-DiffDrive::DiffDrive(Configuration q_orig, double length, double width, double radius)
+DiffDrive::DiffDrive(Configuration q_orig, RobotDimensions rd)
 {
   q = q_orig;
-  L = length;
-  D = width;
-  r = radius;
+  rd.L = rd.L;
+  rd.D = rd.D;
+  rd.r = rd.r;
   H = construct_H_matrix();
   H_pseudo = construct_H_pseudo_matrix();
 }
 
-void DiffDrive::FK(double phi_r_p, double phi_l_p)
+void DiffDrive::FK(double phi_l_p, double phi_r_p)
 {
   double d_phi_r = phi_r_p - phi_r;
   double d_phi_l = phi_l_p - phi_l;
-  vector<double> u{d_phi_r, d_phi_l};
+  vector<double> u{d_phi_l, d_phi_r};
   vector<double> Vb_mat(vector<double>(3, 0.0));
 
   // calculate Vb based on the pseudo inverse of the H matrix
@@ -65,7 +65,7 @@ void DiffDrive::FK(double phi_r_p, double phi_l_p)
   Twist2D Vb{Vb_mat[0], Vb_mat[1], Vb_mat[2]};
 
   // if Vb has zero angular displacement:
-  Transform2D Tbb_prime({Vb.x, Vb.y}, Vb.omega);
+  Transform2D Tbb_prime;
   if (Vb.omega <= 1e-5 && Vb.omega >= -1e-5) {
     // Integrate the twist to find Tbb_prime
     Tbb_prime = integrate_twist(Vb);
@@ -118,14 +118,19 @@ Configuration DiffDrive::get_current_configuration()
   return q;
 }
 
+RobotDimensions DiffDrive::get_robot_dimensions()
+{
+  return rd;
+}
+
 vector<vector<double>> DiffDrive::construct_H_matrix()
 {
-  vector<vector<double>> H_tmp = {{-D, 1, 0},
-    {D, 1, 0}};
+  vector<vector<double>> H_tmp = {{-rd.D, 1, 0},
+    {rd.D, 1, 0}};
 
   for (int i = 0; i < (int)H_tmp.size(); i++) {
     for (int j = 0; j < (int)H_tmp.size(); j++) {
-      H_tmp[i][j] *= 1 / r; // r/3???
+      H_tmp[i][j] *= 1 / rd.r; // r/3???
     }
   }
 
@@ -134,12 +139,14 @@ vector<vector<double>> DiffDrive::construct_H_matrix()
 
 vector<vector<double>> DiffDrive::construct_H_pseudo_matrix()
 {
-  // vector<vector<double>> H_pseudo_tmp = {{-1 / D, 1, -1}, {1 / D, 1, 1}};
-  vector<vector<double>> H_pseudo_tmp = {{-1 / D, 1 / D}, {1, 1}, {-1, 1}};
+  // I calculated this using numpy, and am simply constructing the matrix here
+  // in lieu of calculating the pseudo matrix by hand in C++ with no help from
+  // libraries.
+  vector<vector<double>> H_pseudo_tmp = {{-1 / rd.D, 1 / rd.D}, {1, 1}, {0, 0}};
 
   for (int i = 0; i < (int)H_pseudo_tmp.size(); i++) {
     for (int j = 0; j < (int)H_pseudo_tmp.size(); j++) {
-      H_pseudo_tmp[i][j] *= r;
+      H_pseudo_tmp[i][j] *= rd.r / 2;
     }
   }
 
