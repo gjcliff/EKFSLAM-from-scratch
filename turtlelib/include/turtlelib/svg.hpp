@@ -23,7 +23,7 @@ namespace turtlelib
         /// \brief create a svg file with a specific file name, delete its
         ///contents, and open it for writing
         /// \param fileName - the file name. MUST append .svg
-        Svg(std::string fileName);
+        Svg(std::string fileName); // const std::string &
 
         /// \brief flip from a left-handed coordinate system to a
         /// right-handed coordinate system
@@ -45,7 +45,7 @@ namespace turtlelib
         /// @brief draw a point in the svg file of a certain color
         /// @param p  - the coordaites of the point that will be drawn
         /// @param color - the color of the point that will be draw
-        void draw_point(Point2D p, std::string color);
+        void draw_point(Point2D p, std::string color); // std string by ref or std::string_view
 
         /// \brief draw a vector in the svg file from the origin
         /// \param v - the vector that will be drawn
@@ -54,7 +54,7 @@ namespace turtlelib
         /// @brief draw a vector in the svg file from the origin in a specific color
         /// @param v - the vector to be drawn
         /// @param color - the color the vector will be
-        void draw_vector(Vector2D v, std::string color);
+        void draw_vector(Vector2D v, std::string color); // std string by ref or std::string_view
 
         /// \brief draw a vector in the svg file starting from a point
         /// \param v - the vector that will be drawn
@@ -84,7 +84,7 @@ namespace turtlelib
         void draw_coordinate_frame(Transform2D t, std::string text);
 
         /// @brief write the closing </svg> tag to file, and close the file
-        void close();
+        void close(); // is this svg object valid after calling .close?
 
 
     private:
@@ -93,7 +93,7 @@ namespace turtlelib
         int ppi = 96; // pixels per inch
         double page_width = 8.5;
         double page_height = 11.0;
-        Vector2D page_center = {page_width/2*ppi, page_height/2*ppi};\
+        Vector2D page_center = {page_width/2*ppi, page_height/2*ppi}; // /2.0 no by 2
 
         double fixed_frame_rad = deg2rad(180);
         Transform2D fixed_frame;

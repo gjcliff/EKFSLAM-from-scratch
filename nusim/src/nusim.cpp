@@ -26,6 +26,7 @@ public:
   : Node("nusim"), count_(0)
   {
     // declare parameters
+      // unnecessary use of this-> (all uses here are unnecessary
     this->declare_parameter("rate", 5);
     this->declare_parameter("x0", 0.0);
     this->declare_parameter("y0", 0.0);
@@ -57,7 +58,7 @@ public:
     // check whether or not the obstacle arrays are the same size
     if (obstacles_x.size() != obstacles_y.size()) {
       RCLCPP_ERROR(this->get_logger(), "obstacles_x and obstacles_y are not the same size");
-      rclcpp::shutdown();
+      rclcpp::shutdown(); // throw an exception not shutdown
     }
 
     auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local();
@@ -98,14 +99,14 @@ private:
   visualization_msgs::msg::MarkerArray construct_obstacle_array()
   {
     visualization_msgs::msg::MarkerArray arr;
-    for (int i = 0; i < (int)obstacles_x.size(); i++) {
+    for (int i = 0; i < (int)obstacles_x.size(); i++) { // i is size_t, don't use C style cast (int)
       visualization_msgs::msg::Marker marker;
       marker.header.frame_id = "nusim/world";
       marker.header.stamp = this->get_clock()->now();
       marker.id = i;
       marker.type = visualization_msgs::msg::Marker::CYLINDER;
       marker.action = visualization_msgs::msg::Marker::ADD;
-      marker.pose.position.x = obstacles_x[i];
+      marker.pose.position.x = obstacles_x[i]; // .at()
       marker.pose.position.y = obstacles_y[i];
       marker.pose.position.z = wall_height_ / 2;
       marker.pose.orientation.x = 0;
@@ -207,7 +208,7 @@ private:
       request->theta);
 
     tf_broadcaster_->sendTransform(t);
-    (void) response;
+    (void) response; // this is C, in C++ you would omit the name of the parameter
 
     x_ = request->x;
     y_ = request->y;
@@ -220,6 +221,7 @@ private:
   {
     (void) request; // is this good practice????
     (void) response; // found here: https://docs.ros.org/en/humble/p/rclcpp/generated/program_listing_file_include_rclcpp_any_subscription_callback.hpp.html
+    // No the above is C, in C++ you would omit the parameter
     current_timestep_ = 0;
     x_ = og_x_;
     y_ = og_y_;

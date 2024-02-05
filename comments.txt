@@ -1,0 +1,3 @@
+Some tests fail.
+There is a problem with your example svg drawing.
+All points should be coincident. The points in different coordinate systems refer tot he same geometric object that is at a particular location in the world. The vectors should all be pointing in the same direction: theya re the same vector, just expressed in different coordinate frames

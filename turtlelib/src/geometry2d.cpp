@@ -28,7 +28,7 @@ namespace turtlelib
         } 
 
         is >> p.x >> p.y;
-        
+        // does not eat the last ']'
         return is;
     }
 
@@ -37,7 +37,7 @@ namespace turtlelib
         vec.x = head.x - tail.x;
         vec.y = head.y - tail.y;
 
-        return vec;
+        return vec; // can return {head.x - tail.x, head.y - tail.y}
     }
 
     Point2D operator+(const Point2D & tail, const Vector2D & disp){
@@ -45,7 +45,7 @@ namespace turtlelib
         head.x = tail.x + disp.x;
         head.y = tail.y + disp.y;
         
-        return head;
+        return head; // return {} no temp needed
 
     }
 
@@ -60,12 +60,13 @@ namespace turtlelib
         }
 
         is >> v.x >> v.y;
-        
+        // does not eat the last
         return is;
     }
 
     Vector2D normalize_vector(Vector2D v)
     {
+        // do not * 1/x instead just / x
         return v * (1/(std::sqrt(std::pow(v.x, 2) + std::pow(v.y, 2))));
     }
 

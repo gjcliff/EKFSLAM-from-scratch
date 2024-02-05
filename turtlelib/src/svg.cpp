@@ -165,7 +165,7 @@ namespace turtlelib
         Point2D p = {t.translation().x, t.translation().y};
         p = fixed_frame(p * ppi);
 
-        double radians = -t.rotation();
+        double radians = -t.rotation(); // const auto
         Transform2D t_new(radians);
 
         Point2D headx = p + t_new(x_axis);

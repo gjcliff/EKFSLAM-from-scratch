@@ -21,16 +21,18 @@ namespace turtlelib
         }
 
         is >> tw.omega >> tw.x >> tw.y;
+        // doesn't eat the last ']'
+
         return is;
     }
 
-    Transform2D::Transform2D(){
+    Transform2D::Transform2D(){ // use initiailzer lists
         t = {{std::cos(rad),-std::sin(rad),x},
              {std::sin(rad),std::cos(rad),y},
              {0.0,0.0,1.0}};
     }
 
-    Transform2D::Transform2D(Vector2D trans){
+    Transform2D::Transform2D(Vector2D trans){ // initializer lists
         x = trans.x;
         y = trans.y;
         t = {{std::cos(rad),-std::sin(rad),x},
@@ -38,14 +40,14 @@ namespace turtlelib
              {0.0,0.0,1.0}};
     }
 
-    Transform2D::Transform2D(double radians){
+    Transform2D::Transform2D(double radians){ // initializer lists
         rad = normalize_angle(radians);
         t = {{std::cos(rad),-std::sin(rad),x},
              {std::sin(rad),std::cos(rad),y},
              {0.0,0.0,1.0}};
     }
 
-    Transform2D::Transform2D(Vector2D trans, double radians){
+    Transform2D::Transform2D(Vector2D trans, double radians){ // initializer lists
         rad = normalize_angle(radians);
         x = trans.x;
         y = trans.y;
@@ -58,13 +60,13 @@ namespace turtlelib
         vector<double> mat_p = {p.x, p.y, 1}; // create a tempoarary 3x1 vector so we can do the math.
         vector<double> output(3,0.0); // create a vector that we'll construct a Point2D object from after the multiplication is done.
 
-        for (unsigned int i = 0; i < t[0].size(); i ++){
-            for (unsigned int j = 0; j < t.size(); j ++){
-                output[i] += t[i][j] * mat_p[j];
+        for (unsigned int i = 0; i < t[0].size(); i ++){ // size_t i, .at()
+            for (unsigned int j = 0; j < t.size(); j ++){ // size_t i, .at
+                output[i] += t[i][j] * mat_p[j]; //.at() .at(), .at()
             }
         }
 
-        Point2D out_p;
+        Point2D out_p; // use the constructor
         out_p = {output[0], output[1]};
 
         return out_p;
@@ -73,20 +75,20 @@ namespace turtlelib
 
     Vector2D Transform2D::operator()(Vector2D v) const{
         vector<vector<double>> tmp_t = t;
-        tmp_t[0][2] = 0.0; // set the x translation portion of the transformatoin matrix equal to 0
-        tmp_t[1][2] = 0.0; // set the y translation portion of the transformation matrix equal to 0
+        tmp_t[0][2] = 0.0; // set the x translation portion of the transformatoin matrix equal to 0 // .at()
+        tmp_t[1][2] = 0.0; // set the y translation portion of the transformation matrix equal to 0 // .at()
         // this might not be the right way to do this
         vector<double> mat_v = {v.x, v.y, 1.0};
         vector<double> output(3,0.0);
 
         for (unsigned int i = 0; i < tmp_t.size(); i++){
             for (unsigned int j = 0; j < tmp_t[0].size(); j++){
-                output[i] += tmp_t[i][j] * mat_v[j];
+                output[i] += tmp_t[i][j] * mat_v[j]; //.at()
             }
         }
 
-        Vector2D out_v;
-        out_v = {output[0], output[1]};
+        Vector2D out_v; // use constructor
+        out_v = {output[0], output[1]}; //.at()
 
         return out_v;
     }
@@ -96,21 +98,21 @@ namespace turtlelib
         
         vector<double> v_mat = {v.omega, v.x, v.y};
         vector<double> output(3, 0.0);
-        vector<vector<double>> adj = {{1,0,0},{t[1][2],t[0][0],t[0][1]},{-t[0][2],t[1][0],t[1][1]}};
+        vector<vector<double>> adj = {{1,0,0},{t[1][2],t[0][0],t[0][1]},{-t[0][2],t[1][0],t[1][1]}}; // .at()
         for (int i = 0; i < (int)adj.size(); i++){
             for (int j = 0; j < (int)adj.size(); j++){
                 output[i] += adj[i][j] * v_mat[j];
             }
         }
 
-        Twist2D out_v = {output[0], output[1], output[2]};
+        Twist2D out_v = {output[0], output[1], output[2]}; // just return output
 
         return out_v;
     }
 
     Transform2D Transform2D::inv() const{
         // using the formula from ME449 the inverse of a transformation matrix
-        vector<vector<double>> R_T = {{t[0][0], t[1][0]}, {t[0][1], t[1][1]}};
+        vector<vector<double>> R_T = {{t[0][0], t[1][0]}, {t[0][1], t[1][1]}}; //.at()
         vector<double> neg_R_TP(2,0.0);
 
         for (unsigned int i = 0; i < R_T.size(); i++){
@@ -120,7 +122,7 @@ namespace turtlelib
             
         }
 
-        Transform2D t_T = *this;
+        Transform2D t_T = *this; //.at()
         t_T.t[0][0] = R_T[0][0];
         t_T.t[0][1] = R_T[0][1];
         t_T.t[1][0] = R_T[1][0];
@@ -143,7 +145,7 @@ namespace turtlelib
         for (unsigned int i = 0; i < t.size(); i++){
             for (unsigned int j = 0; j < t.size(); j++){
                 for (unsigned int k = 0; k < t.size(); k++){
-                    output[i][j] += t[i][k] * rhs.t[k][j];
+                    output[i][j] += t[i][k] * rhs.t[k][j]; //.at()
                 }
             }
         }
@@ -161,7 +163,7 @@ namespace turtlelib
 
     Vector2D Transform2D::translation() const{
         Vector2D trans = {x, y};
-        return trans;
+        return trans; // return {x, y}
     }
 
     double Transform2D::rotation() const{
@@ -174,7 +176,7 @@ namespace turtlelib
     }
 
     std::istream & operator>>(std::istream & is, Transform2D & tf){
-        double degrees;
+        double degrees; // unitialized
         Vector2D trans;
 
         is >> degrees >> trans.x >> trans.y;
