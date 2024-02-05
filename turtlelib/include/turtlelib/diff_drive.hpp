@@ -10,6 +10,20 @@
 
 namespace turtlelib
 {
+
+/// @brief a robot configuration in the world frame
+struct Configuration
+{
+  /// @brief the x coordinate
+  double x = 0.0;
+
+  /// @brief the y coordinate
+  double y = 0.0;
+
+  /// @brief the angle
+  double theta = 0.0;
+};
+
 class DiffDrive
 {
 public:
@@ -32,22 +46,18 @@ public:
 
   /// @brief create a model of the kinematics of a differential drive robot
   /// that specifies the initial configuration of the robot
-  /// @param x - the x position of the robot in the world
-  /// @param y - the y position of the robot in the world
-  /// @param theta - the angle the robot has traveled from 0 wrt the x axis
-  DiffDrive(double x, double y, double theta);
+  /// @param q_orig - the original configuration of the robot
+  DiffDrive(Configuration q_orig);
 
   /// @brief create a model of the kinematics of a differential drive robot
   /// that specifies the initial configuration of the robot and additionally
   /// the positions of the robot's wheels in relation to its body frame at the
   /// center of the robot
-  /// @param x - the x position of the robot in the world
-  /// @param y - the y position of the robot in the world
-  /// @param theta - the angle the robot has traveled from 0 wrt the x axis
+  /// @param q_orig - the original configuration of the robot
   /// @param L - the length of the robot, divided by two
   /// @param D - the width of the robot, divided by two
   /// @param r - the radius of the wheels of the robot
-  DiffDrive(double x, double y, double theta, double length, double width, double radius);
+  DiffDrive(Configuration q_orig, double length, double width, double radius);
 
   /// @brief given new wheel positions, update the configuration
   /// @param phi_r_p
@@ -59,26 +69,17 @@ public:
   /// @param twist
   void IK(Twist2D twist);
 
-  /// @brief - construct the H matrix
-  /// @return - a 2x3 H matrix
+  /// @brief retrieve the robot's current configuration
+  /// @return the robot's current configuration
+  Configuration get_current_configuration();
+
+  /// @brief construct the H matrix
+  /// @return a 2x3 H matrix
   vector<vector<double>> construct_H_matrix();
 
   /// @brief construct the pseudo H matrix
-  /// @return - a 3x2 pseudo H matrix
+  /// @return a 3x2 pseudo H matrix
   vector<vector<double>> construct_H_pseudo_matrix();
-
-  /// @brief a robot configuration in the world frame
-  struct Configuration
-  {
-    /// @brief the x coordinate
-    double x = 0.0;
-
-    /// @brief the y coordinate
-    double y = 0.0;
-
-    /// @brief the angle
-    double theta = 0.0;
-  };
 
 private:
   double phi_r = 0.0;

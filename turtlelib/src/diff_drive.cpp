@@ -29,16 +29,16 @@ DiffDrive::DiffDrive(double length, double width, double radius)
   H_pseudo = construct_H_pseudo_matrix();
 }
 
-DiffDrive::DiffDrive(double x, double y, double theta)
+DiffDrive::DiffDrive(Configuration q_orig)
 {
-  q = Configuration{x, y, theta};
+  q = q_orig;
   H = construct_H_matrix();
   H_pseudo = construct_H_pseudo_matrix();
 }
 
-DiffDrive::DiffDrive(double x, double y, double theta, double length, double width, double radius)
+DiffDrive::DiffDrive(Configuration q_orig, double length, double width, double radius)
 {
-  q = Configuration{x, y, theta};
+  q = q_orig;
   L = length;
   D = width;
   r = radius;
@@ -49,15 +49,15 @@ DiffDrive::DiffDrive(double x, double y, double theta, double length, double wid
 void DiffDrive::FK(double phi_r_p, double phi_l_p)
 {
   double d_phi_r = phi_r_p - phi_r;
-  double d_phi_l = phi_r_p - phi_l;
+  double d_phi_l = phi_l_p - phi_l;
   vector<double> u{d_phi_r, d_phi_l};
-  vector<double> Vb_mat(vector<double>(2, 0.0));
+  vector<double> Vb_mat(vector<double>(3, 0.0));
 
   // calculate Vb based on the pseudo inverse of the H matrix
   // and the input controls
   for (int i = 0; i < (int)H_pseudo.size(); i++) {
     for (int j = 0; j < (int)H_pseudo[0].size(); j++) {
-      Vb_mat[i] = H_pseudo[i][j] * u[j];
+      Vb_mat[i] += H_pseudo[i][j] * u[j];
     }
   }
 
@@ -65,8 +65,8 @@ void DiffDrive::FK(double phi_r_p, double phi_l_p)
   Twist2D Vb{Vb_mat[0], Vb_mat[1], Vb_mat[2]};
 
   // if Vb has zero angular displacement:
-  Transform2D Tbb_prime;
-  if (!Vb.omega) {
+  Transform2D Tbb_prime({Vb.x, Vb.y}, Vb.omega);
+  if (Vb.omega <= 1e-5 && Vb.omega >= -1e-5) {
     // Integrate the twist to find Tbb_prime
     Tbb_prime = integrate_twist(Vb);
   } else { // else if Vb has angular displacement:
@@ -89,7 +89,7 @@ void DiffDrive::FK(double phi_r_p, double phi_l_p)
   // the world frame {w}
   Transform2D Twb({q.x, q.y}, q.theta);
   Transform2D Twb_prime = Twb * Tbb_prime;
-  q.theta += Vb.omega;
+  q.theta += Twb_prime.rotation();
   q.x += Twb_prime.translation().x;
   q.y += Twb_prime.translation().y;
 }
@@ -113,6 +113,11 @@ void DiffDrive::IK(Twist2D twist)
 
 }
 
+Configuration DiffDrive::get_current_configuration()
+{
+  return q;
+}
+
 vector<vector<double>> DiffDrive::construct_H_matrix()
 {
   vector<vector<double>> H_tmp = {{-D, 1, 0},
@@ -120,7 +125,7 @@ vector<vector<double>> DiffDrive::construct_H_matrix()
 
   for (int i = 0; i < (int)H_tmp.size(); i++) {
     for (int j = 0; j < (int)H_tmp.size(); j++) {
-      H_tmp[i][j] *= r; // r/3???
+      H_tmp[i][j] *= 1 / r; // r/3???
     }
   }
 
@@ -129,12 +134,15 @@ vector<vector<double>> DiffDrive::construct_H_matrix()
 
 vector<vector<double>> DiffDrive::construct_H_pseudo_matrix()
 {
-  vector<vector<double>> H_pseudo_tmp = {{-1 / D, 1, -1}, {1 / D, 1, 1}};
+  // vector<vector<double>> H_pseudo_tmp = {{-1 / D, 1, -1}, {1 / D, 1, 1}};
+  vector<vector<double>> H_pseudo_tmp = {{-1 / D, 1 / D}, {1, 1}, {-1, 1}};
 
   for (int i = 0; i < (int)H_pseudo_tmp.size(); i++) {
     for (int j = 0; j < (int)H_pseudo_tmp.size(); j++) {
-      H_pseudo_tmp[i][j] *= 1 / r;
+      H_pseudo_tmp[i][j] *= r;
     }
   }
+
+  return H_pseudo_tmp;
 }
 }

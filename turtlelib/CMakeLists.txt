@@ -5,6 +5,10 @@ cmake_minimum_required(VERSION 3.22)
 # find the c and c++ compilers
 project(turtlelib)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Type of build." FORCE)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -42,6 +46,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory
 add_library(geometry2d src/geometry2d.cpp)
 add_library(se2d src/se2d.cpp)
 add_library(svg src/svg.cpp)
+add_library(diffdrive src/diff_drive.cpp)
 
 # Use target_include_directories so that #include"mylibrary/header.hpp" works
 # The use of the <BUILD_INTERFACE> and <INSTALL_INTERFACE> is because when
@@ -62,6 +67,10 @@ target_include_directories(svg
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
     $<INSTALL_INTERFACE:include/>)
+target_include_directories(diffdrive
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+    $<INSTALL_INTERFACE:include/>)
 
 # specify additional compilation flags for the library
 # Public causes the flags to propagate to anything
@@ -69,6 +78,7 @@ target_include_directories(svg
 target_compile_options(geometry2d PUBLIC -Wall -Wextra -pedantic)
 target_compile_options(se2d PUBLIC -Wall -Wextra -pedantic)
 target_compile_options(svg PUBLIC -Wall -Wextra -pedantic)
+target_compile_options(diffdrive PUBLIC -Wall -Wextra -pedantic)
 
 # Enable c++17 support.
 # Public causes the features to propagate to anything
@@ -76,6 +86,7 @@ target_compile_options(svg PUBLIC -Wall -Wextra -pedantic)
 target_compile_features(geometry2d PUBLIC cxx_std_17)
 target_compile_features(se2d PUBLIC cxx_std_17)
 target_compile_features(svg PUBLIC cxx_std_17)
+target_compile_features(diffdrive PUBLIC cxx_std_17)
 
 # Create an executable from the following source code files
 # The Name of the executable creates a cmake "target"
@@ -95,7 +106,7 @@ install(DIRECTORY include/turtlelib DESTINATION include)
 # Also create CMake Export called projet_name-targets
 # The CMake Export contains files that allow other CMake projects
 # to find this project. It must be installed separately.
-install(TARGETS frame_main geometry2d se2d svg EXPORT turtlelib-targets)
+install(TARGETS frame_main geometry2d se2d svg diffdrive EXPORT turtlelib-targets)
 # install(TARGETS turtlelib se2d EXPORT turtlelib-targets)
 
 # The project_name-targets created by install(TARGETS) needs to be installed.
@@ -130,4 +141,9 @@ if(BUILD_TESTING)
     add_executable(test_svg tests/test_svg.cpp)
     target_link_libraries(test_svg Catch2::Catch2WithMain svg se2d geometry2d)
     add_test(NAME svg_test COMMAND test_svg)
+
+    add_executable(test_diffdrive tests/test_diff_drive.cpp)
+    target_link_libraries(test_diffdrive Catch2::Catch2WithMain diffdrive svg se2d geometry2d)
+    add_test(NAME diffdrive_test COMMAND test_diffdrive)
+
 endif()
