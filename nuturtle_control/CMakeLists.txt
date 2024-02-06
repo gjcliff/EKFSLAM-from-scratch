@@ -10,9 +10,10 @@ find_package(ament_cmake REQUIRED)
 find_package(nuturtle_description REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(nuturtlebot_msgs REQUIRED)
 
 add_executable(turtle_control src/turtle_control.cpp)
-ament_target_dependencies(turtle_control nuturtle_description geometry_msgs rclcpp)
+ament_target_dependencies(turtle_control nuturtle_description nuturtlebot_msgs geometry_msgs rclcpp)
 target_include_directories(turtle_control PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
