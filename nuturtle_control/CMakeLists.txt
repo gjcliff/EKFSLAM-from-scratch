@@ -7,17 +7,19 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(nuturtle_description REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(rclcpp REQUIRED)
 
 add_executable(turtle_control src/turtle_control.cpp)
+ament_target_dependencies(turtle_control nuturtle_description geometry_msgs rclcpp)
 target_include_directories(turtle_control PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_compile_features(turtle_control PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
-install(TARGETS turtle_control
+install(TARGETS 
+  turtle_control
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

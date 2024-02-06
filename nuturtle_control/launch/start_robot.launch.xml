@@ -1,0 +1,8 @@
+<launch>
+    <arg name="config_file" default="diff_params.yaml" description="the file that determines physical parameters for the turtlebot"/>
+
+    <node pkg="turtle_control" exec="turtle_control">
+        <param from="$(find-pkg-share nuturtle_description)/config/$(var config_file)"/>
+    </node>
+
+</launch>
