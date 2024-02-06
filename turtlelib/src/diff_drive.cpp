@@ -56,44 +56,28 @@ Configuration DiffDrive::FK(double phi_l_p, double phi_r_p)
   // calculate Vb based on the pseudo inverse of the H matrix
   // and the input controls
   for (int i = 0; i < (int)H_pseudo.size(); i++) {
-    for (int j = 0; j < (int)H_pseudo[0].size(); j++) {
+    for (int j = 0; j < (int)H_pseudo.at(0).size(); j++) {
       Vb_mat[i] += H_pseudo[i][j] * u[j];
     }
   }
 
   // create the twist
-  Twist2D Vb{Vb_mat[0], Vb_mat[1], Vb_mat[2]};
+  Twist2D Vb{Vb_mat.at(0), Vb_mat.at(1), Vb_mat.at(2)};
 
-  // if Vb has zero angular displacement:
-  Transform2D Tbb_prime;
-  if (Vb.omega <= 1e-5 && Vb.omega >= -1e-5) {
-    // Integrate the twist to find Tbb_prime
-    Tbb_prime = integrate_twist(Vb);
-  } else { // else if Vb has angular displacement:
-    // Find the center of rotation in a frame {s} using the adjoint. This
-    // is represented by the transform Tsb from the body frame to the center
-    // of rotation frame.
-    double xs = Vb.y / Vb.omega;
-    double ys = -Vb.x / Vb.omega;
-    Transform2D Tsb({xs, ys});
-
-    // find the translation representing the pure rotation in the new frame, {s}
-    Transform2D Tss_prime(Vb.omega);
-
-    // now translate back to the body frame location while keeping the new
-    // orientaion
-    Tbb_prime = Tsb.inv() * Tss_prime * Tsb;
-  }
+  Transform2D Tbb_prime = integrate_twist(Vb);
 
   // now, compute the transformation matrix of the robot body frame {b} in
   // the world frame {w}
   Transform2D Twb({q.x, q.y}, q.theta);
   Transform2D Twb_prime = Twb * Tbb_prime;
-  q.theta += Twb_prime.rotation();
-  q.x += Twb_prime.translation().x;
-  q.y += Twb_prime.translation().y;
+  
+  Configuration q_dot{Twb_prime.rotation(), Twb_prime.translation().x, Twb_prime.translation().y};
 
-  return q;
+  q.theta += q_dot.theta; 
+  q.x += q_dot.x;
+  q.y += q_dot.y;
+
+  return q_dot;
 }
 
 vector<double> DiffDrive::IK(Twist2D twist)
@@ -108,7 +92,7 @@ vector<double> DiffDrive::IK(Twist2D twist)
 
   // multiple the H matrix by the body twist to find the new wheel velocities
   for (int i = 0; i < (int)H.size(); i++) {
-    for (int j = 0; j < (int)H[0].size(); j++) {
+    for (int j = 0; j < (int)H.at(0).size(); j++) {
       phi_delta[i] += H[i][j] * Vb[j];
     }
   }
@@ -132,7 +116,7 @@ vector<vector<double>> DiffDrive::construct_H_matrix()
     {rd.D, 1, 0}};
 
   for (int i = 0; i < (int)H_tmp.size(); i++) {
-    for (int j = 0; j < (int)H_tmp[0].size(); j++) {
+    for (int j = 0; j < (int)H_tmp.at(0).size(); j++) {
       H_tmp[i][j] *= 1 / rd.r; // r/3???
     }
   }
@@ -148,7 +132,7 @@ vector<vector<double>> DiffDrive::construct_H_pseudo_matrix()
   vector<vector<double>> H_pseudo_tmp = {{-1 / rd.D, 1 / rd.D}, {1, 1}, {0, 0}};
 
   for (int i = 0; i < (int)H_pseudo_tmp.size(); i++) {
-    for (int j = 0; j < (int)H_pseudo_tmp[0].size(); j++) {
+    for (int j = 0; j < (int)H_pseudo_tmp.at(0).size(); j++) {
       H_pseudo_tmp[i][j] *= rd.r / 2;
     }
   }

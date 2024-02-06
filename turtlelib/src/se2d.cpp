@@ -206,8 +206,28 @@ Transform2D operator*(Transform2D lhs, const Transform2D & rhs)
   return lhs *= rhs;
 }
 
-Transform2D integrate_twist(Twist2D t)
+Transform2D integrate_twist(Twist2D Vb)
 {
-  return Transform2D({t.x, t.y}, t.omega);
+  Transform2D Tbb_prime;
+
+  // if Vb has 0 angular displacement
+  if (Vb.omega <= 1e-5 && Vb.omega >= -1e-5) {
+    Tbb_prime = Transform2D({Vb.x, Vb.y});
+  }
+  // Find the center of rotation in a frame {s} using the adjoint. This
+  // is represented by the transform Tsb from the body frame to the center
+  // of rotation frame.
+  double xs = Vb.y / Vb.omega;
+  double ys = -Vb.x / Vb.omega;
+  Transform2D Tsb({xs, ys});
+
+  // find the translation representing the pure rotation in the new frame, {s}
+  Transform2D Tss_prime(Vb.omega);
+
+  // now translate back to the body frame location while keeping the new
+  // orientaion
+  Tbb_prime = Tsb.inv() * Tss_prime * Tsb;
+
+  return Tbb_prime;
 }
 }

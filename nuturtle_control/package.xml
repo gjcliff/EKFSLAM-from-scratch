@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>nuturtle_control</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>Enable control of the turtlebot via geometry_msgs/msg/Twist messages on the cmd_vel topic</description>
   <maintainer email="gclifford@u.northwestern.edu">Graham Clifford</maintainer>
   <license>APLv2</license>
@@ -13,6 +13,8 @@
   <depend>geometry_msgs</depend>
   <depend>nuturtle_description</depend>
   <depend>nuturtlebot_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>turtlelib</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

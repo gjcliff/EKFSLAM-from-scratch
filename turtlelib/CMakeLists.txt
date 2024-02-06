@@ -43,10 +43,11 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory
 # you don't need or want to.
 # name is the name of the library without the extension or lib prefix
 # name creates a cmake "target"
-add_library(geometry2d src/geometry2d.cpp)
-add_library(se2d src/se2d.cpp)
-add_library(svg src/svg.cpp)
-add_library(diffdrive src/diff_drive.cpp)
+add_library(turtlelib src/geometry2d.cpp src/se2d.cpp src/svg.cpp src/diff_drive.cpp)
+# add_library(geometry2d src/geometry2d.cpp)
+# add_library(se2d src/se2d.cpp)
+# add_library(svg src/svg.cpp)
+# add_library(diffdrive src/diff_drive.cpp)
 
 # Use target_include_directories so that #include"mylibrary/header.hpp" works
 # The use of the <BUILD_INTERFACE> and <INSTALL_INTERFACE> is because when
@@ -54,39 +55,37 @@ add_library(diffdrive src/diff_drive.cpp)
 # During build, the headers are read from the source code directory
 # When used from the installed location, headers are in the
 # system include/ directory
-target_include_directories(geometry2d
+target_include_directories(turtlelib
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
     $<INSTALL_INTERFACE:include/>)
+# target_include_directories(geometry2d
+#     PUBLIC
+#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+#     $<INSTALL_INTERFACE:include/>)
     
-target_include_directories(se2d
-    PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-    $<INSTALL_INTERFACE:include/>)
-target_include_directories(svg
-    PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-    $<INSTALL_INTERFACE:include/>)
-target_include_directories(diffdrive
-    PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-    $<INSTALL_INTERFACE:include/>)
+# target_include_directories(se2d
+#     PUBLIC
+#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+#     $<INSTALL_INTERFACE:include/>)
+# target_include_directories(svg
+#     PUBLIC
+#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+#     $<INSTALL_INTERFACE:include/>)
+# target_include_directories(diffdrive
+#     PUBLIC
+#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+#     $<INSTALL_INTERFACE:include/>)
 
 # specify additional compilation flags for the library
 # Public causes the flags to propagate to anything
 # that links against this library
-target_compile_options(geometry2d PUBLIC -Wall -Wextra -pedantic)
-target_compile_options(se2d PUBLIC -Wall -Wextra -pedantic)
-target_compile_options(svg PUBLIC -Wall -Wextra -pedantic)
-target_compile_options(diffdrive PUBLIC -Wall -Wextra -pedantic)
+target_compile_options(turtlelib PUBLIC -Wall -Wextra -pedantic)
 
 # Enable c++17 support.
 # Public causes the features to propagate to anything
 # that links against this library
-target_compile_features(geometry2d PUBLIC cxx_std_17)
-target_compile_features(se2d PUBLIC cxx_std_17)
-target_compile_features(svg PUBLIC cxx_std_17)
-target_compile_features(diffdrive PUBLIC cxx_std_17)
+target_compile_features(turtlelib PUBLIC cxx_std_17)
 
 # Create an executable from the following source code files
 # The Name of the executable creates a cmake "target"
@@ -97,16 +96,16 @@ add_executable(frame_main src/frame_main.cpp)
 # This will automatically add all required library files
 # that need to be linked
 # and paths to th locations of header files
-target_link_libraries(frame_main geometry2d se2d svg)
+target_link_libraries(frame_main turtlelib)
 
 # install the include files by copying the whole include directory
-install(DIRECTORY include/turtlelib DESTINATION include)
+install(DIRECTORY include/ DESTINATION include/)
 
 # Create a CMake Exported Target containing the lib and exe.
 # Also create CMake Export called projet_name-targets
 # The CMake Export contains files that allow other CMake projects
 # to find this project. It must be installed separately.
-install(TARGETS frame_main geometry2d se2d svg diffdrive EXPORT turtlelib-targets)
+install(TARGETS turtlelib EXPORT turtlelib-targets)
 # install(TARGETS turtlelib se2d EXPORT turtlelib-targets)
 
 # The project_name-targets created by install(TARGETS) needs to be installed.
@@ -129,21 +128,21 @@ if(BUILD_TESTING)
 
     # A test is just an executable that is linked against the unit testing library
     add_executable(test_geometry2D tests/test_geometry2d.cpp)
-    target_link_libraries(test_geometry2D Catch2::Catch2WithMain geometry2d)
+    target_link_libraries(test_geometry2D Catch2::Catch2WithMain turtlelib)
 
     # register the test with CTest, telling it what executable to run
     add_test(NAME geometry2D_test COMMAND test_geometry2D)
 
     add_executable(test_se2d tests/test_se2d.cpp)
-    target_link_libraries(test_se2d Catch2::Catch2WithMain se2d geometry2d)
+    target_link_libraries(test_se2d Catch2::Catch2WithMain turtlelib)
     add_test(NAME se2d_test COMMAND test_se2d)
 
     add_executable(test_svg tests/test_svg.cpp)
-    target_link_libraries(test_svg Catch2::Catch2WithMain svg se2d geometry2d)
+    target_link_libraries(test_svg Catch2::Catch2WithMain turtlelib)
     add_test(NAME svg_test COMMAND test_svg)
 
     add_executable(test_diffdrive tests/test_diff_drive.cpp)
-    target_link_libraries(test_diffdrive Catch2::Catch2WithMain diffdrive svg se2d geometry2d)
+    target_link_libraries(test_diffdrive Catch2::Catch2WithMain turtlelib)
     add_test(NAME diffdrive_test COMMAND test_diffdrive)
 
 endif()
