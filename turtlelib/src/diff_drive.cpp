@@ -46,7 +46,7 @@ DiffDrive::DiffDrive(Configuration q_orig, RobotDimensions rd)
   H_pseudo = construct_H_pseudo_matrix();
 }
 
-void DiffDrive::FK(double phi_l_p, double phi_r_p)
+Configuration DiffDrive::FK(double phi_l_p, double phi_r_p)
 {
   double d_phi_r = phi_r_p - phi_r;
   double d_phi_l = phi_l_p - phi_l;
@@ -92,25 +92,28 @@ void DiffDrive::FK(double phi_l_p, double phi_r_p)
   q.theta += Twb_prime.rotation();
   q.x += Twb_prime.translation().x;
   q.y += Twb_prime.translation().y;
+
+  return q;
 }
 
-void DiffDrive::IK(Twist2D twist)
+vector<double> DiffDrive::IK(Twist2D twist)
 {
   vector<double> phi_delta(2, 0.0);
   vector<double> Vb = {twist.omega, twist.x, twist.y};
 
-  double threshold = 1e10;
+  double threshold = 1e-10;
   if (twist.y >= threshold || twist.y <= -threshold) {
     throw std::logic_error("wheels are slipping!! Vb.y is not 0");
   }
 
   // multiple the H matrix by the body twist to find the new wheel velocities
-  for (int i = 0; i < (int)phi_delta.size(); i++) {
-    for (int j = 0; j < (int)phi_delta.size(); j++) {
+  for (int i = 0; i < (int)H.size(); i++) {
+    for (int j = 0; j < (int)H[0].size(); j++) {
       phi_delta[i] += H[i][j] * Vb[j];
     }
   }
 
+  return phi_delta;
 }
 
 Configuration DiffDrive::get_current_configuration()
@@ -129,7 +132,7 @@ vector<vector<double>> DiffDrive::construct_H_matrix()
     {rd.D, 1, 0}};
 
   for (int i = 0; i < (int)H_tmp.size(); i++) {
-    for (int j = 0; j < (int)H_tmp.size(); j++) {
+    for (int j = 0; j < (int)H_tmp[0].size(); j++) {
       H_tmp[i][j] *= 1 / rd.r; // r/3???
     }
   }
@@ -145,7 +148,7 @@ vector<vector<double>> DiffDrive::construct_H_pseudo_matrix()
   vector<vector<double>> H_pseudo_tmp = {{-1 / rd.D, 1 / rd.D}, {1, 1}, {0, 0}};
 
   for (int i = 0; i < (int)H_pseudo_tmp.size(); i++) {
-    for (int j = 0; j < (int)H_pseudo_tmp.size(); j++) {
+    for (int j = 0; j < (int)H_pseudo_tmp[0].size(); j++) {
       H_pseudo_tmp[i][j] *= rd.r / 2;
     }
   }

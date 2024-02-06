@@ -66,12 +66,12 @@ public:
   /// @brief given new wheel positions, update the configuration
   /// @param phi_r_p
   /// @param phi_l_p
-  void FK(double phi_l_p, double phi_r_p);
+  Configuration FK(double phi_l_p, double phi_r_p);
 
   /// @brief compute the wheel velocities required to make the robot move
   /// at a given body twist
   /// @param twist
-  void IK(Twist2D twist);
+  vector<double> IK(Twist2D twist);
 
   /// @brief retrieve the robot's current configuration
   /// @return the robot's current configuration

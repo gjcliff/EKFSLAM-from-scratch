@@ -12,8 +12,7 @@ TEST_CASE("Test FK translation forward only", "[FK_translation_forward]")
 {
   DiffDrive turtlebot;
   double radians = deg2rad(90);
-  turtlebot.FK(radians, radians);
-  Configuration q = turtlebot.get_current_configuration();
+  Configuration q = turtlebot.FK(radians, radians);
 
   RobotDimensions rd = turtlebot.get_robot_dimensions();
   double distance_traveled = 2 * PI * rd.r * (radians / deg2rad(360));
@@ -27,8 +26,7 @@ TEST_CASE("Test FK translation backward only", "[FK_translation_backward]")
 {
   DiffDrive turtlebot;
   double radians = deg2rad(-90);
-  turtlebot.FK(radians, radians);
-  Configuration q = turtlebot.get_current_configuration();
+  Configuration q = turtlebot.FK(radians, radians);
 
   RobotDimensions rd = turtlebot.get_robot_dimensions();
   double distance_traveled = 2 * PI * rd.r * (radians / deg2rad(360));
@@ -43,8 +41,7 @@ TEST_CASE("Test FK rotation CW only", "[FK_rotation_CW]")
   DiffDrive turtlebot;
   double radians_l = deg2rad(90);
   double radians_r = 0.0;
-  turtlebot.FK(radians_l, radians_r);
-  Configuration q = turtlebot.get_current_configuration();
+  Configuration q = turtlebot.FK(radians_l, radians_r);
 
   RobotDimensions rd = turtlebot.get_robot_dimensions();
 
@@ -60,8 +57,6 @@ TEST_CASE("Test FK rotation CW only", "[FK_rotation_CW]")
   // is at where the right wheel touches the ground.
   double expected_q_theta = -arc_length * deg2rad(360) / (2 * PI * (2 * rd.D));
 
-  // REQUIRE_THAT(q.x, Catch::Matchers::WithinAbs(0.0, 1e-5));
-  // REQUIRE_THAT(q.y, Catch::Matchers::WithinAbs(0.0, 1e-5));
   REQUIRE(q.x > 0.0);
   REQUIRE(q.y < 0.0);
   REQUIRE_THAT(q.theta, Catch::Matchers::WithinAbs(expected_q_theta, 1e-5));
@@ -72,8 +67,7 @@ TEST_CASE("Test FK rotation CCW only", "[FK_rotation_CCW]")
   DiffDrive turtlebot;
   double radians_l = 0.0;
   double radians_r = deg2rad(90);
-  turtlebot.FK(radians_l, radians_r);
-  Configuration q = turtlebot.get_current_configuration();
+  Configuration q = turtlebot.FK(radians_l, radians_r);
 
   RobotDimensions rd = turtlebot.get_robot_dimensions();
 
@@ -89,15 +83,97 @@ TEST_CASE("Test FK rotation CCW only", "[FK_rotation_CCW]")
   // is at where the right wheel touches the ground.
   double expected_q_theta = arc_length * deg2rad(360) / (2 * PI * (2 * rd.D));
 
-  // REQUIRE_THAT(q.x, Catch::Matchers::WithinAbs(0.0, 1e-5));
-  // REQUIRE_THAT(q.y, Catch::Matchers::WithinAbs(0.0, 1e-5));
   REQUIRE(q.x > 0.0);
   REQUIRE(q.y > 0.0);
   REQUIRE_THAT(q.theta, Catch::Matchers::WithinAbs(expected_q_theta, 1e-5));
 }
 
-TEST_CASE("")
+TEST_CASE("Test FK rotation and translation", "[FK_rotation_translation]")
 {
+  DiffDrive turtlebot;
+  double radians_l = deg2rad(90);
+  double radians_r = deg2rad(180);
+  Configuration q = turtlebot.FK(radians_l, radians_r);
+
+  RobotDimensions rd = turtlebot.get_robot_dimensions();
+
+  // rotation calculations
+  double arc_length = 2 * PI * rd.r * ((radians_r - radians_l) / deg2rad(360));
+  double expected_q_theta = arc_length * deg2rad(360) / (2 * PI * (2 * rd.D));
+
+  REQUIRE(q.x > 0.0);
+  REQUIRE(q.y > 0.0);
+  REQUIRE_THAT(q.theta, Catch::Matchers::WithinAbs(expected_q_theta, 1e-5));
+}
+
+TEST_CASE("Test FK rotation and translation inverse", "[FK_rotation_translation_inverse]")
+{
+  DiffDrive turtlebot;
+  double radians_l = deg2rad(-90);
+  double radians_r = deg2rad(-180);
+  Configuration q = turtlebot.FK(radians_l, radians_r);
+
+  RobotDimensions rd = turtlebot.get_robot_dimensions();
+
+  // rotation calculations
+  double arc_length = 2 * PI * rd.r * ((radians_r - radians_l) / deg2rad(360));
+  double expected_q_theta = arc_length * deg2rad(360) / (2 * PI * (2 * rd.D));
+
+  REQUIRE(q.x < 0.0);
+  REQUIRE(q.y > 0.0);
+  REQUIRE_THAT(q.theta, Catch::Matchers::WithinAbs(expected_q_theta, 1e-5));
+}
+
+TEST_CASE("Test IK", "[IK]")
+{
+  DiffDrive turtlebot;
+  SECTION("Test linear x forwards")
+  {
+    // follow a twist moving linearly in the x direction
+    Twist2D Vb{0.0, 1.0, 0.0};
+    vector<double> phi_dot = turtlebot.IK(Vb);
+
+    REQUIRE_THAT(phi_dot[0], Catch::Matchers::WithinAbs(10.0, 1e-5));
+    REQUIRE_THAT(phi_dot[1], Catch::Matchers::WithinAbs(10.0, 1e-5));
+  }
+
+  SECTION("Test linear x backwards")
+  {
+    // follow a twist moving linearly in the x direction
+    Twist2D Vb{0.0, -1.0, 0.0};
+    vector<double> phi_dot = turtlebot.IK(Vb);
+
+    REQUIRE_THAT(phi_dot[0], Catch::Matchers::WithinAbs(-10.0, 1e-5));
+    REQUIRE_THAT(phi_dot[1], Catch::Matchers::WithinAbs(-10.0, 1e-5));
+  }
+
+  SECTION("Test rotation CCW only")
+  {
+    // follow a twist moving linearly in the x direction
+    Twist2D Vb{1.0, 0.0, 0.0};
+    vector<double> phi_dot = turtlebot.IK(Vb);
+
+    REQUIRE_THAT(phi_dot[0], Catch::Matchers::WithinAbs(-10.0, 1e-5));
+    REQUIRE_THAT(phi_dot[1], Catch::Matchers::WithinAbs(10.0, 1e-5));
+  }
+
+  SECTION("Test rotation CW only")
+  {
+    // follow a twist moving linearly in the x direction
+    Twist2D Vb{-1.0, 0.0, 0.0};
+    vector<double> phi_dot = turtlebot.IK(Vb);
+
+    REQUIRE_THAT(phi_dot[0], Catch::Matchers::WithinAbs(10.0, 1e-5));
+    REQUIRE_THAT(phi_dot[1], Catch::Matchers::WithinAbs(-10.0, 1e-5));
+  }
+
+  SECTION("Test Invalid Twist")
+  {
+    // follow a twist moving linearly in the y direction
+    Twist2D Vb{0.0, 0.0, 1.0};
+
+    REQUIRE_THROWS(turtlebot.IK(Vb));
+  }
 
 }
 }
