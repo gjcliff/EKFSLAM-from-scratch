@@ -66,7 +66,13 @@ public:
   /// @brief given new wheel positions, update the configuration
   /// @param phi_r_p
   /// @param phi_l_p
-  Configuration FK(double phi_l_p, double phi_r_p);
+  Twist2D FK(double phi_l_p, double phi_r_p);
+
+  /// @brief update the configuration of the robot given a body twist
+  /// @param Vb - the body twist
+  /// @return - the change in configuration of the robot. The global configuration
+  /// of the robot in the world frame is updated and stored in the class.
+  Configuration update_configuration(Twist2D Vb);
 
   /// @brief compute the wheel velocities required to make the robot move
   /// at a given body twist

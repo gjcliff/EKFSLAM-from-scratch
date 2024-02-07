@@ -5,17 +5,16 @@
 ///     wheel_radius (double): The radius of the turtlebot's wheels
 ///     track_width (double): The total distance between the center of the turtlebot's wheels
 ///     motor_cmd_max (double): The max allowable speed of the motor
-///     motor_cmd_per_rad_sec (double): 
-///     encoder_ticks_per_rad (double): 
-///     collision_radius (double): 
+///     motor_cmd_per_rad_sec (double):
+///     encoder_ticks_per_rad (double):
+///     collision_radius (double):
 /// PUBLISHES:
-///     topic_name (topic_type): description of topic
+///     wheel_cmd (nuturtlebot_msgs::msg::WheelCOmmands): Commands that make the turtlebot follow a specified twist
+///     joint_states (sensor_msgs::msg::JointState): Provide the angle (rad) and velocity (rad/sec) of the turtlebot's wheels
 /// SUBSCRIBES:
-///     topic_name (topic_type): description of the topic
-/// SERVERS:
-///     service_name (service_type): description of the service
-/// CLIENTS:
-///     service_name (service_type): description of the service
+///     cmd_vel (geometry_msgs::msg::Twist): A twist commanded to the turtlebot
+///     sensor_data (nuturtlebot_msgs::msg::SensorData): A stream of data from the turtlebot including
+///     encoder data, accelerometer data, gyroscope data, magnetometer data, and batter information.
 
 #include <chrono>
 #include <functional>
@@ -38,7 +37,9 @@ class TurtleControl : public rclcpp::Node
 {
 public:
   TurtleControl()
-  : Node("TurtleControl"), count_(0)
+  : Node("TurtleControl"),
+    wheel_velocities_({0.0, 0.0}),
+    count_(0)
   {
     // declare parameters
     declare_parameter("wheel_radius", 0.01);
@@ -51,38 +52,32 @@ public:
     // get parameters
     try {
       wheel_radius_ = get_parameter("wheel_radius").as_double();
-    } 
-    catch (rclcpp::exceptions::ParameterUninitializedException){
+    } catch (rclcpp::exceptions::ParameterUninitializedException) {
       rclcpp::shutdown();
     }
     try {
       track_width_ = get_parameter("track_width").as_double();
-    }
-    catch (rclcpp::exceptions::ParameterUninitializedException){
+    } catch (rclcpp::exceptions::ParameterUninitializedException) {
       rclcpp::shutdown();
     }
     try {
       motor_cmd_max_ = get_parameter("motor_cmd_max").as_double();
-    }
-    catch (rclcpp::exceptions::ParameterUninitializedException){
+    } catch (rclcpp::exceptions::ParameterUninitializedException) {
       rclcpp::shutdown();
     }
     try {
       motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
-    }
-    catch (rclcpp::exceptions::ParameterUninitializedException){
+    } catch (rclcpp::exceptions::ParameterUninitializedException) {
       rclcpp::shutdown();
     }
     try {
       encoder_ticks_per_rad_ = get_parameter("encoder_ticks_per_rad").as_double();
-    }
-    catch (rclcpp::exceptions::ParameterUninitializedException){
+    } catch (rclcpp::exceptions::ParameterUninitializedException) {
       rclcpp::shutdown();
     }
     try {
       collision_radius_ = get_parameter("collision_radius").as_double();
-    }
-    catch (rclcpp::exceptions::ParameterUninitializedException){
+    } catch (rclcpp::exceptions::ParameterUninitializedException) {
       rclcpp::shutdown();
     }
 
@@ -93,7 +88,7 @@ public:
       "sensor_data", 10, std::bind(&TurtleControl::sensor_data_callback, this, _1));
 
     // create publisher
-    wheel_cmd_publisher_ = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("topic", 10);
+    wheel_cmd_publisher_ = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("wheel_cmd", 10);
     my_joint_state_publisher_ = create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
 
     // create timer
@@ -102,32 +97,36 @@ public:
   }
 
 private:
-  void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData & msg) 
+  void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData & msg)
   {
     RCLCPP_INFO_STREAM_ONCE(get_logger(), "got sensor_data msg");
 
     double phi_l = get_encoder_angle(msg.left_encoder);
     double phi_r = get_encoder_angle(msg.right_encoder);
 
-    turtlelib::Configuration q_dot = turtlebot_.FK(phi_l, phi_r);
+    sensor_msgs::msg::JointState joint_state;
+    joint_state.position = vector<double>{phi_l, phi_r};
+    joint_state.velocity = wheel_velocities_;
 
+    my_joint_state_publisher_->publish(joint_state);
   }
 
-  void cmd_callback(const geometry_msgs::msg::Twist & msg) 
+  void cmd_callback(const geometry_msgs::msg::Twist & msg)
   {
     RCLCPP_INFO_STREAM_ONCE(get_logger(), "got cmd_vel msg");
 
     nuturtlebot_msgs::msg::WheelCommands wheel_cmd_msg;
-    vector<double> wheel_cmd_tmp = turtlebot_.IK({msg.angular.z, msg.linear.x, msg.linear.y});
+    wheel_velocities_ = turtlebot_.IK({msg.angular.z, msg.linear.x, msg.linear.y});
 
-    wheel_cmd_msg.left_velocity = wheel_cmd_tmp.at(0);
-    wheel_cmd_msg.right_velocity = wheel_cmd_tmp.at(1);
+    wheel_cmd_msg.left_velocity = wheel_velocities_.at(0);
+    wheel_cmd_msg.right_velocity = wheel_velocities_.at(1);
 
     wheel_cmd_publisher_->publish(wheel_cmd_msg);
   }
 
-  float get_encoder_angle(int encoder_ticks) {
-    return encoder_ticks*encoder_ticks_per_rad_;
+  float get_encoder_angle(int encoder_ticks)
+  {
+    return encoder_ticks * encoder_ticks_per_rad_;
   }
 
   void timer_callback()
@@ -143,6 +142,7 @@ private:
   nuturtlebot_msgs::msg::SensorData sensor_data_;
   geometry_msgs::msg::Twist cmd_vel_;
   turtlelib::DiffDrive turtlebot_;
+  vector<double> wheel_velocities_;
   double wheel_radius_;
   double track_width_;
   double motor_cmd_max_;

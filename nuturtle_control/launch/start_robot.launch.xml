@@ -5,4 +5,15 @@
         <param from="$(find-pkg-share nuturtle_description)/config/$(var config_file)"/>
     </node>
 
+    <node pkg="turtle_control" exec="odometry">
+        <param name="body_id" value="base_footprint"/>
+        <param name="odom_id" value="odom"/>
+        <param name="wheel_left" value="wheel_left"/>
+        <param name="wheel_right" value="wheel_right"/>
+    </node>
+
+    <node pkg="turtle_control" exec="color">
+        <param name="frequency" value="1000"/>
+    </node>
+
 </launch>
