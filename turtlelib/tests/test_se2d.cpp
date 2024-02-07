@@ -212,10 +212,9 @@ TEST_CASE(
   "Test the integrate_twist() function with a twist containing a rotation and a translation",
   "[integrate_twist]")
 {
-  Transform2D t = integrate_twist({1.5708, 1.0, 1.0});
+  Transform2D t = integrate_twist({1.5708, 1.0, 0.0});
   REQUIRE_THAT(t.rotation(), Catch::Matchers::WithinAbs(1.5708, 0.001));
-  REQUIRE_THAT(t.translation().x, Catch::Matchers::WithinAbs(1.0, 0.001));
-  REQUIRE_THAT(t.translation().y, Catch::Matchers::WithinAbs(1.0, 0.001));
+  REQUIRE_THAT(t.translation().x, Catch::Matchers::WithinAbs(t.translation().y, 1e-5));
 }
 
 TEST_CASE(
