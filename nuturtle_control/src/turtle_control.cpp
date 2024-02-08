@@ -45,7 +45,7 @@ public:
     // declare parameters
     declare_parameter("wheel_radius", rclcpp::PARAMETER_DOUBLE);
     declare_parameter("track_width", rclcpp::PARAMETER_DOUBLE);
-    declare_parameter("motor_cmd_max", rclcpp::PARAMETER_DOUBLE);
+    declare_parameter("motor_cmd_max", rclcpp::PARAMETER_INTEGER);
     declare_parameter("motor_cmd_per_rad_sec", rclcpp::PARAMETER_DOUBLE);
     declare_parameter("encoder_ticks_per_rad", rclcpp::PARAMETER_DOUBLE);
     declare_parameter("collision_radius", rclcpp::PARAMETER_DOUBLE);
@@ -70,7 +70,7 @@ public:
     }
 
     try {
-      motor_cmd_max_ = get_parameter("motor_cmd_max").as_double();
+      motor_cmd_max_ = get_parameter("motor_cmd_max").as_int();
     } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
       RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no motor_cmd_max parameter declared");
     }
@@ -174,7 +174,7 @@ private:
   int prev_right_encoder_;
   double wheel_radius_;
   double track_width_;
-  double motor_cmd_max_;
+  int motor_cmd_max_;
   double motor_cmd_per_rad_sec_;
   double encoder_ticks_per_rad_;
   double collision_radius_;

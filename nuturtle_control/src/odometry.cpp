@@ -32,15 +32,22 @@ public:
   Odometry()
   : Node("odometry"), count_(0)
   {
-    declare_parameter("body_id", rclcpp::PARAMETER_STRING);
+    declare_parameter("body_id", "thing");
     declare_parameter("odom_id", "odom");
-    declare_parameter("wheel_left", rclcpp::PARAMETER_STRING);
-    declare_parameter("wheel_right", rclcpp::PARAMETER_STRING);
+    declare_parameter("wheel_left", "thing");
+    declare_parameter("wheel_right", "thing");
 
-    body_id_ = get_parameter("body_id").as_string();
+    try {
+      body_id_ = get_parameter("body_id").as_string();
+    } catch (rclcpp::exceptions::InvalidParameterTypeException()) {
+      RCLCPP_ERROR_STREAM(get_logger(), "wtf");
+    }
+    
     odom_id_ = get_parameter("odom_id").as_string();
     wheel_left_ = get_parameter("wheel_left").as_string();
     wheel_right_ = get_parameter("wheel_right").as_string();
+
+    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
     // create publishers
     odometry_publisher_ = create_publisher<nav_msgs::msg::Odometry>(
@@ -55,10 +62,10 @@ public:
       "initial_pose", std::bind(&Odometry::initial_pose_callback, this, _1, _2));
 
     timer_ = this->create_wall_timer(
-      500ms, std::bind(&Odometry::timer_callback, this));
+      10ms, std::bind(&Odometry::timer_callback, this));
 
-    robot_odometry_.header.frame_id = body_id_;
-    robot_odometry_.child_frame_id = odom_id_;
+    robot_odometry_.header.frame_id = odom_id_;
+    robot_odometry_.child_frame_id = body_id_;
   }
 
 private:
@@ -75,6 +82,8 @@ private:
   }
   void joint_state_callback(const sensor_msgs::msg::JointState msg)
   {
+
+    RCLCPP_INFO_STREAM_ONCE(get_logger(), "joint state callback");
     double phi_l = msg.position.at(0);
     double phi_r = msg.position.at(1);
 
@@ -88,8 +97,8 @@ private:
     geometry_msgs::msg::Quaternion geometry_quat = tf2::toMsg(tf2_quat);
     // END CITATION [23]
 
-    robot_odometry_.header.frame_id = body_id_;
-    robot_odometry_.child_frame_id = odom_id_;
+    robot_odometry_.header.frame_id = odom_id_;
+    robot_odometry_.child_frame_id = body_id_;
     robot_odometry_.pose.pose.orientation = geometry_quat;
     robot_odometry_.pose.pose.position.x = q_now.x;
     robot_odometry_.pose.pose.position.y = q_now.y;
@@ -99,24 +108,24 @@ private:
 
     odometry_publisher_->publish(robot_odometry_);
 
-    geometry_msgs::msg::TransformStamped transform;
 
-    transform.header.stamp = get_clock()->now();
-    transform.header.frame_id = body_id_;
-    transform.child_frame_id = odom_id_;
-    transform.transform.translation.x = q_now.x;
-    transform.transform.translation.y = q_now.y;
-    transform.transform.translation.z = 0.0;
-    transform.transform.rotation.x = geometry_quat.x;
-    transform.transform.rotation.y = geometry_quat.y;
-    transform.transform.rotation.z = geometry_quat.z;
-    transform.transform.rotation.w = geometry_quat.w;
-
-    tf_broadcaster_->sendTransform(transform);
   }
   void timer_callback()
   {
+    RCLCPP_INFO_STREAM_ONCE(get_logger(), "here");
+    turtlelib::Configuration q_now = turtlebot_.get_current_configuration();
+    RCLCPP_INFO_STREAM_ONCE(get_logger(), "here");
+    geometry_msgs::msg::TransformStamped transform;
 
+    transform.header.stamp = get_clock()->now();
+    transform.header.frame_id = odom_id_;
+    transform.child_frame_id = body_id_;
+    transform.transform.translation.x = q_now.x;
+    transform.transform.translation.y = q_now.y;
+    transform.transform.translation.z = 0.0;
+    transform.transform.rotation.z = q_now.theta;
+
+    tf_broadcaster_->sendTransform(transform);
   }
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_publisher_;

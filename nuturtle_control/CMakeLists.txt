@@ -5,6 +5,10 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)        # If no build type is set, set one
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Type of build." FORCE)
+endif()
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(nuturtle_description REQUIRED)
@@ -18,6 +22,7 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(numsr_turtlebot REQUIRED)
 
 # find libraries
 find_package(turtlelib REQUIRED)
@@ -85,6 +90,7 @@ rosidl_get_typesupport_target(cpp_typesupport_target
 
 target_link_libraries(odometry "${cpp_typesupport_target}")
 target_link_libraries(circle "${cpp_typesupport_target}")
+target_link_libraries(turtle_control "${cpp_typesupport_target}")
 target_link_libraries(odometry turtlelib::turtlelib)
 target_link_libraries(turtle_control turtlelib::turtlelib)
 target_link_libraries(circle turtlelib::turtlelib)
@@ -100,10 +106,21 @@ install(TARGETS
   circle
   DESTINATION lib/${PROJECT_NAME})
 
+# install launch files
+install(
+  DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+)
+
+install(
+  DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
+
 if(BUILD_TESTING)
   include(CTest)
 
-  add_executable(turtle_control_test src/turtle_control_test.cpp)
+  add_executable(turtle_control_test tests/turtle_control_test.cpp)
   target_link_libraries(turtle_control_test
   catch_ros2::catch_ros2_with_main)
 

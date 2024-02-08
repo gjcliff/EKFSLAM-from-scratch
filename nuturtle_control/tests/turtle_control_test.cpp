@@ -1,6 +1,5 @@
 #include "rclcpp/rclcpp.hpp"
 #include "catch_ros2/catch_ros2.hpp"
-#include "geometry_msgs/msg/twist.hpp"
 
 using catch_ros2::SimulateArgs;
 
