@@ -46,7 +46,7 @@ DiffDrive::DiffDrive(Configuration q_orig, RobotDimensions rd)
   H_pseudo = construct_H_pseudo_matrix();
 }
 
-Configuration DiffDrive::update_configuration(Twist2D Vb)
+vector<Configuration> DiffDrive::update_configuration(Twist2D Vb)
 {
   Transform2D Tbb_prime = integrate_twist(Vb);
 
@@ -61,7 +61,7 @@ Configuration DiffDrive::update_configuration(Twist2D Vb)
   q.x += q_dot.x;
   q.y += q_dot.y;
 
-  return q_dot;
+  return {q, q_dot};
 }
 
 Twist2D DiffDrive::FK(double phi_l_p, double phi_r_p)

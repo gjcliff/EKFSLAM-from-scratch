@@ -27,3 +27,5 @@ Task D.1: Complete 2/5/2024
 Task D.2: Complete 2/5/2024
 
 Task E.1: Complete 2/6/2024
+Task E.2: Complete 2/7/2024
+Task E.3: Complete

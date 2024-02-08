@@ -63,16 +63,17 @@ public:
   /// @param rd - the dimensions of the robot
   DiffDrive(Configuration q_orig, RobotDimensions rd);
 
-  /// @brief given new wheel positions, update the configuration
+  /// @brief given new wheel positions, calculate the body twist
   /// @param phi_r_p
   /// @param phi_l_p
   Twist2D FK(double phi_l_p, double phi_r_p);
 
   /// @brief update the configuration of the robot given a body twist
   /// @param Vb - the body twist
-  /// @return - the change in configuration of the robot. The global configuration
-  /// of the robot in the world frame is updated and stored in the class.
-  Configuration update_configuration(Twist2D Vb);
+  /// @return - an array of configurations, the first of which is the current
+  /// configuration of the robot in the body frame, and the second of which is
+  /// the change in configuration since the last time FK() was called.
+  vector<Configuration> update_configuration(Twist2D Vb);
 
   /// @brief compute the wheel velocities required to make the robot move
   /// at a given body twist

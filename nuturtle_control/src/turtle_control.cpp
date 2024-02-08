@@ -29,6 +29,7 @@
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
 
 #include "turtlelib/diff_drive.hpp"
+#include "turtlelib/geometry2d.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -94,6 +95,8 @@ public:
     // create timer
     timer_ = create_wall_timer(
       500ms, std::bind(&TurtleControl::timer_callback, this));
+
+    prev_encoder_tic_time_ = get_clock()->now();
   }
 
 private:
@@ -104,9 +107,14 @@ private:
     double phi_l = get_encoder_angle(msg.left_encoder);
     double phi_r = get_encoder_angle(msg.right_encoder);
 
+    double left_wheel_velocity = (msg.left_encoder - prev_left_encoder_)/(prev_encoder_tic_time_.nanoseconds()/1e9);
+    double right_wheel_velocity = (msg.right_encoder - prev_right_encoder_)/(prev_encoder_tic_time_.nanoseconds()/1e9);
+    prev_left_encoder_ = msg.left_encoder;
+    prev_right_encoder_ = msg.right_encoder;
+
     sensor_msgs::msg::JointState joint_state;
-    joint_state.position = vector<double>{phi_l, phi_r};
-    joint_state.velocity = wheel_velocities_;
+    joint_state.position = {phi_l, phi_r};
+    joint_state.velocity = {left_wheel_velocity, right_wheel_velocity};
 
     my_joint_state_publisher_->publish(joint_state);
   }
@@ -117,6 +125,16 @@ private:
 
     nuturtlebot_msgs::msg::WheelCommands wheel_cmd_msg;
     wheel_velocities_ = turtlebot_.IK({msg.angular.z, msg.linear.x, msg.linear.y});
+    wheel_velocities_.at(0) *= motor_cmd_per_rad_sec_;
+    wheel_velocities_.at(1) *= motor_cmd_per_rad_sec_;
+
+    for (int i = 0; i < (int)wheel_velocities_.size(); ++i){
+      if (wheel_velocities_.at(i) > motor_cmd_max_) {
+        wheel_velocities_.at(i) = motor_cmd_max_;
+      } else if (wheel_velocities_.at(i) < -motor_cmd_max_) {
+        wheel_velocities_.at(i) = -motor_cmd_max_;
+      }
+    }
 
     wheel_cmd_msg.left_velocity = wheel_velocities_.at(0);
     wheel_cmd_msg.right_velocity = wheel_velocities_.at(1);
@@ -126,7 +144,7 @@ private:
 
   float get_encoder_angle(int encoder_ticks)
   {
-    return encoder_ticks * encoder_ticks_per_rad_;
+    return turtlelib::normalize_angle(encoder_ticks * encoder_ticks_per_rad_);
   }
 
   void timer_callback()
@@ -143,6 +161,9 @@ private:
   geometry_msgs::msg::Twist cmd_vel_;
   turtlelib::DiffDrive turtlebot_;
   vector<double> wheel_velocities_;
+  rclcpp::Time prev_encoder_tic_time_;
+  int prev_left_encoder_;
+  int prev_right_encoder_;
   double wheel_radius_;
   double track_width_;
   double motor_cmd_max_;

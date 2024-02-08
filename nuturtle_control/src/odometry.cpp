@@ -6,14 +6,22 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "geometry_msgs/msg/quaternion.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
+#include "tf2_ros/transform_broadcaster.h"
+
+#include "nuturtle_control/srv/initial_pose.hpp"
+#include "nuturtle_control/msg/robot_configuration.hpp"
 
 #include "turtlelib/geometry2d.hpp"
 #include "turtlelib/diff_drive.hpp"
+
 #include <string>
 #include <vector>
 
 using namespace std::chrono_literals;
-using std::placeholders::_1;
+using std::placeholders::_1, std::placeholders::_2;
 
 /* This example creates a subclass of Node and uses std::bind() to register a
 * member function as a callback from the timer. */
@@ -29,29 +37,10 @@ public:
     declare_parameter("wheel_left", "not_specified");
     declare_parameter("wheel_right", "not_specified");
 
-    try {
-      body_id_ = get_parameter("body_id").as_string();
-    } catch (rclcpp::exceptions::ParameterUninitializedException) {
-      rclcpp::shutdown();
-    }
-
-    try {
-      odom_id_ = get_parameter("odom_id").as_string();
-    } catch (rclcpp::exceptions::ParameterUninitializedException) {
-      rclcpp::shutdown();
-    }
-
-    try {
-      wheel_left_ = get_parameter("wheel_left").as_string();
-    } catch (rclcpp::exceptions::ParameterUninitializedException) {
-      rclcpp::shutdown();
-    }
-
-    try {
-      wheel_right_ = get_parameter("wheel_right").as_string();
-    } catch (rclcpp::exceptions::ParameterUninitializedException) {
-      rclcpp::shutdown();
-    }
+    body_id_ = get_parameter("body_id").as_string();
+    odom_id_ = get_parameter("odom_id").as_string();
+    wheel_left_ = get_parameter("wheel_left").as_string();
+    wheel_right_ = get_parameter("wheel_right").as_string();
 
     // create publishers
     odometry_publisher_ = create_publisher<nav_msgs::msg::Odometry>(
@@ -61,36 +50,80 @@ public:
     joint_state_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
       "joint_states", 10, std::bind(&Odometry::joint_state_callback, this, _1));
 
+    // create services
+    initial_pose_service_ = create_service<nuturtle_control::srv::InitialPose>(
+      "initial_pose", std::bind(&Odometry::initial_pose_callback, this, _1, _2));
+
     timer_ = this->create_wall_timer(
       500ms, std::bind(&Odometry::timer_callback, this));
+
+    robot_odometry_.header.frame_id = body_id_; 
+    robot_odometry_.child_frame_id = odom_id_;
   }
 
 private:
+  void initial_pose_callback(const std::shared_ptr<nuturtle_control::srv::InitialPose::Request> request,
+  std::shared_ptr<nuturtle_control::srv::InitialPose::Response>)
+  {
+    tf2::Quaternion tf2_quat;
+    tf2_quat.setRPY(0.0, 0.0, request->q.theta);
+    
+    robot_odometry_.pose.pose.orientation = tf2::toMsg(tf2_quat);
+    robot_odometry_.pose.pose.position.x = request->q.x;
+    robot_odometry_.pose.pose.position.y = request->q.y;
+  }
   void joint_state_callback(const sensor_msgs::msg::JointState msg)
   {
     double phi_l = msg.position.at(0);
     double phi_r = msg.position.at(1);
 
     turtlelib::Twist2D Vb = turtlebot_.FK(phi_l, phi_r);
-    turtlelib::Configuration q_diff = turtlebot_.update_configuration(Vb);
+    turtlelib::Configuration q_now = turtlebot_.update_configuration(Vb).at(0);
 
-    nav_msgs::msg::Odometry odom_msg;
-    odom_msg.header.frame_id = body_id_;
-    odom_msg.child_frame_id = odom_id_;
-    // odom_msg.pose
-    odom_msg.twist.twist.angular.z = Vb.omega;
-    odom_msg.twist.twist.linear.x = Vb.x;
-    odom_msg.twist.twist.linear.y = Vb.y;
+    tf2::Quaternion tf2_quat;
+    tf2_quat.setRPY(0.0, 0.0, q_now.theta);
 
+    // BEGIN CITATION [23]
+    geometry_msgs::msg::Quaternion geometry_quat = tf2::toMsg(tf2_quat); 
+    // END CITATION [23]
+
+    robot_odometry_.header.frame_id = body_id_;
+    robot_odometry_.child_frame_id = odom_id_;
+    robot_odometry_.pose.pose.orientation = geometry_quat;
+    robot_odometry_.pose.pose.position.x = q_now.x;
+    robot_odometry_.pose.pose.position.y = q_now.y;
+    robot_odometry_.twist.twist.angular.z = Vb.omega;
+    robot_odometry_.twist.twist.linear.x = Vb.x;
+    robot_odometry_.twist.twist.linear.y = Vb.y;
+
+    odometry_publisher_->publish(robot_odometry_);
+
+    geometry_msgs::msg::TransformStamped transform;
+
+    transform.header.stamp = get_clock()->now();
+    transform.header.frame_id = body_id_;
+    transform.child_frame_id = odom_id_;
+    transform.transform.translation.x = q_now.x;
+    transform.transform.translation.y = q_now.y;
+    transform.transform.translation.z = 0.0;
+    transform.transform.rotation.x = geometry_quat.x;
+    transform.transform.rotation.y = geometry_quat.y;
+    transform.transform.rotation.z = geometry_quat.z;
+    transform.transform.rotation.w = geometry_quat.w;
+
+    tf_broadcaster_->sendTransform(transform);
   }
   void timer_callback()
   {
-
+    
   }
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_publisher_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
+  rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_service_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   turtlelib::DiffDrive turtlebot_;
+  nav_msgs::msg::Odometry robot_odometry_;
   std::string body_id_;
   std::string odom_id_;
   std::string wheel_left_;
