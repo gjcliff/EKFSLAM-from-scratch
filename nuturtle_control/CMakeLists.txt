@@ -16,6 +16,7 @@ find_package(nav_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 # find libraries
@@ -28,6 +29,7 @@ add_executable(circle src/circle.cpp)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotConfiguration.msg"
   "srv/InitialPose.srv"
+  "srv/Control.srv"
 )
 
 ament_target_dependencies(
@@ -42,6 +44,7 @@ ament_target_dependencies(
   tf2
   tf2_ros
   tf2_geometry_msgs
+  std_srvs
 )
 
 ament_target_dependencies(
@@ -56,6 +59,7 @@ ament_target_dependencies(
   tf2
   tf2_ros
   tf2_geometry_msgs
+  std_srvs
 )
 ament_target_dependencies(
   circle
@@ -69,12 +73,14 @@ ament_target_dependencies(
   tf2
   tf2_ros
   tf2_geometry_msgs
+  std_srvs
 )
 
 rosidl_get_typesupport_target(cpp_typesupport_target
   ${PROJECT_NAME} rosidl_typesupport_cpp)
 
 target_link_libraries(odometry "${cpp_typesupport_target}")
+target_link_libraries(circle "${cpp_typesupport_target}")
 target_link_libraries(turtle_control turtlelib::turtlelib)
 target_link_libraries(odometry turtlelib::turtlelib)
 target_link_libraries(circle turtlelib::turtlelib)
