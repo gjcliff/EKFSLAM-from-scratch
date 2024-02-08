@@ -20,3 +20,5 @@
 [21] https://stackoverflow.com/questions/39553008/how-to-read-a-python-tuple-using-pyyaml
 [22] https://answers.ros.org/question/295518/how-to-get-an-array-of-parameters-with-rclcpp/
 [23] https://docs.ros.org/en/iron/Tutorials/Intermediate/Tf2/Quaternion-Fundamentals.html
+[24] https://stackoverflow.com/questions/62030341/what-is-this-catching-polymorphic-type-x-by-value-wcatch-value
+[25] Leo Chen

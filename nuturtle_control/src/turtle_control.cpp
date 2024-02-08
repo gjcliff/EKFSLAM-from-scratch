@@ -51,12 +51,42 @@ public:
     declare_parameter("collision_radius", rclcpp::PARAMETER_DOUBLE);
 
     // get parameters
-    wheel_radius_ = get_parameter("wheel_radius").as_double();
-    track_width_ = get_parameter("track_width").as_double();
-    motor_cmd_max_ = get_parameter("motor_cmd_max").as_double();
-    motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
-    encoder_ticks_per_rad_ = get_parameter("encoder_ticks_per_rad").as_double();
-    collision_radius_ = get_parameter("collision_radius").as_double();
+
+    try {
+      wheel_radius_ = get_parameter("wheel_radius").as_double();
+      // BEGIN CITATION [24]
+    } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
+      // END CITATION [24]
+      RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no wheel_radius parameter declared");
+      // BEGIN CITATION [25]
+      throw;
+      // END CITATION [25]
+    }
+
+    try {
+      track_width_ = get_parameter("track_width").as_double();
+    } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
+      RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no track_width parameter declared");
+    }
+
+    try {
+      motor_cmd_max_ = get_parameter("motor_cmd_max").as_double();
+    } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
+      RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no motor_cmd_max parameter declared");
+    }
+
+    try {
+      encoder_ticks_per_rad_ = get_parameter("encoder_ticks_per_rad").as_double();
+    } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
+      RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no encoder_ticks_per_rad parameter declared");
+    }
+
+    try {
+      collision_radius_ = get_parameter("collision_radius").as_double();
+    } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
+      RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no collision_radius parameter declared");
+    }
+
 
     // create subscriber
     cmd_subscriber_ = create_subscription<geometry_msgs::msg::Twist>(
