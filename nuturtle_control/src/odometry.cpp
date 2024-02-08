@@ -32,10 +32,10 @@ public:
   Odometry()
   : Node("odometry"), count_(0)
   {
-    declare_parameter("body_id", "not_specified");
+    declare_parameter("body_id", rclcpp::PARAMETER_STRING);
     declare_parameter("odom_id", "odom");
-    declare_parameter("wheel_left", "not_specified");
-    declare_parameter("wheel_right", "not_specified");
+    declare_parameter("wheel_left", rclcpp::PARAMETER_STRING);
+    declare_parameter("wheel_right", rclcpp::PARAMETER_STRING);
 
     body_id_ = get_parameter("body_id").as_string();
     odom_id_ = get_parameter("odom_id").as_string();
@@ -57,17 +57,18 @@ public:
     timer_ = this->create_wall_timer(
       500ms, std::bind(&Odometry::timer_callback, this));
 
-    robot_odometry_.header.frame_id = body_id_; 
+    robot_odometry_.header.frame_id = body_id_;
     robot_odometry_.child_frame_id = odom_id_;
   }
 
 private:
-  void initial_pose_callback(const std::shared_ptr<nuturtle_control::srv::InitialPose::Request> request,
-  std::shared_ptr<nuturtle_control::srv::InitialPose::Response>)
+  void initial_pose_callback(
+    const std::shared_ptr<nuturtle_control::srv::InitialPose::Request> request,
+    std::shared_ptr<nuturtle_control::srv::InitialPose::Response>)
   {
     tf2::Quaternion tf2_quat;
     tf2_quat.setRPY(0.0, 0.0, request->q.theta);
-    
+
     robot_odometry_.pose.pose.orientation = tf2::toMsg(tf2_quat);
     robot_odometry_.pose.pose.position.x = request->q.x;
     robot_odometry_.pose.pose.position.y = request->q.y;
@@ -84,7 +85,7 @@ private:
     tf2_quat.setRPY(0.0, 0.0, q_now.theta);
 
     // BEGIN CITATION [23]
-    geometry_msgs::msg::Quaternion geometry_quat = tf2::toMsg(tf2_quat); 
+    geometry_msgs::msg::Quaternion geometry_quat = tf2::toMsg(tf2_quat);
     // END CITATION [23]
 
     robot_odometry_.header.frame_id = body_id_;
@@ -115,7 +116,7 @@ private:
   }
   void timer_callback()
   {
-    
+
   }
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_publisher_;

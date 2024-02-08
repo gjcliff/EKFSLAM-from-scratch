@@ -14,14 +14,14 @@ namespace turtlelib
 /// @brief a robot configuration in the world frame
 struct Configuration
 {
+  /// @brief the angle
+  double theta = 0.0;
+
   /// @brief the x coordinate
   double x = 0.0;
 
   /// @brief the y coordinate
   double y = 0.0;
-
-  /// @brief the angle
-  double theta = 0.0;
 };
 
 struct RobotDimensions
@@ -82,11 +82,13 @@ public:
 
   /// @brief retrieve the robot's current configuration
   /// @return the robot's current configuration
-  Configuration get_current_configuration();
+  Configuration get_current_configuration() const;
+
+  void set_current_configuration(Configuration q);
 
   /// @brief retrieve the robot's current dimensions
   /// @return the robot's current dimensions
-  RobotDimensions get_robot_dimensions();
+  RobotDimensions get_robot_dimensions() const;
 
   /// @brief construct the H matrix
   /// @return a 2x3 H matrix

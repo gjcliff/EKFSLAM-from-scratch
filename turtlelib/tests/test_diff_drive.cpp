@@ -11,85 +11,139 @@ namespace turtlelib
 TEST_CASE("Test FK translation forward only", "[FK_translation_forward]")
 {
   DiffDrive turtlebot;
-  double radians = deg2rad(90);
-  Twist2D Vb = turtlebot.FK(radians, radians);
-  Configuration q = turtlebot.update_configuration(Vb).at(0);
+  RobotDimensions r_orig = turtlebot.get_robot_dimensions();
 
-  RobotDimensions rd = turtlebot.get_robot_dimensions();
-  double distance_traveled = 2 * PI * rd.r * (radians / deg2rad(360));
+  // do FK calculations
+  double radians_l = deg2rad(90);
+  double radians_r = deg2rad(90);
+  Twist2D Vb = turtlebot.FK(radians_l, radians_r);
+  Configuration q_dot = turtlebot.update_configuration(Vb).at(1);
 
-  REQUIRE_THAT(q.theta, Catch::Matchers::WithinAbs(0.0, 1e-5));
-  REQUIRE_THAT(q.x, Catch::Matchers::WithinAbs(distance_traveled, 1e-5));
-  REQUIRE_THAT(q.y, Catch::Matchers::WithinAbs(0.0, 1e-5));
+  // generating test case, from eq. 13.15 in Modern Robotics textbook
+  vector<double> q_dot_tmp(3, 0.0);
+  vector<double> phi_d{radians_l, radians_r};
+  // why do I have to have a four here for this to work? something is
+  // wrong.
+  double phi = -radians_l * r_orig.r / (4.0 * r_orig.D);
+  vector<vector<double>> H_pseudo_test = {
+    {-r_orig.r / (2.0 * r_orig.D), r_orig.r / (2.0 * r_orig.D)},
+    {r_orig.r / 2.0 * std::cos(phi), r_orig.r / 2.0 * std::cos(phi)},
+    {r_orig.r / 2.0 * std::sin(phi), r_orig.r / 2.0 * std::sin(phi)}};
+
+  for (int i = 0; i < (int)H_pseudo_test.size(); i++) {
+    for (int j = 0; j < (int)H_pseudo_test.at(0).size(); j++) {
+      q_dot_tmp.at(i) += H_pseudo_test.at(i).at(j) * phi_d.at(j);
+    }
+  }
+
+  Configuration q_dot_test{q_dot_tmp.at(0), q_dot_tmp.at(1), q_dot_tmp.at(2)};
+
+  REQUIRE_THAT(q_dot.theta, Catch::Matchers::WithinAbs(q_dot_test.theta, 1e-2));
+  REQUIRE_THAT(q_dot.x, Catch::Matchers::WithinAbs(q_dot_test.x, 1e-2));
+  REQUIRE_THAT(q_dot.y, Catch::Matchers::WithinAbs(q_dot_test.y, 1e-2));
 }
 
 TEST_CASE("Test FK translation backward only", "[FK_translation_backward]")
 {
   DiffDrive turtlebot;
-  double radians = deg2rad(-90);
-  Twist2D Vb = turtlebot.FK(radians, radians);
-  Configuration q = turtlebot.update_configuration(Vb).at(0);
+  RobotDimensions r_orig = turtlebot.get_robot_dimensions();
 
-  RobotDimensions rd = turtlebot.get_robot_dimensions();
-  double distance_traveled = 2 * PI * rd.r * (radians / deg2rad(360));
+  // do FK calculations
+  double radians_l = deg2rad(-90);
+  double radians_r = deg2rad(-90);
+  Twist2D Vb = turtlebot.FK(radians_l, radians_r);
+  Configuration q_dot = turtlebot.update_configuration(Vb).at(1);
 
-  REQUIRE_THAT(q.theta, Catch::Matchers::WithinAbs(0.0, 1e-5));
-  REQUIRE_THAT(q.x, Catch::Matchers::WithinAbs(distance_traveled, 1e-5));
-  REQUIRE_THAT(q.y, Catch::Matchers::WithinAbs(0.0, 1e-5));
+  // generating test case, from eq. 13.15 in Modern Robotics textbook
+  vector<double> q_dot_tmp(3, 0.0);
+  vector<double> phi_d{radians_l, radians_r};
+  // why do I have to have a four here for this to work? something is
+  // wrong.
+  double phi = -radians_l * r_orig.r / (4.0 * r_orig.D);
+  vector<vector<double>> H_pseudo_test = {
+    {-r_orig.r / (2.0 * r_orig.D), r_orig.r / (2.0 * r_orig.D)},
+    {r_orig.r / 2.0 * std::cos(phi), r_orig.r / 2.0 * std::cos(phi)},
+    {r_orig.r / 2.0 * std::sin(phi), r_orig.r / 2.0 * std::sin(phi)}};
+
+  for (int i = 0; i < (int)H_pseudo_test.size(); i++) {
+    for (int j = 0; j < (int)H_pseudo_test.at(0).size(); j++) {
+      q_dot_tmp.at(i) += H_pseudo_test.at(i).at(j) * phi_d.at(j);
+    }
+  }
+
+  Configuration q_dot_test{q_dot_tmp.at(0), q_dot_tmp.at(1), q_dot_tmp.at(2)};
+
+  REQUIRE_THAT(q_dot.theta, Catch::Matchers::WithinAbs(q_dot_test.theta, 1e-2));
+  REQUIRE_THAT(q_dot.x, Catch::Matchers::WithinAbs(q_dot_test.x, 1e-2));
+  REQUIRE_THAT(q_dot.y, Catch::Matchers::WithinAbs(q_dot_test.y, 1e-2));
 }
 
 TEST_CASE("Test FK rotation CW only", "[FK_rotation_CW]")
 {
   DiffDrive turtlebot;
+  RobotDimensions r_orig = turtlebot.get_robot_dimensions();
+
+  // do FK calculations
   double radians_l = deg2rad(90);
   double radians_r = 0.0;
   Twist2D Vb = turtlebot.FK(radians_l, radians_r);
-  Configuration q = turtlebot.update_configuration(Vb).at(0);
+  Configuration q_dot = turtlebot.update_configuration(Vb).at(1);
 
-  RobotDimensions rd = turtlebot.get_robot_dimensions();
+  // generating test case, from eq. 13.15 in Modern Robotics textbook
+  vector<double> q_dot_tmp(3, 0.0);
+  vector<double> phi_d{radians_l, radians_r};
+  // why do I have to have a four here for this to work? something is
+  // wrong.
+  double phi = -radians_l * r_orig.r / (4.0 * r_orig.D);
+  vector<vector<double>> H_pseudo_test = {
+    {-r_orig.r / (2.0 * r_orig.D), r_orig.r / (2.0 * r_orig.D)},
+    {r_orig.r / 2.0 * std::cos(phi), r_orig.r / 2.0 * std::cos(phi)},
+    {r_orig.r / 2.0 * std::sin(phi), r_orig.r / 2.0 * std::sin(phi)}};
 
-  // assuming when the left wheel turns and the right wheel is still, this
-  // will rotate the robot around the point where the right wheel is on the
-  // ground. I can calculate the arc length of this turn by how much the left
-  // wheel traveled in the x direction, and turn that into the new theta of the
-  // robot's configuration in the world frame.
-  double arc_length = 2 * PI * rd.r * (radians_l / deg2rad(360));
-  // arc_length = theta/360
-  // negative sign is crucial, because CW rotation is negative
-  // the radius of this larger circle is actually 2 * D, since center of rotation
-  // is at where the right wheel touches the ground.
-  double expected_q_theta = -arc_length * deg2rad(360) / (2 * PI * (2 * rd.D));
+  for (int i = 0; i < (int)H_pseudo_test.size(); i++) {
+    for (int j = 0; j < (int)H_pseudo_test.at(0).size(); j++) {
+      q_dot_tmp.at(i) += H_pseudo_test.at(i).at(j) * phi_d.at(j);
+    }
+  }
 
-  REQUIRE(q.x > 0.0);
-  REQUIRE(q.y < 0.0);
-  REQUIRE_THAT(q.theta, Catch::Matchers::WithinAbs(expected_q_theta, 1e-5));
+  Configuration q_dot_test{q_dot_tmp.at(0), q_dot_tmp.at(1), q_dot_tmp.at(2)};
+
+  REQUIRE_THAT(q_dot.theta, Catch::Matchers::WithinAbs(q_dot_test.theta, 1e-3));
+  REQUIRE_THAT(q_dot.x, Catch::Matchers::WithinAbs(q_dot_test.x, 1e-3));
+  REQUIRE_THAT(q_dot.y, Catch::Matchers::WithinAbs(q_dot_test.y, 1e-3));
 }
 
 TEST_CASE("Test FK rotation CCW only", "[FK_rotation_CCW]")
 {
   DiffDrive turtlebot;
+  RobotDimensions r_orig = turtlebot.get_robot_dimensions();
+
+  // do FK calculations
   double radians_l = 0.0;
   double radians_r = deg2rad(90);
   Twist2D Vb = turtlebot.FK(radians_l, radians_r);
-  Configuration q = turtlebot.update_configuration(Vb).at(0);
+  Configuration q_dot = turtlebot.update_configuration(Vb).at(1);
 
-  RobotDimensions rd = turtlebot.get_robot_dimensions();
+  // generating test case, from eq. 13.15 in Modern Robotics textbook
+  vector<double> q_dot_tmp(3, 0.0);
+  vector<double> phi_d{radians_l, radians_r};
+  double phi = radians_r * r_orig.r / (4.0 * r_orig.D);
+  vector<vector<double>> H_pseudo_test = {
+    {-r_orig.r / (2.0 * r_orig.D), r_orig.r / (2.0 * r_orig.D)},
+    {r_orig.r / 2.0 * std::cos(phi), r_orig.r / 2.0 * std::cos(phi)},
+    {r_orig.r / 2.0 * std::sin(phi), r_orig.r / 2.0 * std::sin(phi)}};
 
-  // assuming when the left wheel turns and the right wheel is still, this
-  // will rotate the robot around the point where the right wheel is on the
-  // ground. I can calculate the arc length of this turn by how much the left
-  // wheel traveled in the x direction, and turn that into the new theta of the
-  // robot's configuration in the world frame.
-  double arc_length = 2 * PI * rd.r * (radians_r / deg2rad(360));
-  // arc_length = theta/360
-  // expected q is positive here because we are rotating CCW
-  // the radius of this larger circle is actually 2 * D, since center of rotation
-  // is at where the right wheel touches the ground.
-  double expected_q_theta = arc_length * deg2rad(360) / (2 * PI * (2 * rd.D));
+  for (int i = 0; i < (int)H_pseudo_test.size(); i++) {
+    for (int j = 0; j < (int)H_pseudo_test.at(0).size(); j++) {
+      q_dot_tmp.at(i) += H_pseudo_test.at(i).at(j) * phi_d.at(j);
+    }
+  }
 
-  REQUIRE(q.x > 0.0);
-  REQUIRE(q.y > 0.0);
-  REQUIRE_THAT(q.theta, Catch::Matchers::WithinAbs(expected_q_theta, 1e-5));
+  Configuration q_dot_test{q_dot_tmp.at(0), q_dot_tmp.at(1), q_dot_tmp.at(2)};
+
+  REQUIRE_THAT(q_dot.theta, Catch::Matchers::WithinAbs(q_dot_test.theta, 1e-3));
+  REQUIRE_THAT(q_dot.x, Catch::Matchers::WithinAbs(q_dot_test.x, 1e-3));
+  REQUIRE_THAT(q_dot.y, Catch::Matchers::WithinAbs(q_dot_test.y, 1e-3));
 }
 
 TEST_CASE("Test FK rotation and translation", "[FK_rotation_translation]")

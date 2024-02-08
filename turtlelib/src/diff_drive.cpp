@@ -46,24 +46,6 @@ DiffDrive::DiffDrive(Configuration q_orig, RobotDimensions rd)
   H_pseudo = construct_H_pseudo_matrix();
 }
 
-vector<Configuration> DiffDrive::update_configuration(Twist2D Vb)
-{
-  Transform2D Tbb_prime = integrate_twist(Vb);
-
-  // now, compute the transformation matrix of the robot body frame {b} in
-  // the world frame {w}
-  Transform2D Twb({q.x, q.y}, q.theta);
-  Transform2D Twb_prime = Twb * Tbb_prime;
-
-  Configuration q_dot{Twb_prime.rotation(), Twb_prime.translation().x, Twb_prime.translation().y};
-
-  q.theta += q_dot.theta;
-  q.x += q_dot.x;
-  q.y += q_dot.y;
-
-  return {q, q_dot};
-}
-
 Twist2D DiffDrive::FK(double phi_l_p, double phi_r_p)
 {
   double d_phi_r = phi_r_p - phi_r;
@@ -80,6 +62,24 @@ Twist2D DiffDrive::FK(double phi_l_p, double phi_r_p)
   }
 
   return {Vb_mat.at(0), Vb_mat.at(1), Vb_mat.at(2)};
+}
+
+vector<Configuration> DiffDrive::update_configuration(Twist2D Vb)
+{
+  Transform2D Tbb_prime = integrate_twist(Vb);
+
+  // now, compute the transformation matrix of the robot body frame {b} in
+  // the world frame {w}
+  Transform2D Twb({q.x, q.y}, q.theta);
+  Transform2D Twb_prime = Twb * Tbb_prime;
+
+  Configuration q_dot{Twb_prime.rotation(), Twb_prime.translation().x, Twb_prime.translation().y};
+
+  q.theta += q_dot.theta;
+  q.x += q_dot.x;
+  q.y += q_dot.y;
+
+  return {q, q_dot};
 }
 
 vector<double> DiffDrive::IK(Twist2D twist)
@@ -102,12 +102,17 @@ vector<double> DiffDrive::IK(Twist2D twist)
   return phi_delta;
 }
 
-Configuration DiffDrive::get_current_configuration()
+Configuration DiffDrive::get_current_configuration() const
 {
   return q;
 }
 
-RobotDimensions DiffDrive::get_robot_dimensions()
+void DiffDrive::set_current_configuration(Configuration q_new)
+{
+  q = q_new;
+}
+
+RobotDimensions DiffDrive::get_robot_dimensions() const
 {
   return rd;
 }

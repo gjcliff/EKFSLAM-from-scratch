@@ -43,44 +43,20 @@ public:
     count_(0)
   {
     // declare parameters
-    declare_parameter("wheel_radius", 0.01);
-    declare_parameter("track_width", 0.01);
-    declare_parameter("motor_cmd_max", 0.01);
-    declare_parameter("motor_cmd_per_rad_sec", 0.01);
-    declare_parameter("encoder_ticks_per_rad", 0.01);
-    declare_parameter("collision_radius", 0.01);
+    declare_parameter("wheel_radius", rclcpp::PARAMETER_DOUBLE);
+    declare_parameter("track_width", rclcpp::PARAMETER_DOUBLE);
+    declare_parameter("motor_cmd_max", rclcpp::PARAMETER_DOUBLE);
+    declare_parameter("motor_cmd_per_rad_sec", rclcpp::PARAMETER_DOUBLE);
+    declare_parameter("encoder_ticks_per_rad", rclcpp::PARAMETER_DOUBLE);
+    declare_parameter("collision_radius", rclcpp::PARAMETER_DOUBLE);
 
     // get parameters
-    try {
-      wheel_radius_ = get_parameter("wheel_radius").as_double();
-    } catch (rclcpp::exceptions::ParameterUninitializedException) {
-      rclcpp::shutdown();
-    }
-    try {
-      track_width_ = get_parameter("track_width").as_double();
-    } catch (rclcpp::exceptions::ParameterUninitializedException) {
-      rclcpp::shutdown();
-    }
-    try {
-      motor_cmd_max_ = get_parameter("motor_cmd_max").as_double();
-    } catch (rclcpp::exceptions::ParameterUninitializedException) {
-      rclcpp::shutdown();
-    }
-    try {
-      motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
-    } catch (rclcpp::exceptions::ParameterUninitializedException) {
-      rclcpp::shutdown();
-    }
-    try {
-      encoder_ticks_per_rad_ = get_parameter("encoder_ticks_per_rad").as_double();
-    } catch (rclcpp::exceptions::ParameterUninitializedException) {
-      rclcpp::shutdown();
-    }
-    try {
-      collision_radius_ = get_parameter("collision_radius").as_double();
-    } catch (rclcpp::exceptions::ParameterUninitializedException) {
-      rclcpp::shutdown();
-    }
+    wheel_radius_ = get_parameter("wheel_radius").as_double();
+    track_width_ = get_parameter("track_width").as_double();
+    motor_cmd_max_ = get_parameter("motor_cmd_max").as_double();
+    motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
+    encoder_ticks_per_rad_ = get_parameter("encoder_ticks_per_rad").as_double();
+    collision_radius_ = get_parameter("collision_radius").as_double();
 
     // create subscriber
     cmd_subscriber_ = create_subscription<geometry_msgs::msg::Twist>(
@@ -107,8 +83,10 @@ private:
     double phi_l = get_encoder_angle(msg.left_encoder);
     double phi_r = get_encoder_angle(msg.right_encoder);
 
-    double left_wheel_velocity = (msg.left_encoder - prev_left_encoder_)/(prev_encoder_tic_time_.nanoseconds()/1e9);
-    double right_wheel_velocity = (msg.right_encoder - prev_right_encoder_)/(prev_encoder_tic_time_.nanoseconds()/1e9);
+    double left_wheel_velocity = (msg.left_encoder - prev_left_encoder_) /
+      (prev_encoder_tic_time_.nanoseconds() / 1e9);
+    double right_wheel_velocity = (msg.right_encoder - prev_right_encoder_) /
+      (prev_encoder_tic_time_.nanoseconds() / 1e9);
     prev_left_encoder_ = msg.left_encoder;
     prev_right_encoder_ = msg.right_encoder;
 
@@ -128,7 +106,7 @@ private:
     wheel_velocities_.at(0) *= motor_cmd_per_rad_sec_;
     wheel_velocities_.at(1) *= motor_cmd_per_rad_sec_;
 
-    for (int i = 0; i < (int)wheel_velocities_.size(); ++i){
+    for (int i = 0; i < (int)wheel_velocities_.size(); ++i) {
       if (wheel_velocities_.at(i) > motor_cmd_max_) {
         wheel_velocities_.at(i) = motor_cmd_max_;
       } else if (wheel_velocities_.at(i) < -motor_cmd_max_) {

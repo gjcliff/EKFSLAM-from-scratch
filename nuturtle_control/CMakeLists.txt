@@ -26,6 +26,9 @@ add_executable(turtle_control src/turtle_control.cpp)
 add_executable(odometry src/odometry.cpp)
 add_executable(circle src/circle.cpp)
 
+# find testing dependencies
+find_package(catch_ros2 REQUIRED)
+
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotConfiguration.msg"
   "srv/InitialPose.srv"
@@ -61,6 +64,7 @@ ament_target_dependencies(
   tf2_geometry_msgs
   std_srvs
 )
+
 ament_target_dependencies(
   circle
   rclcpp
@@ -81,8 +85,8 @@ rosidl_get_typesupport_target(cpp_typesupport_target
 
 target_link_libraries(odometry "${cpp_typesupport_target}")
 target_link_libraries(circle "${cpp_typesupport_target}")
-target_link_libraries(turtle_control turtlelib::turtlelib)
 target_link_libraries(odometry turtlelib::turtlelib)
+target_link_libraries(turtle_control turtlelib::turtlelib)
 target_link_libraries(circle turtlelib::turtlelib)
 
 target_include_directories(turtle_control PUBLIC
@@ -90,13 +94,21 @@ target_include_directories(turtle_control PUBLIC
   $<INSTALL_INTERFACE:include>)
 target_compile_features(turtle_control PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
-install(TARGETS 
+install(TARGETS
   turtle_control
   odometry
   circle
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
+  include(CTest)
+
+  add_executable(turtle_control_test src/turtle_control_test.cpp)
+  target_link_libraries(turtle_control_test
+  catch_ros2::catch_ros2_with_main)
+
+  add_test(NAME cmd_vel_test COMMAND turtle_control_test)
+
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
   # comment the line when a copyright and license is added to all source files
