@@ -75,9 +75,9 @@ vector<Configuration> DiffDrive::update_configuration(Twist2D Vb)
 
   Configuration q_dot{Twb_prime.rotation(), Twb_prime.translation().x, Twb_prime.translation().y};
 
-  q.theta += q_dot.theta;
-  q.x += q_dot.x;
-  q.y += q_dot.y;
+  q.theta = q_dot.theta;
+  q.x = q_dot.x;
+  q.y = q_dot.y;
 
   return {q, q_dot};
 }
@@ -115,6 +115,13 @@ void DiffDrive::set_current_configuration(Configuration q_new)
 RobotDimensions DiffDrive::get_robot_dimensions() const
 {
   return rd;
+}
+
+void DiffDrive::set_robot_dimensions(RobotDimensions rd_new)
+{
+  rd = rd_new;
+  H = construct_H_matrix();
+  H_pseudo = construct_H_pseudo_matrix();
 }
 
 vector<vector<double>> DiffDrive::construct_H_matrix()

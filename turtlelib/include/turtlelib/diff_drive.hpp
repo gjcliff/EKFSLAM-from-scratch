@@ -90,6 +90,10 @@ public:
   /// @return the robot's current dimensions
   RobotDimensions get_robot_dimensions() const;
 
+  /// @brief set the robot's dimensions
+  /// @param rd - the desired dimensions of the robot
+  void set_robot_dimensions(RobotDimensions rd);
+
   /// @brief construct the H matrix
   /// @return a 2x3 H matrix
   vector<vector<double>> construct_H_matrix();

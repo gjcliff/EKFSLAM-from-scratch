@@ -5,6 +5,10 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)        # If no build type is set, set one
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Type of build." FORCE)
+endif()
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -14,7 +18,10 @@ find_package(geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(turtlelib)
+find_package(nuturtlebot_msgs)
 
 set(srv_files
   "srv/Teleport.srv"
@@ -24,9 +31,12 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   ${srv_files}
 )
 
+
 ament_export_dependencies(rosidl_default_runtime)
 
 add_executable(nusim_exec src/nusim.cpp)
+
+target_link_libraries(nusim_exec turtlelib::turtlelib)
 
 ament_target_dependencies(
   nusim_exec
@@ -37,6 +47,9 @@ ament_target_dependencies(
   rclcpp
   tf2
   tf2_ros
+  tf2_geometry_msgs
+  turtlelib
+  nuturtlebot_msgs
 )
 
 install(TARGETS

@@ -16,10 +16,10 @@ class Circle : public rclcpp::Node
 {
 public:
   Circle()
-  : Node("minimal_publisher"), count_(0)
+  : Node("circle"), count_(0)
   {
-    declare_parameter("frequency_", "100");
-    frequency_ = get_parameter("frequency").as_double();
+    declare_parameter("frequency", 100);
+    frequency_ = get_parameter("frequency").as_int();
     std::chrono::duration<double> period(1.0 / frequency_);
 
     // create publishers
@@ -56,13 +56,10 @@ private:
     const std::shared_ptr<nuturtle_control::srv::Control::Request> request,
     std::shared_ptr<nuturtle_control::srv::Control::Response>)
   {
-    // I have math to back the line below up
-    double vx = turtlelib::PI * request->radius;
+    double vx = request->velocity * request->radius;
     geometry_msgs::msg::Twist msg;
     cmd_vel_msg_.angular.z = request->velocity;
     cmd_vel_msg_.linear.x = vx;
-
-
   }
   void reverse_callback(
     const std::shared_ptr<std_srvs::srv::Empty::Request>,

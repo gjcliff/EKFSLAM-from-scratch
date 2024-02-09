@@ -6,12 +6,11 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /RobotModel1/Status1
-        - /RobotModel2/Status1
         - /TF1
-        - /TF1/Status1
         - /Odometry1
-        - /Odometry1/Status1
+        - /MarkerArray1
+        - /MarkerArray2
+        - /MarkerArray2/Topic1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -186,7 +185,13 @@ Visualization Manager:
           Value: true
         blue/imu_link:
           Value: true
+        blue/wheel_left_link:
+          Value: true
+        blue/wheel_right_link:
+          Value: true
         nusim/world:
+          Value: true
+        odom:
           Value: true
         red/base_footprint:
           Value: true
@@ -198,6 +203,10 @@ Visualization Manager:
           Value: true
         red/imu_link:
           Value: true
+        red/wheel_left_link:
+          Value: true
+        red/wheel_right_link:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -205,6 +214,19 @@ Visualization Manager:
       Show Names: false
       Tree:
         nusim/world:
+          odom:
+            blue/base_footprint:
+              blue/base_link:
+                blue/base_scan:
+                  {}
+                blue/caster_back_link:
+                  {}
+                blue/imu_link:
+                  {}
+                blue/wheel_left_link:
+                  {}
+                blue/wheel_right_link:
+                  {}
           red/base_footprint:
             red/base_link:
               red/base_scan:
@@ -212,6 +234,10 @@ Visualization Manager:
               red/caster_back_link:
                 {}
               red/imu_link:
+                {}
+              red/wheel_left_link:
+                {}
+              red/wheel_right_link:
                 {}
       Update Interval: 0
       Value: true
@@ -253,6 +279,30 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /odom
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /nusim/walls
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /nusim/obstacles
       Value: true
   Enabled: true
   Global Options:
@@ -300,7 +350,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.0481791496276855
+      Distance: 1.012309193611145
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -315,10 +365,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.785398006439209
+      Pitch: 0.6497973203659058
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.785398006439209
+      Yaw: 0.7503981590270996
     Saved: ~
 Window Geometry:
   Displays:

@@ -13,23 +13,41 @@ finish unit testing -->
         <let name="use_rviz" value="false"/>
     </group>
 
-    <node pkg="nuturtle_control" exec="circle" if="$(eval '\'$(var cmd_src)\' == \'circle\'')">
-        <param name="frequency" value="100"/>
-    </node>
+    <!-- Handle the use_rviz argument -->
+    <group if="$(eval '\'$(var use_rviz)\' == \'true\'')">
+        <group if="$(eval '\'$(var robot)\' == \'nusim\'')">
+            <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+                <arg name="use_rviz" value="false"/>
+                <arg name="use_jsp" value="true"/>
+                <arg name="color" value="red"/>
+            </include>
+        </group>
+        <node pkg="rviz2" exec="rviz2" if="$(eval '\'$(var use_rviz)\' == \'true\'')" args="-d $(find-pkg-share nuturtle_control)/config/turtle_control.rviz"/>
+        <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+            <arg name="use_rviz" value="false"/>
+            <arg name="use_jsp" value="false"/>
+            <arg name="color" value="blue"/>
+        </include>
+    </group>
+
+    <!-- Handle the cmd_src argument -->
+    <group>
+        <node pkg="nuturtle_control" exec="circle" if="$(eval '\'$(var cmd_src)\' == \'circle\'')">
+            <param name="frequency" value="100"/>
+        </node>
+        
+        <node pkg="turtlebot3_teleop" exec="teleop_twist_keyboard" if="$(eval '\'$(var cmd_src)\' == \'teleop\'')"/>
+    </group>
     
-    <node pkg="turtlebot3_teleop" exec="teleop_twist_keyboard" if="$(eval '\'$(var cmd_src)\' == \'teleop\'')"/>
-    
+    <!-- Handle the robot argument -->
     <group if="$(eval '\'$(var robot)\' == \'nusim\'')">
         <include file="$(find-pkg-share nusim)/launch/nusim.launch.xml">
             <arg name="use_rviz" value="false"/>
             <arg name="robot_color" value="blue"/>
-            <arg name="load_robot" value="true"/>
+            <arg name="load_robot" value="false"/>
             <arg name="config_file" value="$(find-pkg-share nusim)/config/nuturtle_control_world.yaml"/>
-        </include>
-        <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
-            <arg name="use_rviz" value="false"/>
-            <arg name="use_jsp" value="true"/>
-            <arg name="color" value="red"/>
+            <arg name="diff_params" value="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+            <remap from="/wheel_cmd" to="/red/wheel_cmd"/>
         </include>
         <node pkg="nuturtle_control" exec="odometry" >
             <param name="body_id" value="blue/base_footprint"/>
@@ -39,6 +57,7 @@ finish unit testing -->
         </node>
         <node pkg="nuturtle_control" exec="turtle_control">
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+            <remap from="/wheel_cmd" to="/red/wheel_cmd"/>
         </node>
     </group>
         
@@ -56,15 +75,9 @@ finish unit testing -->
     </group>
 
     <group if="$(eval '\'$(var robot)\' == \'none\'')">
-        <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
-            <arg name="use_rviz" value="false"/>
-            <arg name="use_jsp" value="true"/>
-            <arg name="color" value="blue"/>
-        </include>
     </group>
 
-    <node pkg="rviz2" exec="rviz2" if="$(eval '\'$(var use_rviz)\' == \'true\'')" args="-d $(find-pkg-share nuturtle_control)/config/turtle_control.rviz"/>
-    
+    <!-- Launch the static_transform publisher --> 
     <node pkg="tf2_ros" exec="static_transform_publisher" args=
         "--x 0
         --y 0
@@ -74,6 +87,6 @@ finish unit testing -->
         --roll 0
         --frame-id nusim/world
         --child-frame-id odom"
-        />
+    />
 
 </launch>

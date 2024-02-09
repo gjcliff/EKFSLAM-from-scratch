@@ -15,10 +15,13 @@
   <depend>rclcpp</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>visualization_msgs</depend>
+  <depend>turtlelib</depend>
+  <depend>nuturtlebot_msgs</depend>
 
   <exec_depend>rviz2</exec_depend>
 

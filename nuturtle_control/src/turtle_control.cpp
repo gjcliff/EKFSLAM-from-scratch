@@ -38,7 +38,7 @@ class TurtleControl : public rclcpp::Node
 {
 public:
   TurtleControl()
-  : Node("TurtleControl"),
+  : Node("turtle_control"),
     wheel_velocities_({0.0, 0.0}),
     count_(0)
   {
@@ -67,42 +67,57 @@ public:
       track_width_ = get_parameter("track_width").as_double();
     } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
       RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no track_width parameter declared");
+      throw;
     }
 
     try {
       motor_cmd_max_ = get_parameter("motor_cmd_max").as_int();
     } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
       RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no motor_cmd_max parameter declared");
+      throw;
+    }
+
+    try {
+      motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
+    } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
+      RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no motor_cmd_per_rad_sec parameter declared");
+      throw;
     }
 
     try {
       encoder_ticks_per_rad_ = get_parameter("encoder_ticks_per_rad").as_double();
     } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
       RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no encoder_ticks_per_rad parameter declared");
+      throw;
     }
 
     try {
       collision_radius_ = get_parameter("collision_radius").as_double();
     } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
       RCLCPP_ERROR_STREAM_ONCE(get_logger(), "no collision_radius parameter declared");
+      throw;
     }
 
+    turtlelib::RobotDimensions rd{0.0, track_width_ / 2, wheel_radius_};
+    turtlebot_.set_robot_dimensions(rd);
 
     // create subscriber
-    cmd_subscriber_ = create_subscription<geometry_msgs::msg::Twist>(
+    cmd_subscriber_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10, std::bind(&TurtleControl::cmd_callback, this, _1));
-    sensor_data_subscriber_ = create_subscription<nuturtlebot_msgs::msg::SensorData>(
+    sensor_data_subscriber_ = this->create_subscription<nuturtlebot_msgs::msg::SensorData>(
       "sensor_data", 10, std::bind(&TurtleControl::sensor_data_callback, this, _1));
 
     // create publisher
-    wheel_cmd_publisher_ = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("wheel_cmd", 10);
-    my_joint_state_publisher_ = create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+    wheel_cmd_publisher_ = this->create_publisher<nuturtlebot_msgs::msg::WheelCommands>(
+      "wheel_cmd", 10);
+    my_joint_state_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>(
+      "joint_states", 10);
 
     // create timer
-    timer_ = create_wall_timer(
+    timer_ = this->create_wall_timer(
       500ms, std::bind(&TurtleControl::timer_callback, this));
 
-    prev_encoder_tic_time_ = get_clock()->now();
+    prev_encoder_tic_time_ = this->get_clock()->now();
   }
 
 private:
@@ -129,12 +144,10 @@ private:
 
   void cmd_callback(const geometry_msgs::msg::Twist & msg)
   {
-    RCLCPP_INFO_STREAM_ONCE(get_logger(), "got cmd_vel msg");
-
     nuturtlebot_msgs::msg::WheelCommands wheel_cmd_msg;
     wheel_velocities_ = turtlebot_.IK({msg.angular.z, msg.linear.x, msg.linear.y});
-    wheel_velocities_.at(0) *= motor_cmd_per_rad_sec_;
-    wheel_velocities_.at(1) *= motor_cmd_per_rad_sec_;
+    wheel_velocities_.at(0) /= motor_cmd_per_rad_sec_;
+    wheel_velocities_.at(1) /= motor_cmd_per_rad_sec_;
 
     for (int i = 0; i < (int)wheel_velocities_.size(); ++i) {
       if (wheel_velocities_.at(i) > motor_cmd_max_) {
@@ -143,11 +156,10 @@ private:
         wheel_velocities_.at(i) = -motor_cmd_max_;
       }
     }
-
-    wheel_cmd_msg.left_velocity = wheel_velocities_.at(0);
-    wheel_cmd_msg.right_velocity = wheel_velocities_.at(1);
-
+    wheel_cmd_msg.left_velocity = static_cast<int>(wheel_velocities_.at(0));
+    wheel_cmd_msg.right_velocity = static_cast<int>(wheel_velocities_.at(1));
     wheel_cmd_publisher_->publish(wheel_cmd_msg);
+
   }
 
   float get_encoder_angle(int encoder_ticks)
