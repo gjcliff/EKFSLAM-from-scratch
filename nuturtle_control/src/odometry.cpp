@@ -47,7 +47,7 @@ public:
     try {
       body_id_ = get_parameter("body_id").as_string();
     } catch (rclcpp::exceptions::InvalidParameterTypeException()) {
-      RCLCPP_ERROR_STREAM(get_logger(), "wtf");
+      RCLCPP_ERROR_STREAM(get_logger(), "no body_id parameter declared");
     }
 
     try {
@@ -59,7 +59,13 @@ public:
     try {
       wheel_left_ = get_parameter("wheel_left").as_string();
     } catch (rclcpp::exceptions::InvalidParameterTypeException()) {
-      RCLCPP_ERROR_STREAM(get_logger(), "wtf");
+      RCLCPP_ERROR_STREAM(get_logger(), "no wheel_left parameter declared");
+    }
+
+    try {
+      wheel_right_ = get_parameter("wheel_right").as_string();
+    } catch (rclcpp::exceptions::InvalidParameterTypeException()) {
+      RCLCPP_ERROR_STREAM(get_logger(), "no wheel_right parameter declared");
     }
 
     try {
@@ -189,17 +195,39 @@ private:
     RCLCPP_INFO_STREAM_ONCE(get_logger(), "here");
     turtlelib::Configuration q_now = turtlebot_.get_current_configuration();
     RCLCPP_INFO_STREAM_ONCE(get_logger(), "here");
-    geometry_msgs::msg::TransformStamped transform;
+    geometry_msgs::msg::TransformStamped transform_body;
 
-    transform.header.stamp = get_clock()->now();
-    transform.header.frame_id = odom_id_;
-    transform.child_frame_id = body_id_;
-    transform.transform.translation.x = q_now.x;
-    transform.transform.translation.y = q_now.y;
-    transform.transform.translation.z = 0.0;
-    transform.transform.rotation.z = q_now.theta;
+    transform_body.header.stamp = get_clock()->now();
+    transform_body.header.frame_id = odom_id_;
+    transform_body.child_frame_id = body_id_;
+    transform_body.transform.translation.x = q_now.x;
+    transform_body.transform.translation.y = q_now.y;
+    transform_body.transform.translation.z = 0.0;
+    transform_body.transform.rotation.z = q_now.theta;
 
-    tf_broadcaster_->sendTransform(transform);
+    tf_broadcaster_->sendTransform(transform_body);
+
+    geometry_msgs::msg::TransformStamped transform_left_wheel;
+    transform_left_wheel.header.stamp = get_clock()->now();
+    transform_left_wheel.header.frame_id = body_id_;
+    transform_left_wheel.child_frame_id = wheel_left_;
+    transform_left_wheel.transform.translation.x = q_now.x;
+    transform_left_wheel.transform.translation.y = q_now.y;
+    transform_left_wheel.transform.translation.z = 0.0;
+    transform_left_wheel.transform.rotation.z = q_now.theta;
+
+    tf_broadcaster_->sendTransform(transform_left_wheel);
+
+    geometry_msgs::msg::TransformStamped transform_right_wheel;
+    transform_right_wheel.header.stamp = get_clock()->now();
+    transform_right_wheel.header.frame_id = body_id_;
+    transform_right_wheel.child_frame_id = wheel_right_;
+    transform_right_wheel.transform.translation.x = q_now.x;
+    transform_right_wheel.transform.translation.y = q_now.y;
+    transform_right_wheel.transform.translation.z = 0.0;
+    transform_right_wheel.transform.rotation.z = q_now.theta;
+
+    tf_broadcaster_->sendTransform(transform_right_wheel);
   }
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_publisher_;

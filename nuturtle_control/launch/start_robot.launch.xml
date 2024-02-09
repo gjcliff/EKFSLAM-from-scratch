@@ -51,8 +51,8 @@ finish unit testing -->
         <node pkg="nuturtle_control" exec="odometry" >
             <param name="body_id" value="blue/base_footprint"/>
             <param name="odom_id" value="odom"/>
-            <param name="wheel_left" value="blue/wheel_left"/>
-            <param name="wheel_right" value="blue/wheel_right"/>
+            <param name="wheel_left" value="blue/wheel_left_link"/>
+            <param name="wheel_right" value="blue/wheel_right_link"/>
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
         </node>
         <node pkg="nuturtle_control" exec="turtle_control">
