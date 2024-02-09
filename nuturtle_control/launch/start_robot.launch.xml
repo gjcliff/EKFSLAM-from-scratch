@@ -43,21 +43,22 @@ finish unit testing -->
     <group if="$(eval '\'$(var robot)\' == \'nusim\'')">
         <include file="$(find-pkg-share nusim)/launch/nusim.launch.xml">
             <arg name="use_rviz" value="false"/>
-            <arg name="robot_color" value="blue"/>
+            <arg name="robot_color" value="red"/>
             <arg name="load_robot" value="false"/>
             <arg name="config_file" value="$(find-pkg-share nusim)/config/nuturtle_control_world.yaml"/>
             <arg name="diff_params" value="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
-            <remap from="/wheel_cmd" to="/red/wheel_cmd"/>
         </include>
         <node pkg="nuturtle_control" exec="odometry" >
             <param name="body_id" value="blue/base_footprint"/>
             <param name="odom_id" value="odom"/>
             <param name="wheel_left" value="blue/wheel_left"/>
             <param name="wheel_right" value="blue/wheel_right"/>
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
         </node>
         <node pkg="nuturtle_control" exec="turtle_control">
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
             <remap from="/wheel_cmd" to="/red/wheel_cmd"/>
+            <remap from="/sensor_data" to="/red/sensor_data"/>
         </node>
     </group>
         

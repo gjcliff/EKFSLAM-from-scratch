@@ -20,6 +20,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <cmath>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -125,8 +126,16 @@ private:
   {
     RCLCPP_INFO_STREAM_ONCE(get_logger(), "got sensor_data msg");
 
-    double phi_l = get_encoder_angle(msg.left_encoder);
-    double phi_r = get_encoder_angle(msg.right_encoder);
+    // if the robot just starts up, carter told me that it retains it's encoder psitions
+    // from last time. is this true?
+    // if (prev_left_encoder_ == 0 && prev_right_encoder_ == 0) {
+    //   prev_left_encoder_ = msg.left_encoder;
+    //   prev_right_encoder_ = msg.right_encoder;
+    //   return;
+    // }
+
+    double phi_l = msg.left_encoder / encoder_ticks_per_rad_;
+    double phi_r = msg.right_encoder / encoder_ticks_per_rad_;
 
     double left_wheel_velocity = (msg.left_encoder - prev_left_encoder_) /
       (prev_encoder_tic_time_.nanoseconds() / 1e9);
@@ -156,15 +165,10 @@ private:
         wheel_velocities_.at(i) = -motor_cmd_max_;
       }
     }
-    wheel_cmd_msg.left_velocity = static_cast<int>(wheel_velocities_.at(0));
-    wheel_cmd_msg.right_velocity = static_cast<int>(wheel_velocities_.at(1));
+    wheel_cmd_msg.left_velocity = std::lround(wheel_velocities_.at(0));
+    wheel_cmd_msg.right_velocity = std::lround(wheel_velocities_.at(1));
     wheel_cmd_publisher_->publish(wheel_cmd_msg);
 
-  }
-
-  float get_encoder_angle(int encoder_ticks)
-  {
-    return turtlelib::normalize_angle(encoder_ticks * encoder_ticks_per_rad_);
   }
 
   void timer_callback()

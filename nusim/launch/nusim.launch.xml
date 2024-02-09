@@ -24,5 +24,7 @@
         <param name="arena_length_x" value="$(var arena_length_x)"/>
         <param name="arena_length_y" value="$(var arena_length_y)"/>
         <param name="obstacles/r" value="$(var obstacles/r)"/>
+        <remap from="/wheel_cmd" to="/$(var robot_color)/wheel_cmd"/>
+        <remap from="/sensor_data" to="/$(var robot_color)/sensor_data"/>
     </node>
 </launch>
