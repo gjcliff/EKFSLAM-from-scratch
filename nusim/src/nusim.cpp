@@ -122,23 +122,25 @@ public:
 private:
   void wheel_commands_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
   {
-    double left_wheel_velocity = msg.left_velocity * (max_rot_vel / motor_cmd_max_);
-    double right_wheel_velocity = msg.right_velocity * (max_rot_vel / motor_cmd_max_);
+    double left_wheel_velocity = msg.left_velocity * motor_cmd_per_rad_sec_;
+    double right_wheel_velocity = msg.right_velocity * motor_cmd_per_rad_sec_;
+
+    // this is unfortunate, but has to be done.
+    left_wheel_velocity = static_cast<int>(left_wheel_velocity * encoder_ticks_per_rad_) /
+      encoder_ticks_per_rad_;
+    right_wheel_velocity = static_cast<int>(right_wheel_velocity * encoder_ticks_per_rad_) /
+      encoder_ticks_per_rad_;
 
     turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity, right_wheel_velocity);
     vector<turtlelib::Configuration> qv = turtlebot_.update_configuration(Vb);
-
-    RCLCPP_INFO_STREAM(
-      get_logger(), "q_new: " << qv.at(0).theta << ", " << qv.at(
-        0).x << ", " << qv.at(0).y);
 
     x_ = qv.at(0).x;
     y_ = qv.at(0).y;
     theta_ = qv.at(0).theta;
 
     vector<double> wheel_pos_rad = turtlebot_.IK(Vb);
-    int left_encoder_ticks = wheel_pos_rad.at(0) * encoder_ticks_per_rad_;
-    int right_encoder_ticks = wheel_pos_rad.at(1) * encoder_ticks_per_rad_;
+    int left_encoder_ticks = static_cast<int>(wheel_pos_rad.at(0) * encoder_ticks_per_rad_);
+    int right_encoder_ticks = static_cast<int>(wheel_pos_rad.at(1) * encoder_ticks_per_rad_);
 
     nuturtlebot_msgs::msg::SensorData sensor_data_msg;
     sensor_data_msg.left_encoder = left_encoder_ticks;

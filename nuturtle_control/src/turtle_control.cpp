@@ -122,35 +122,6 @@ public:
   }
 
 private:
-  void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData & msg)
-  {
-    RCLCPP_INFO_STREAM_ONCE(get_logger(), "got sensor_data msg");
-
-    // if the robot just starts up, carter told me that it retains it's encoder psitions
-    // from last time. is this true?
-    // if (prev_left_encoder_ == 0 && prev_right_encoder_ == 0) {
-    //   prev_left_encoder_ = msg.left_encoder;
-    //   prev_right_encoder_ = msg.right_encoder;
-    //   return;
-    // }
-
-    double phi_l = msg.left_encoder / encoder_ticks_per_rad_;
-    double phi_r = msg.right_encoder / encoder_ticks_per_rad_;
-
-    double left_wheel_velocity = (msg.left_encoder - prev_left_encoder_) /
-      (prev_encoder_tic_time_.nanoseconds() / 1e9);
-    double right_wheel_velocity = (msg.right_encoder - prev_right_encoder_) /
-      (prev_encoder_tic_time_.nanoseconds() / 1e9);
-    prev_left_encoder_ = msg.left_encoder;
-    prev_right_encoder_ = msg.right_encoder;
-
-    sensor_msgs::msg::JointState joint_state;
-    joint_state.position = {phi_l, phi_r};
-    joint_state.velocity = {left_wheel_velocity, right_wheel_velocity};
-
-    my_joint_state_publisher_->publish(joint_state);
-  }
-
   void cmd_callback(const geometry_msgs::msg::Twist & msg)
   {
     nuturtlebot_msgs::msg::WheelCommands wheel_cmd_msg;
@@ -165,10 +136,38 @@ private:
         wheel_velocities_.at(i) = -motor_cmd_max_;
       }
     }
-    wheel_cmd_msg.left_velocity = std::lround(wheel_velocities_.at(0));
-    wheel_cmd_msg.right_velocity = std::lround(wheel_velocities_.at(1));
+    wheel_cmd_msg.left_velocity = static_cast<int>(wheel_velocities_.at(0));
+    wheel_cmd_msg.right_velocity = static_cast<int>(wheel_velocities_.at(1));
     wheel_cmd_publisher_->publish(wheel_cmd_msg);
+  }
 
+  void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData & msg)
+  {
+    RCLCPP_INFO_STREAM_ONCE(get_logger(), "got sensor_data msg");
+
+    // if the robot just starts up, carter told me that it retains it's encoder psitions
+    // from last time. is this true?
+    // if (prev_left_rad_ == 0 && prev_right_rad_ == 0) {
+    //   prev_left_rad_ = msg.left_encoder;
+    //   prev_right_rad_ = msg.right_encoder;
+    //   return;
+    // }
+
+    double phi_l = msg.left_encoder / encoder_ticks_per_rad_;
+    double phi_r = msg.right_encoder / encoder_ticks_per_rad_;
+
+    double left_wheel_velocity = (phi_l - prev_left_rad_) /
+      (prev_encoder_tic_time_.nanoseconds() / 1e9);
+    double right_wheel_velocity = (phi_r - prev_right_rad_) /
+      (prev_encoder_tic_time_.nanoseconds() / 1e9);
+    prev_left_rad_ = phi_l;
+    prev_right_rad_ = phi_r;
+
+    sensor_msgs::msg::JointState joint_state;
+    joint_state.position = {phi_l, phi_r};
+    joint_state.velocity = {left_wheel_velocity, right_wheel_velocity};
+
+    my_joint_state_publisher_->publish(joint_state);
   }
 
   void timer_callback()
@@ -186,8 +185,8 @@ private:
   turtlelib::DiffDrive turtlebot_;
   vector<double> wheel_velocities_;
   rclcpp::Time prev_encoder_tic_time_;
-  int prev_left_encoder_;
-  int prev_right_encoder_;
+  double prev_left_rad_;
+  double prev_right_rad_;
   double wheel_radius_;
   double track_width_;
   int motor_cmd_max_;
