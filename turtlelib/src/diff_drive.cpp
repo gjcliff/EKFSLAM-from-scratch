@@ -48,8 +48,6 @@ DiffDrive::DiffDrive(Configuration q_orig, RobotDimensions rd)
 
 Twist2D DiffDrive::FK(double phi_l_p, double phi_r_p)
 {
-  // double d_phi_r = phi_r_p - phi_r;
-  // double d_phi_l = phi_l_p - phi_l;
   vector<double> u{phi_l_p, phi_r_p};
   vector<double> Vb_mat(vector<double>(3, 0.0));
 

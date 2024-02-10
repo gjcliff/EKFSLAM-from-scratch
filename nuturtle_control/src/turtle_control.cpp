@@ -126,9 +126,6 @@ private:
   {
     nuturtlebot_msgs::msg::WheelCommands wheel_cmd_msg;
     wheel_velocities_ = turtlebot_.IK({msg.angular.z, msg.linear.x, msg.linear.y});
-    // RCLCPP_INFO_STREAM(
-    //   get_logger(), "wheel_velocities: " << wheel_velocities_.at(
-    //     0) << ", " << wheel_velocities_.at(1));
     wheel_velocities_.at(0) /= motor_cmd_per_rad_sec_;
     wheel_velocities_.at(1) /= motor_cmd_per_rad_sec_;
 
@@ -149,20 +146,6 @@ private:
   {
     RCLCPP_INFO_STREAM_ONCE(get_logger(), "got sensor_data msg");
 
-    // if the robot just starts up, carter told me that it retains it's encoder psitions
-    // from last time. is this true?
-    // if (prev_left_rad_ == 0 && prev_right_rad_ == 0) {
-    //   prev_left_rad_ = msg.left_encoder;
-    //   prev_right_rad_ = msg.right_encoder;
-    //   return;
-    // }
-    // if (count_ == 0) {
-    //   original_left_encoder_ = msg.left_encoder;
-    //   original_right_encoder_ = msg.right_encoder;
-    //   count_++;
-    //   return;
-    // }
-
     double phi_l = msg.left_encoder / encoder_ticks_per_rad_;
     double phi_r = msg.right_encoder / encoder_ticks_per_rad_;
 
@@ -172,11 +155,6 @@ private:
       (prev_encoder_tic_time_.nanoseconds() / 1e9);
     prev_left_rad_ = phi_l;
     prev_right_rad_ = phi_r;
-
-    // original_left_encoder_ = msg.left_encoder;
-    // original_right_encoder_ = msg.right_encoder;
-
-    // RCLCPP_INFO_STREAM(get_logger(), "angles: " << prev_left_rad_ << ", " << prev_right_rad_);
 
     sensor_msgs::msg::JointState joint_state;
     joint_state.header.stamp = get_clock()->now();
@@ -189,8 +167,6 @@ private:
 
   void timer_callback()
   {
-    // nuturtlebot_msgs::msg::WheelCommands msg;
-    // wheel_cmd_publisher_->publish(msg);
   }
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_subscriber_;
