@@ -125,29 +125,40 @@ private:
     double left_wheel_velocity = msg.left_velocity * motor_cmd_per_rad_sec_;
     double right_wheel_velocity = msg.right_velocity * motor_cmd_per_rad_sec_;
 
+
     // this is unfortunate, but has to be done.
-    left_wheel_velocity = static_cast<int>(left_wheel_velocity * encoder_ticks_per_rad_) /
-      encoder_ticks_per_rad_;
-    right_wheel_velocity = static_cast<int>(right_wheel_velocity * encoder_ticks_per_rad_) /
-      encoder_ticks_per_rad_;
+    // left_wheel_velocity = static_cast<int>(left_wheel_velocity * encoder_ticks_per_rad_) /
+    //   encoder_ticks_per_rad_;
+    // right_wheel_velocity = static_cast<int>(right_wheel_velocity * encoder_ticks_per_rad_) /
+    //   encoder_ticks_per_rad_;
+
+    // RCLCPP_INFO_STREAM(
+    //   get_logger(),
+    //   "msg: " << left_wheel_velocity << ", " << right_wheel_velocity);
 
     turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity, right_wheel_velocity);
+    // RCLCPP_INFO_STREAM(get_logger(), "Vb: " << Vb.omega << ", " << Vb.x << ", " << Vb.y);
     vector<turtlelib::Configuration> qv = turtlebot_.update_configuration(Vb);
+
+    // RCLCPP_INFO_STREAM(
+    //   get_logger(), "qv: " << qv.at(0).theta << ", " << qv.at(0).x << ", " << qv.at(
+    //     0).y);
+    // RCLCPP_INFO_STREAM(
+    //   get_logger(), "Vb: " << Vb.omega << ", " << Vb.x << ", " << Vb.y);
 
     x_ = qv.at(0).x;
     y_ = qv.at(0).y;
     theta_ = qv.at(0).theta;
 
     vector<double> wheel_pos_rad = turtlebot_.IK(Vb);
-    int left_encoder_ticks = static_cast<int>(wheel_pos_rad.at(0) * encoder_ticks_per_rad_);
-    int right_encoder_ticks = static_cast<int>(wheel_pos_rad.at(1) * encoder_ticks_per_rad_);
+    left_encoder_ticks_ += static_cast<int>(wheel_pos_rad.at(0) * encoder_ticks_per_rad_);
+    right_encoder_ticks_ += static_cast<int>(wheel_pos_rad.at(1) * encoder_ticks_per_rad_);
 
-    nuturtlebot_msgs::msg::SensorData sensor_data_msg;
-    sensor_data_msg.left_encoder = left_encoder_ticks;
-    sensor_data_msg.right_encoder = right_encoder_ticks;
-    sensor_data_msg.stamp = get_clock()->now();
+    // RCLCPP_INFO_STREAM(
+    //   get_logger(), "wheel_pos: " << wheel_pos_rad.at(
+    //     0) << ", " << wheel_pos_rad.at(1));
 
-    sensor_data_publisher_->publish(sensor_data_msg);
+
   }
 
   visualization_msgs::msg::MarkerArray construct_obstacle_array()
@@ -298,6 +309,16 @@ private:
 
     visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array();
     obstacles_publisher_->publish(obstacle_array);
+
+
+    nuturtlebot_msgs::msg::SensorData sensor_data_msg;
+    sensor_data_msg.left_encoder = left_encoder_ticks_;
+    sensor_data_msg.right_encoder = right_encoder_ticks_;
+    sensor_data_msg.stamp = get_clock()->now();
+
+    sensor_data_publisher_->publish(sensor_data_msg);
+    left_encoder_ticks_ = 0.0;
+    right_encoder_ticks_ = 0.0;
   }
   rclcpp::TimerBase::SharedPtr timer_;
   // publishers
@@ -334,6 +355,8 @@ private:
   double motor_cmd_per_rad_sec_;
   double encoder_ticks_per_rad_;
   double collision_radius_;
+  double left_encoder_ticks_;
+  double right_encoder_ticks_;
   std::vector<double> obstacles_x;
   std::vector<double> obstacles_y;
   double obstacle_radius_;
