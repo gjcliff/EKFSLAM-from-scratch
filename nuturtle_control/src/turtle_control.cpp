@@ -152,9 +152,15 @@ private:
     //   prev_right_rad_ = msg.right_encoder;
     //   return;
     // }
+    if (count_ == 0) {
+      original_left_encoder_ = msg.left_encoder;
+      original_right_encoder_ = msg.right_encoder;
+      count_++;
+      return;
+    }
 
-    double phi_l = msg.left_encoder / encoder_ticks_per_rad_;
-    double phi_r = msg.right_encoder / encoder_ticks_per_rad_;
+    double phi_l = (msg.left_encoder - original_left_encoder_) / encoder_ticks_per_rad_;
+    double phi_r = (msg.right_encoder - original_right_encoder_) / encoder_ticks_per_rad_;
 
     double left_wheel_velocity = (phi_l - prev_left_rad_) /
       (prev_encoder_tic_time_.nanoseconds() / 1e9);
@@ -162,6 +168,9 @@ private:
       (prev_encoder_tic_time_.nanoseconds() / 1e9);
     prev_left_rad_ = phi_l;
     prev_right_rad_ = phi_r;
+
+    original_left_encoder_ = msg.left_encoder;
+    original_right_encoder_ = msg.right_encoder;
 
     sensor_msgs::msg::JointState joint_state;
     joint_state.position = {phi_l, phi_r};
@@ -187,6 +196,8 @@ private:
   rclcpp::Time prev_encoder_tic_time_;
   double prev_left_rad_;
   double prev_right_rad_;
+  int original_left_encoder_;
+  int original_right_encoder_;
   double wheel_radius_;
   double track_width_;
   int motor_cmd_max_;

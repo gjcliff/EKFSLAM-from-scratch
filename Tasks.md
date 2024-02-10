@@ -22,6 +22,7 @@ Task C.4: Complete 1/22/2024
 Task C.5: Complete 1/22/2024
 Task C.6: Complete 1/22/2024
 Task C.7: Complete 1/23/2024
+Task C.7(hw2) Complete 2/9/2024
 
 Task D.1: Complete 2/5/2024
 Task D.2: Complete 2/5/2024
@@ -30,3 +31,4 @@ Task E.1: Complete 2/6/2024
 Task E.2: Complete 2/7/2024
 Task E.3: Complete 2/7/2024
 Task E.4: 
+Task E.5: Complete 2/8/2024

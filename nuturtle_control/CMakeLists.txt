@@ -31,8 +31,7 @@ add_executable(turtle_control src/turtle_control.cpp)
 add_executable(odometry src/odometry.cpp)
 add_executable(circle src/circle.cpp)
 
-# find testing dependencies
-find_package(catch_ros2 REQUIRED)
+
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotConfiguration.msg"
@@ -118,6 +117,9 @@ install(
 )
 
 if(BUILD_TESTING)
+  # find testing dependencies
+  find_package(catch_ros2 REQUIRED)
+
   include(CTest)
 
   add_executable(turtle_control_test tests/turtle_control_test.cpp)

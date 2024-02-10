@@ -6,9 +6,11 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /RobotModel2
         - /TF1
         - /Odometry1
         - /MarkerArray1
+        - /MarkerArray1/Topic1
         - /MarkerArray2
         - /MarkerArray2/Topic1
       Splitter Ratio: 0.5
@@ -129,39 +131,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_scan:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_back_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wheel_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Mass Properties:
         Inertia: false
         Mass: false
@@ -193,20 +162,6 @@ Visualization Manager:
           Value: true
         odom:
           Value: true
-        red/base_footprint:
-          Value: true
-        red/base_link:
-          Value: true
-        red/base_scan:
-          Value: true
-        red/caster_back_link:
-          Value: true
-        red/imu_link:
-          Value: true
-        red/wheel_left_link:
-          Value: true
-        red/wheel_right_link:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -223,21 +178,9 @@ Visualization Manager:
                   {}
                 blue/imu_link:
                   {}
-                blue/wheel_left_link:
-                  {}
-                blue/wheel_right_link:
-                  {}
-          red/base_footprint:
-            red/base_link:
-              red/base_scan:
+              blue/wheel_left_link:
                 {}
-              red/caster_back_link:
-                {}
-              red/imu_link:
-                {}
-              red/wheel_left_link:
-                {}
-              red/wheel_right_link:
+              blue/wheel_right_link:
                 {}
       Update Interval: 0
       Value: true
@@ -259,7 +202,7 @@ Visualization Manager:
           Value: true
         Value: true
       Enabled: true
-      Keep: 100
+      Keep: 10
       Name: Odometry
       Position Tolerance: 0.10000000149011612
       Shape:
@@ -284,10 +227,10 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Topic:
         Depth: 5
-        Durability Policy: Volatile
+        Durability Policy: Transient Local
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /nusim/walls
@@ -296,10 +239,10 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Topic:
         Depth: 5
-        Durability Policy: Volatile
+        Durability Policy: Transient Local
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /nusim/obstacles
@@ -350,16 +293,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.012309193611145
+      Distance: 3.402219772338867
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 0.013522209599614143
+        Y: 0.2161169946193695
+        Z: -0.20696164667606354
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

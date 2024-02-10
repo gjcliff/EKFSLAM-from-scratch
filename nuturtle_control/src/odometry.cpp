@@ -211,10 +211,10 @@ private:
     transform_left_wheel.header.stamp = get_clock()->now();
     transform_left_wheel.header.frame_id = body_id_;
     transform_left_wheel.child_frame_id = wheel_left_;
-    transform_left_wheel.transform.translation.x = q_now.x;
-    transform_left_wheel.transform.translation.y = q_now.y;
+    transform_left_wheel.transform.translation.x = 0.0;
+    transform_left_wheel.transform.translation.y = track_width_ / 2;
     transform_left_wheel.transform.translation.z = 0.0;
-    transform_left_wheel.transform.rotation.z = q_now.theta;
+    transform_left_wheel.transform.rotation.x = turtlelib::deg2rad(90);
 
     tf_broadcaster_->sendTransform(transform_left_wheel);
 
@@ -222,10 +222,10 @@ private:
     transform_right_wheel.header.stamp = get_clock()->now();
     transform_right_wheel.header.frame_id = body_id_;
     transform_right_wheel.child_frame_id = wheel_right_;
-    transform_right_wheel.transform.translation.x = q_now.x;
-    transform_right_wheel.transform.translation.y = q_now.y;
+    transform_right_wheel.transform.translation.x = 0.0;
+    transform_right_wheel.transform.translation.y = -track_width_ / 2;
     transform_right_wheel.transform.translation.z = 0.0;
-    transform_right_wheel.transform.rotation.z = q_now.theta;
+    transform_right_wheel.transform.rotation.x = turtlelib::deg2rad(90);
 
     tf_broadcaster_->sendTransform(transform_right_wheel);
   }
