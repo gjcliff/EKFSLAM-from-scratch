@@ -23,15 +23,17 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(numsr_turtlebot REQUIRED)
+find_package(Doxygen)
 
 # find libraries
 find_package(turtlelib REQUIRED)
 
+# find test pkg
+
+
 add_executable(turtle_control src/turtle_control.cpp)
 add_executable(odometry src/odometry.cpp)
 add_executable(circle src/circle.cpp)
-
-
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotConfiguration.msg"
@@ -123,18 +125,57 @@ if(BUILD_TESTING)
   include(CTest)
 
   add_executable(turtle_control_test tests/turtle_control_test.cpp)
+  add_executable(turtle_odom_test tests/turtle_control_test.cpp)
+
   target_link_libraries(turtle_control_test
-  catch_ros2::catch_ros2_with_main)
+  catch_ros2::catch_ros2_with_node_main)
+
+  target_link_libraries(turtle_odom_test
+  catch_ros2::catch_ros2_with_node_main)
 
   ament_target_dependencies(turtle_control_test
-    rclcpp std_srvs
+    rclcpp
+    geometry_msgs
+    nuturtlebot_msgs
+    sensor_msgs
   )
+
+  ament_target_dependencies(turtle_odom_test
+    rclcpp
+    geometry_msgs
+    nuturtlebot_msgs
+    sensor_msgs
+  )
+  target_link_libraries(turtle_odom_test "${cpp_typesupport_target}")
 
   install(TARGETS
     turtle_control_test
-    DESTINATION lib/${PROJECT_NAME} 
+    turtle_odom_test
+    DESTINATION lib/${PROJECT_NAME}
   )
-  add_test(NAME cmd_vel_test COMMAND turtle_control_test)
+
+  # install(FILES
+  #   tests/turtle_control_test.launch.xml
+  #   # tests/turtle_odom_test.launch.xml
+  #   # tests/turtle_circle_test.launch.xml
+  #   DESTINATION share/${PROJECT_NAME}
+  # )
+
+  catch_ros2_add_integration_test(TurtleControlIntegration_TestCpp
+    LAUNCH_FILE turtle_control_test.launch.xml
+  )
+
+  catch_ros2_add_integration_test(TurtleOdomIntegration_TestCpp
+    LAUNCH_FILE turtle_odom_test.launch.xml
+  )
+
+  # catch_ros2_add_integration_test(OdometryIntegration_TestCpp
+  #   LAUNCH_FILE turtle_odom_test.launch.xml
+  # )
+
+  # catch_ros2_add_integration_test(CircleIntegration_TestCpp
+  #   LAUNCH_FILE turtle_circle_test.launch.xml
+  # )
 
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

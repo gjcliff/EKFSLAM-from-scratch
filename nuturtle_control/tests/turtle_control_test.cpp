@@ -1,32 +1,98 @@
-#include "rclcpp/rclcpp.hpp"
+#include <chrono>
 #include "catch_ros2/catch_ros2.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+#include "nuturtlebot_msgs/msg/wheel_commands.hpp"
+#include "nuturtlebot_msgs/msg/sensor_data.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
+#include <string>
 
-using catch_ros2::SimulateArgs;
+using namespace std::chrono_literals;
 
-TEST_CASE("cmd_vel", "[cmd_vel]")
+double pt_left_velocity;
+double pt_right_velocity;
+double pr_left_velocity;
+double pr_right_velocity;
+bool help = false;
+void pure_translation_callback(const nuturtlebot_msgs::msg::WheelCommands & msg)
 {
-  const auto args = SimulateArgs(
-    "--ros-args"
-    "-p wheel_radius:=0.033"
-    "-p track_width:=0.160"
-    "-p motor_cmd_max:=265"
-    "-p motor_cmd_per_rad_sec:=0.024"
-    "-p encoder_ticks_per_rad:=651.898646904"
-    "-p collision_radius:=0.11"
-  );
+  pt_left_velocity = msg.left_velocity;
+  pt_right_velocity = msg.right_velocity;
+  help = true;
+}
 
-  rclcpp::init(args.argc(), args.argv());
+void pure_rotation_callback(const nuturtlebot_msgs::msg::WheelCommands & msg)
+{
+  pr_left_velocity = msg.left_velocity;
+  pr_right_velocity = msg.right_velocity;
+}
 
-  auto node = rclcpp::Node::make_shared("cmd_vel_test_node");
+TEST_CASE("test_pure_translation", "[cmd_vel_translation]")
+{
+  auto node = rclcpp::Node::make_shared("turtle_control_test");
 
-  node->declare_parameter<double>("wheel_radius");
-  node->declare_parameter<double>("track_width");
-  node->declare_parameter<double>("motor_cmd_max");
-  node->declare_parameter<double>("motor_cmd_per_rad_sec");
-  node->declare_parameter<double>("encoder_ticks_per_rad");
-  node->declare_parameter<double>("collision_radius");
+  node->declare_parameter<double>("test_duration");
 
-  // rclcpp::Client<geometry_msgs::msg::Twist>::SharedPtr client =
-  //   node->create_client<geometry_msgs::msg::Twist
+  const auto TEST_DURATION =
+    node->get_parameter("test_duration").get_parameter_value().get<double>();
 
+  auto cmd_vel_publisher = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+  auto wheel_cmd_subscriber = node->create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
+    "wheel_cmd", 10, &pure_translation_callback);
+
+  rclcpp::Time start_time = rclcpp::Clock().now();
+
+  bool valid_wheel_cmd = false;
+
+  while (
+    rclcpp::ok() &&
+    ((rclcpp::Clock().now() - start_time) < rclcpp::Duration::from_seconds(TEST_DURATION))
+  )
+  {
+    geometry_msgs::msg::Twist test_twist;
+    test_twist.linear.x = 0.1;
+    cmd_vel_publisher->publish(test_twist);
+    if (valid_wheel_cmd) {
+      break;
+    }
+
+    rclcpp::spin_some(node);
+  }
+
+  CHECK_THAT(pt_left_velocity, Catch::Matchers::WithinAbs(pt_right_velocity, 1e-5));
+}
+
+TEST_CASE("test_pure_rotation", "[cmd_vel_rotation]")
+{
+  auto node = rclcpp::Node::make_shared("turtle_control_test");
+
+  node->declare_parameter<double>("test_duration");
+
+  const auto TEST_DURATION =
+    node->get_parameter("test_duration").get_parameter_value().get<double>();
+
+  auto cmd_vel_publisher = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+  auto wheel_cmd_subscriber = node->create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
+    "wheel_cmd", 10, &pure_translation_callback);
+
+  rclcpp::Time start_time = rclcpp::Clock().now();
+
+  bool valid_wheel_cmd = false;
+
+  while (
+    rclcpp::ok() &&
+    ((rclcpp::Clock().now() - start_time) < rclcpp::Duration::from_seconds(TEST_DURATION))
+  )
+  {
+    geometry_msgs::msg::Twist test_twist;
+    test_twist.linear.z = 0.1;
+    cmd_vel_publisher->publish(test_twist);
+    if (valid_wheel_cmd) {
+      break;
+    }
+
+    rclcpp::spin_some(node);
+  }
+
+  CHECK_THAT(pt_left_velocity, Catch::Matchers::WithinAbs(pt_right_velocity, 1e-5));
 }

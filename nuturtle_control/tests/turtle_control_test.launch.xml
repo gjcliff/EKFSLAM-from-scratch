@@ -1,0 +1,13 @@
+<launch>
+    <catch2_launch_file description='An example Catch2 integration test launch file'/>
+
+    <arg name='test_duration' default='2.0' description='max length of tests in seconds'/>
+
+    <node pkg='nuturtle_control' exec='turtle_control'>
+        <param from='$(find-pkg-share nuturtle_description)/config/diff_params.yaml'/>
+    </node>
+
+    <catch2_integration_test_node pkg='nuturtle_control' exec='turtle_control_test'>
+        <param name='test_duration' value='$(var test_duration)'/>
+    </catch2_integration_test_node>
+</launch>
