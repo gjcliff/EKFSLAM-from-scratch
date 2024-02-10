@@ -192,9 +192,7 @@ private:
   }
   void timer_callback()
   {
-    RCLCPP_INFO_STREAM_ONCE(get_logger(), "here");
     turtlelib::Configuration q_now = turtlebot_.get_current_configuration();
-    RCLCPP_INFO_STREAM_ONCE(get_logger(), "here");
     geometry_msgs::msg::TransformStamped transform_body;
 
     transform_body.header.stamp = get_clock()->now();
@@ -207,27 +205,29 @@ private:
 
     tf_broadcaster_->sendTransform(transform_body);
 
-    geometry_msgs::msg::TransformStamped transform_left_wheel;
-    transform_left_wheel.header.stamp = get_clock()->now();
-    transform_left_wheel.header.frame_id = body_id_;
-    transform_left_wheel.child_frame_id = wheel_left_;
-    transform_left_wheel.transform.translation.x = 0.0;
-    transform_left_wheel.transform.translation.y = track_width_ / 2;
-    transform_left_wheel.transform.translation.z = 0.0;
-    transform_left_wheel.transform.rotation.x = turtlelib::deg2rad(90);
+    // geometry_msgs::msg::TransformStamped transform_left_wheel;
+    // transform_left_wheel.header.stamp = get_clock()->now();
+    // transform_left_wheel.header.frame_id = body_id_;
+    // transform_left_wheel.child_frame_id = wheel_left_;
+    // transform_left_wheel.transform.translation.x = 0.0;
+    // transform_left_wheel.transform.translation.y = track_width_ / 2;
+    // transform_left_wheel.transform.translation.z = 0.0;
+    // transform_left_wheel.transform.rotation.x = 0.707;
+    // transform_left_wheel.transform.rotation.w = 0.707;
 
-    tf_broadcaster_->sendTransform(transform_left_wheel);
+    // tf_broadcaster_->sendTransform(transform_left_wheel);
 
-    geometry_msgs::msg::TransformStamped transform_right_wheel;
-    transform_right_wheel.header.stamp = get_clock()->now();
-    transform_right_wheel.header.frame_id = body_id_;
-    transform_right_wheel.child_frame_id = wheel_right_;
-    transform_right_wheel.transform.translation.x = 0.0;
-    transform_right_wheel.transform.translation.y = -track_width_ / 2;
-    transform_right_wheel.transform.translation.z = 0.0;
-    transform_right_wheel.transform.rotation.x = turtlelib::deg2rad(90);
+    // geometry_msgs::msg::TransformStamped transform_right_wheel;
+    // transform_right_wheel.header.stamp = get_clock()->now();
+    // transform_right_wheel.header.frame_id = body_id_;
+    // transform_right_wheel.child_frame_id = wheel_right_;
+    // transform_right_wheel.transform.translation.x = 0.0;
+    // transform_right_wheel.transform.translation.y = -track_width_ / 2;
+    // transform_right_wheel.transform.translation.z = 0.0;
+    // transform_right_wheel.transform.rotation.x = 0.707;
+    // transform_right_wheel.transform.rotation.w = 0.707;
 
-    tf_broadcaster_->sendTransform(transform_right_wheel);
+    // tf_broadcaster_->sendTransform(transform_right_wheel);
   }
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_publisher_;

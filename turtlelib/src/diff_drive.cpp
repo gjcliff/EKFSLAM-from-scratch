@@ -61,6 +61,9 @@ Twist2D DiffDrive::FK(double phi_l_p, double phi_r_p)
     }
   }
 
+  phi_r = phi_r_p;
+  phi_l = phi_l_p;
+
   return {Vb_mat.at(0), Vb_mat.at(1), Vb_mat.at(2)};
 }
 

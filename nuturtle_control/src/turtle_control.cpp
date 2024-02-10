@@ -152,15 +152,15 @@ private:
     //   prev_right_rad_ = msg.right_encoder;
     //   return;
     // }
-    if (count_ == 0) {
-      original_left_encoder_ = msg.left_encoder;
-      original_right_encoder_ = msg.right_encoder;
-      count_++;
-      return;
-    }
+    // if (count_ == 0) {
+    //   original_left_encoder_ = msg.left_encoder;
+    //   original_right_encoder_ = msg.right_encoder;
+    //   count_++;
+    //   return;
+    // }
 
-    double phi_l = (msg.left_encoder - original_left_encoder_) / encoder_ticks_per_rad_;
-    double phi_r = (msg.right_encoder - original_right_encoder_) / encoder_ticks_per_rad_;
+    double phi_l = (msg.left_encoder) / encoder_ticks_per_rad_;
+    double phi_r = (msg.right_encoder) / encoder_ticks_per_rad_;
 
     double left_wheel_velocity = (phi_l - prev_left_rad_) /
       (prev_encoder_tic_time_.nanoseconds() / 1e9);
@@ -169,10 +169,12 @@ private:
     prev_left_rad_ = phi_l;
     prev_right_rad_ = phi_r;
 
-    original_left_encoder_ = msg.left_encoder;
-    original_right_encoder_ = msg.right_encoder;
+    // original_left_encoder_ = msg.left_encoder;
+    // original_right_encoder_ = msg.right_encoder;
 
     sensor_msgs::msg::JointState joint_state;
+    joint_state.header.stamp = get_clock()->now();
+    joint_state.name = {"wheel_left_joint", "wheel_right_joint"};
     joint_state.position = {phi_l, phi_r};
     joint_state.velocity = {left_wheel_velocity, right_wheel_velocity};
 

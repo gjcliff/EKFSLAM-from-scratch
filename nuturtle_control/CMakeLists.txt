@@ -126,6 +126,14 @@ if(BUILD_TESTING)
   target_link_libraries(turtle_control_test
   catch_ros2::catch_ros2_with_main)
 
+  ament_target_dependencies(turtle_control_test
+    rclcpp std_srvs
+  )
+
+  install(TARGETS
+    turtle_control_test
+    DESTINATION lib/${PROJECT_NAME} 
+  )
   add_test(NAME cmd_vel_test COMMAND turtle_control_test)
 
   find_package(ament_lint_auto REQUIRED)
