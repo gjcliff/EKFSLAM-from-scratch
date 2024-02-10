@@ -1,4 +1,0 @@
-srv/Teleport.idl
-srv/Teleport.srv
-srv/Teleport_Request.msg
-srv/Teleport_Response.msg

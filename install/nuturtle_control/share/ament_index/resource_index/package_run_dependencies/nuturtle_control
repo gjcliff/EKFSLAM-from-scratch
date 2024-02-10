@@ -1,1 +1,0 @@
-rclcpp;geometry_msgs;nuturtle_description;nuturtlebot_msgs;sensor_msgs;turtlelib;tf2;tf2_ros;tf2_geometry_msgs;nav_msgs;numsr_turtlebot;catch_ros2;rosidl_default_runtime;ament_lint_auto;ament_lint_common

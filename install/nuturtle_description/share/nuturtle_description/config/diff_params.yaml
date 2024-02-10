@@ -1,8 +1,0 @@
-/**:
-  ros__parameters:
-    wheel_radius: 0.033 # m
-    track_width: 0.160 # m
-    motor_cmd_max: 265
-    motor_cmd_per_rad_sec: 0.024 # rad/sec
-    encoder_ticks_per_rad: 651.898646904 # ticks/rad
-    collision_radius: 0.11

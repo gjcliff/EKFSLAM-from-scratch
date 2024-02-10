@@ -12,7 +12,7 @@ endif()
 find_package(Doxygen)
 # Building documentation should be optional.
 # To build documentation pass -DBUILD_DOCS=ON when generating the build system
-option(BUILD_DOCS "Build the documentation" ON)
+option(BUILD_DOCS "Build the documentation" OFF)
 
 # build just because Doxygen is missing
 if(${DOXYGEN_FOUND} AND ${BUILD_DOCS})
