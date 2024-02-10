@@ -11,6 +11,8 @@
         <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
     </node>
 
+    <node pkg="joint_state_publisher" exec="joint_state_publisher"/>
+
     <catch2_integration_test_node pkg='nuturtle_control' exec='turtle_odom_test'>
         <param name='test_duration' value='$(var test_duration)'/>
     </catch2_integration_test_node>

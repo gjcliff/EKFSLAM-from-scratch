@@ -49,7 +49,7 @@ TEST_CASE("test_transform_listener", "[transform_listener]")
     node->get_parameter("test_duration").get_parameter_value().get<double>();
 
   auto tf_buffer = std::make_unique<tf2_ros::Buffer>(node->get_clock());
-  auto transform_listener = tf2_ros::TransformListener{*tf_buffer};
+  auto transform_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
 
   rclcpp::Time start_time = rclcpp::Clock().now();
 
@@ -58,13 +58,14 @@ TEST_CASE("test_transform_listener", "[transform_listener]")
     ((rclcpp::Clock().now() - start_time) < rclcpp::Duration::from_seconds(TEST_DURATION))
   )
   {
+    rclcpp::spin_some(node);
     try {
       geometry_msgs::msg::TransformStamped t;
       t = tf_buffer->lookupTransform("base_footprint", "odom", tf2::TimePointZero);
       transform_found = true;
       break;
     } catch (const tf2::TransformException & ex) {
-      break;
+      RCLCPP_INFO_STREAM(node->get_logger(), "could not find transform :(");
     }
 
   }

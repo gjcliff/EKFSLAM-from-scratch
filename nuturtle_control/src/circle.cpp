@@ -73,7 +73,6 @@ private:
   void timer_callback()
   {
     cmd_vel_publisher_->publish(cmd_vel_msg_);
-    RCLCPP_INFO_STREAM(get_logger(), "period: " << frequency_);
   }
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_publisher_;
   rclcpp::Service<nuturtle_control::srv::Control>::SharedPtr control_service_;
