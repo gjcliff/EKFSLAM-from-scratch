@@ -17,5 +17,6 @@ In your turtlebot3 terminal:
 $ ros2 launch nuturtle_control start_robot.launch.xml use_rviz:=false robot:=localhost
 ```
 
-Video:  
+Video:
+
 https://github.com/ME495-Navigation/slam-project-gjcliff/assets/94981561/89174fed-dee4-4afa-9876-2d2973e20900
