@@ -69,12 +69,6 @@ public:
     }
 
     try {
-      wheel_right_ = get_parameter("body_id").as_string();
-    } catch (rclcpp::exceptions::InvalidParameterTypeException()) {
-      RCLCPP_ERROR_STREAM(get_logger(), "wtf");
-    }
-
-    try {
       wheel_radius_ = get_parameter("wheel_radius").as_double();
       // BEGIN CITATION [24]
     } catch (rclcpp::exceptions::ParameterUninitializedException const &) {
@@ -122,10 +116,6 @@ public:
 
     turtlelib::RobotDimensions rd{0.0, track_width_ / 2, wheel_radius_};
     turtlebot_.set_robot_dimensions(rd);
-
-    odom_id_ = get_parameter("odom_id").as_string();
-    wheel_left_ = get_parameter("wheel_left").as_string();
-    wheel_right_ = get_parameter("wheel_right").as_string();
 
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 

@@ -1,0 +1,19 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from nusim/srv/Teleport.srv
+// generated code does not contain a copyright notice
+
+
+module nusim {
+  module srv {
+    struct Teleport_Request {
+      double x;
+
+      double y;
+
+      double theta;
+    };
+    struct Teleport_Response {
+      uint8 structure_needs_at_least_one_member;
+    };
+  };
+};

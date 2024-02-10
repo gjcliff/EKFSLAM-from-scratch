@@ -1,0 +1,21 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from nuturtle_control/srv/Control.srv
+// generated code does not contain a copyright notice
+
+
+module nuturtle_control {
+  module srv {
+    @verbatim (language="comment", text=
+      "the angular velocity, positive for CCW, negative for CW")
+    struct Control_Request {
+      double velocity;
+
+      @verbatim (language="comment", text=
+        "the radius of the arc")
+      double radius;
+    };
+    struct Control_Response {
+      uint8 structure_needs_at_least_one_member;
+    };
+  };
+};

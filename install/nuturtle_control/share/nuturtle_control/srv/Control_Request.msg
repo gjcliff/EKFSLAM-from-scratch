@@ -1,0 +1,4 @@
+# the angular velocity, positive for CCW, negative for CW
+float64 velocity
+# the radius of the arc
+float64 radius

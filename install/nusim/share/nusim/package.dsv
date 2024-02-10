@@ -1,0 +1,14 @@
+source;share/nusim/hook/cmake_prefix_path.ps1
+source;share/nusim/hook/cmake_prefix_path.dsv
+source;share/nusim/hook/cmake_prefix_path.sh
+source;share/nusim/hook/ld_library_path_lib.ps1
+source;share/nusim/hook/ld_library_path_lib.dsv
+source;share/nusim/hook/ld_library_path_lib.sh
+source;share/nusim/hook/pythonpath.ps1
+source;share/nusim/hook/pythonpath.dsv
+source;share/nusim/hook/pythonpath.sh
+source;share/nusim/local_setup.bash
+source;share/nusim/local_setup.dsv
+source;share/nusim/local_setup.ps1
+source;share/nusim/local_setup.sh
+source;share/nusim/local_setup.zsh

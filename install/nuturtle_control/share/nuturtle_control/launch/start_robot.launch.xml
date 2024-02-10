@@ -1,0 +1,98 @@
+<launch>
+    <arg name="cmd_src" default="none" description="decides what control method to use for the robot"/>
+    <arg name="robot" default="nusim" description="decides whether to control a real robot, a fake robot, or nothing"/>
+    <arg name="use_rviz" default="true" description="decides whether or not to use rviz"/>
+
+
+<!-- TODO: make rviz file nuturtle_control.rviz
+figure out what nodes need to get launched by localhost
+finish unit testing -->
+
+    <!-- if robot==localhost, then set use_rviz to false -->
+    <group if="$(eval '\'$(var robot)\' == \'localhost\'')">
+        <let name="use_rviz" value="false"/>
+    </group>
+
+    <!-- Handle the use_rviz argument -->
+    <group if="$(eval '\'$(var use_rviz)\' == \'true\'')">
+        <node pkg="rviz2" exec="rviz2" if="$(eval '\'$(var use_rviz)\' == \'true\'')" args="-d $(find-pkg-share nuturtle_control)/config/turtle_control.rviz"/>
+        <group if="$(eval '\'$(var robot)\' == \'nusim\'')">
+            <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+                <arg name="use_rviz" value="false"/>
+                <arg name="use_jsp" value="true"/>
+                <arg name="color" value="red"/>
+            </include>
+        </group>
+        <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+            <arg name="use_rviz" value="false"/>
+            <arg name="use_jsp" value="false"/>
+            <arg name="color" value="blue"/>
+        </include>
+    </group>
+
+    <!-- Handle the cmd_src argument -->
+    <group>
+        <node pkg="nuturtle_control" exec="circle" if="$(eval '\'$(var cmd_src)\' == \'circle\'')">
+            <param name="frequency" value="100"/>
+        </node>
+        
+        <node pkg="teleop_twist_keyboard" exec="teleop_twist_keyboard" if="$(eval '\'$(var cmd_src)\' == \'teleop\'')" launch-prefix="xterm -e"/>
+    </group>
+    
+    <!-- Handle the robot argument -->
+    <group if="$(eval '\'$(var robot)\' == \'nusim\'')">
+        <include file="$(find-pkg-share nusim)/launch/nusim.launch.xml">
+            <arg name="use_rviz" value="false"/>
+            <arg name="robot_color" value="red"/>
+            <arg name="load_robot" value="false"/>
+            <arg name="config_file" value="$(find-pkg-share nusim)/config/nuturtle_control_world.yaml"/>
+            <arg name="diff_params" value="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+        </include>
+        <node pkg="nuturtle_control" exec="odometry" >
+            <param name="body_id" value="blue/base_footprint"/>
+            <param name="odom_id" value="odom"/>
+            <param name="wheel_left" value="wheel_left_joint"/>
+            <param name="wheel_right" value="wheel_right_joint"/>
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+            <remap from="/joint_states" to="/blue/joint_states"/>
+        </node>
+        <node pkg="nuturtle_control" exec="turtle_control">
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+            <remap from="/wheel_cmd" to="/red/wheel_cmd"/>
+            <remap from="/sensor_data" to="/red/sensor_data"/>
+            <remap from="/joint_states" to="/blue/joint_states"/>
+        </node>
+    </group>
+        
+    <group if="$(eval '\'$(var robot)\' == \'localhost\'')">
+        <node pkg="nuturtle_control" exec="odometry">
+            <param name="body_id" value="blue/base_footprint"/>
+            <param name="odom_id" value="odom"/>
+            <param name="wheel_left" value="wheel_left_joint"/>
+            <param name="wheel_right" value="wheel_right_joint"/>
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+            <remap from="/joint_states" to="/blue/joint_states"/>
+        </node>
+        <node pkg="nuturtle_control" exec="turtle_control">
+            <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+            <remap from="/joint_states" to="/blue/joint_states"/>
+        </node>
+        <node pkg="numsr_turtlebot" exec="numsr_turtlebot"/>
+    </group>
+
+    <group if="$(eval '\'$(var robot)\' == \'none\'')">
+    </group>
+
+    <!-- Launch the static_transform publisher --> 
+    <node pkg="tf2_ros" exec="static_transform_publisher" args=
+        "--x 0
+        --y 0
+        --z 0
+        --yaw 0
+        --pitch 0
+        --roll 0
+        --frame-id nusim/world
+        --child-frame-id odom"
+    />
+
+</launch>

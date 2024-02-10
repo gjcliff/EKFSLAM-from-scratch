@@ -1,0 +1,22 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from nuturtle_control/msg/RobotConfiguration.msg
+// generated code does not contain a copyright notice
+
+
+module nuturtle_control {
+  module msg {
+    @verbatim (language="comment", text=
+      "the angle of the robot relative to the world frame")
+    struct RobotConfiguration {
+      double theta;
+
+      @verbatim (language="comment", text=
+        "the x position of the robot relative to the world frame")
+      double x;
+
+      @verbatim (language="comment", text=
+        "the y position of the robot relative to the world frame")
+      double y;
+    };
+  };
+};

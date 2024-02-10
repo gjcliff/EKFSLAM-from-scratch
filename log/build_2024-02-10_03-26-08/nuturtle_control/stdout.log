@@ -1,0 +1,370 @@
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 2.0.3 (/opt/ros/iron/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3.10 (found version "3.10.12") found components: Interpreter 
+-- Found nuturtle_description: 0.1.1 (/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_description/share/nuturtle_description/cmake)
+-- Found geometry_msgs: 5.0.0 (/opt/ros/iron/share/geometry_msgs/cmake)
+-- Found rosidl_generator_c: 4.0.1 (/opt/ros/iron/share/rosidl_generator_c/cmake)
+-- Found rosidl_generator_cpp: 4.0.1 (/opt/ros/iron/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rclcpp: 21.0.4 (/opt/ros/iron/share/rclcpp/cmake)
+-- Found rmw_implementation_cmake: 7.1.0 (/opt/ros/iron/share/rmw_implementation_cmake/cmake)
+-- Found rmw_fastrtps_cpp: 7.1.2 (/opt/ros/iron/share/rmw_fastrtps_cpp/cmake)
+-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+-- Found FastRTPS: /opt/ros/iron/include  
+-- Using RMW implementation 'rmw_fastrtps_cpp' as default
+-- Found nuturtlebot_msgs: 0.0.2 (/home/graham/classes/Q2/ME495/ws/install/nuturtlebot_msgs/share/nuturtlebot_msgs/cmake)
+-- Found sensor_msgs: 5.0.0 (/opt/ros/iron/share/sensor_msgs/cmake)
+-- Found nav_msgs: 5.0.0 (/opt/ros/iron/share/nav_msgs/cmake)
+-- Found tf2: 0.31.5 (/opt/ros/iron/share/tf2/cmake)
+-- Found tf2_ros: 0.31.5 (/opt/ros/iron/share/tf2_ros/cmake)
+-- Found tf2_geometry_msgs: 0.31.5 (/opt/ros/iron/share/tf2_geometry_msgs/cmake)
+-- Found eigen3_cmake_module: 0.2.2 (/opt/ros/iron/share/eigen3_cmake_module/cmake)
+-- Found Eigen3: TRUE (found version "3.4.90") 
+-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+-- Found std_srvs: 5.0.0 (/opt/ros/iron/share/std_srvs/cmake)
+-- Found rosidl_default_generators: 1.5.0 (/opt/ros/iron/share/rosidl_default_generators/cmake)
+-- Found rosidl_adapter: 4.0.1 (/opt/ros/iron/share/rosidl_adapter/cmake)
+-- Found numsr_turtlebot: 0.0.1 (/home/graham/classes/Q2/ME495/ws/install/numsr_turtlebot/share/numsr_turtlebot/cmake)
+-- Found Doxygen: /usr/bin/doxygen (found version "1.9.1") found components: doxygen dot 
+-- Found ament_cmake_ros: 0.11.2 (/opt/ros/iron/share/ament_cmake_ros/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") 
+-- Found python_cmake_module: 0.10.2 (/opt/ros/iron/share/python_cmake_module/cmake)
+-- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+-- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+-- Found PythonExtra: .so  
+-- Found catch_ros2: 0.2.0 (/opt/ros/iron/share/catch_ros2/cmake)
+-- Found ament_lint_auto: 0.14.2 (/opt/ros/iron/share/ament_lint_auto/cmake)
+-- Added test 'cppcheck' to perform static code analysis on C / C++ code
+-- Configured cppcheck include dirs: $<BUILD_INTERFACE:/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/nuturtle_control/include>
+-- Configured cppcheck exclude dirs and/or files: 
+-- Added test 'lint_cmake' to check CMake code style
+-- Added test 'uncrustify' to check C / C++ code style
+-- Configured uncrustify additional arguments: 
+-- Added test 'xmllint' to check XML markup files
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/nuturtle_control
+[  1%] [34m[1mGenerating type hashes for ROS interfaces[0m
+[  3%] [32mBuilding CXX object CMakeFiles/turtle_control_test.dir/tests/turtle_control_test.cpp.o[0m
+[  3%] Built target ament_cmake_python_copy_nuturtle_control
+running egg_info
+creating nuturtle_control.egg-info
+writing nuturtle_control.egg-info/PKG-INFO
+writing dependency_links to nuturtle_control.egg-info/dependency_links.txt
+writing top-level names to nuturtle_control.egg-info/top_level.txt
+writing manifest file 'nuturtle_control.egg-info/SOURCES.txt'
+reading manifest file 'nuturtle_control.egg-info/SOURCES.txt'
+writing manifest file 'nuturtle_control.egg-info/SOURCES.txt'
+[  3%] Built target ament_cmake_python_build_nuturtle_control_egg
+[  3%] Built target nuturtle_control__rosidl_generator_type_description
+[  4%] [34m[1mGenerating C code for ROS interfaces[0m
+[  6%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[  7%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_c.dir/rosidl_generator_c/nuturtle_control/msg/detail/robot_configuration__description.c.o[0m
+[  9%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_c.dir/rosidl_generator_c/nuturtle_control/msg/detail/robot_configuration__functions.c.o[0m
+[ 10%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_c.dir/rosidl_generator_c/nuturtle_control/msg/detail/robot_configuration__type_support.c.o[0m
+[ 12%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_c.dir/rosidl_generator_c/nuturtle_control/srv/detail/initial_pose__description.c.o[0m
+[ 15%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_c.dir/rosidl_generator_c/nuturtle_control/srv/detail/initial_pose__type_support.c.o[0m
+[ 15%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_c.dir/rosidl_generator_c/nuturtle_control/srv/detail/initial_pose__functions.c.o[0m
+[ 17%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_c.dir/rosidl_generator_c/nuturtle_control/srv/detail/control__description.c.o[0m
+[ 18%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_c.dir/rosidl_generator_c/nuturtle_control/srv/detail/control__functions.c.o[0m
+[ 20%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_c.dir/rosidl_generator_c/nuturtle_control/srv/detail/control__type_support.c.o[0m
+[ 21%] [32m[1mLinking C shared library libnuturtle_control__rosidl_generator_c.so[0m
+[ 21%] Built target nuturtle_control__cpp
+[ 21%] Built target nuturtle_control__rosidl_generator_c
+[ 23%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[ 25%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[ 26%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[ 29%] [34m[1mGenerating C type support for eProsima Fast-RTPS[0m
+[ 29%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[ 31%] [34m[1mGenerating C++ type support for eProsima Fast-RTPS[0m
+[ 32%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_c.dir/rosidl_typesupport_c/nuturtle_control/msg/robot_configuration__type_support.cpp.o[0m
+[ 34%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_c.dir/rosidl_typesupport_c/nuturtle_control/srv/initial_pose__type_support.cpp.o[0m
+[ 35%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_c.dir/rosidl_typesupport_c/nuturtle_control/srv/control__type_support.cpp.o[0m
+[ 37%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/nuturtle_control/srv/control__type_support.cpp.o[0m
+[ 39%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/nuturtle_control/msg/robot_configuration__type_support.cpp.o[0m
+[ 40%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/nuturtle_control/srv/initial_pose__type_support.cpp.o[0m
+[ 42%] [32m[1mLinking CXX shared library libnuturtle_control__rosidl_typesupport_c.so[0m
+[ 43%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/nuturtle_control/msg/detail/robot_configuration__type_support.c.o[0m
+[ 45%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/nuturtle_control/srv/detail/initial_pose__type_support.c.o[0m
+[ 46%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/nuturtle_control/srv/detail/control__type_support.c.o[0m
+[ 46%] Built target nuturtle_control__rosidl_typesupport_c
+[ 48%] [32m[1mLinking C shared library libnuturtle_control__rosidl_typesupport_introspection_c.so[0m
+[ 48%] Built target nuturtle_control__rosidl_typesupport_introspection_c
+[ 51%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/nuturtle_control/srv/detail/initial_pose__type_support.cpp.o[0m
+[ 51%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/nuturtle_control/msg/detail/robot_configuration__type_support.cpp.o[0m
+[ 53%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/nuturtle_control/srv/detail/control__type_support.cpp.o[0m
+[ 54%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/nuturtle_control/srv/detail/dds_fastrtps/initial_pose__type_support.cpp.o[0m
+[ 56%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/nuturtle_control/msg/detail/dds_fastrtps/robot_configuration__type_support.cpp.o[0m
+[ 57%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/nuturtle_control/srv/detail/dds_fastrtps/control__type_support.cpp.o[0m
+[ 59%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/nuturtle_control/srv/detail/initial_pose__type_support_c.cpp.o[0m
+[ 62%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/nuturtle_control/srv/detail/control__type_support_c.cpp.o[0m
+[ 62%] [32mBuilding CXX object CMakeFiles/nuturtle_control__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/nuturtle_control/msg/detail/robot_configuration__type_support_c.cpp.o[0m
+[ 64%] [32m[1mLinking CXX shared library libnuturtle_control__rosidl_typesupport_cpp.so[0m
+[ 64%] Built target nuturtle_control__rosidl_typesupport_cpp
+[ 65%] [32mBuilding CXX object CMakeFiles/circle.dir/src/circle.cpp.o[0m
+[ 67%] [32mBuilding CXX object CMakeFiles/odometry.dir/src/odometry.cpp.o[0m
+[ 68%] [32mBuilding CXX object CMakeFiles/turtle_control.dir/src/turtle_control.cpp.o[0m
+[ 70%] [32mBuilding CXX object CMakeFiles/turtle_odom_test.dir/tests/turtle_control_test.cpp.o[0m
+[ 71%] [32m[1mLinking CXX shared library libnuturtle_control__rosidl_typesupport_fastrtps_c.so[0m
+[ 73%] [32m[1mLinking CXX shared library libnuturtle_control__rosidl_typesupport_fastrtps_cpp.so[0m
+[ 73%] Built target nuturtle_control__rosidl_typesupport_fastrtps_c
+[ 73%] Built target nuturtle_control__rosidl_typesupport_fastrtps_cpp
+[ 75%] [32m[1mLinking CXX shared library libnuturtle_control__rosidl_typesupport_introspection_cpp.so[0m
+[ 75%] Built target nuturtle_control__rosidl_typesupport_introspection_cpp
+[ 75%] Built target nuturtle_control
+[ 76%] [34m[1mGenerating Python code for ROS interfaces[0m
+[ 76%] Built target nuturtle_control__py
+[ 78%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_py.dir/rosidl_generator_py/nuturtle_control/msg/_robot_configuration_s.c.o[0m
+[ 79%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_py.dir/rosidl_generator_py/nuturtle_control/srv/_initial_pose_s.c.o[0m
+[ 81%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_generator_py.dir/rosidl_generator_py/nuturtle_control/srv/_control_s.c.o[0m
+[ 82%] [32m[1mLinking C shared library rosidl_generator_py/nuturtle_control/libnuturtle_control__rosidl_generator_py.so[0m
+[ 82%] Built target nuturtle_control__rosidl_generator_py
+[ 85%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/nuturtle_control/_nuturtle_control_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[ 87%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/nuturtle_control/_nuturtle_control_s.ep.rosidl_typesupport_c.c.o[0m
+[ 87%] [32mBuilding C object CMakeFiles/nuturtle_control__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/nuturtle_control/_nuturtle_control_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[ 89%] [32m[1mLinking C shared library rosidl_generator_py/nuturtle_control/nuturtle_control_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so[0m
+[ 89%] Built target nuturtle_control__rosidl_typesupport_introspection_c__pyext
+[ 92%] [32m[1mLinking C shared library rosidl_generator_py/nuturtle_control/nuturtle_control_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so[0m
+[ 92%] [32m[1mLinking C shared library rosidl_generator_py/nuturtle_control/nuturtle_control_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so[0m
+[ 92%] Built target nuturtle_control__rosidl_typesupport_fastrtps_c__pyext
+[ 92%] Built target nuturtle_control__rosidl_typesupport_c__pyext
+[ 93%] [32m[1mLinking CXX executable circle[0m
+[ 93%] Built target circle
+[ 95%] [32m[1mLinking CXX executable turtle_odom_test[0m
+[ 95%] Built target turtle_odom_test
+[ 96%] [32m[1mLinking CXX executable odometry[0m
+[ 96%] Built target odometry
+[ 98%] [32m[1mLinking CXX executable turtle_control[0m
+[100%] [32m[1mLinking CXX executable turtle_control_test[0m
+[100%] Built target turtle_control_test
+[100%] Built target turtle_control
+-- Install configuration: "Debug"
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/ament_index/resource_index/rosidl_interfaces/nuturtle_control
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/msg/RobotConfiguration.json
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/srv/InitialPose.json
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/srv/Control.json
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/initial_pose.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/control.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__type_support.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__functions.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__struct.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__description.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__type_support.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__struct.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__type_support.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__functions.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__description.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__functions.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__functions.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__type_support.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/robot_configuration.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/rosidl_generator_c__visibility_control.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__type_support.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__functions.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__functions.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__description.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__type_support.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__struct.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/environment/library_path.sh
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/environment/library_path.dsv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_generator_c.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_generator_c.so" to ""
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__rosidl_typesupport_fastrtps_c.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__rosidl_typesupport_fastrtps_c.h
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__rosidl_typesupport_fastrtps_c.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_fastrtps_c.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_fastrtps_c.so" to ""
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/control.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/initial_pose.hpp
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__struct.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__traits.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__struct.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__traits.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__builder.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__builder.hpp
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/robot_configuration.hpp
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__builder.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__struct.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__traits.hpp
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/dds_fastrtps
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__rosidl_typesupport_fastrtps_cpp.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__rosidl_typesupport_fastrtps_cpp.hpp
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/dds_fastrtps
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__rosidl_typesupport_fastrtps_cpp.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_fastrtps_cpp.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_fastrtps_cpp.so" to ""
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__type_support.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__rosidl_typesupport_introspection_c.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__type_support.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__rosidl_typesupport_introspection_c.h
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/rosidl_typesupport_introspection_c__visibility_control.h
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__type_support.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__rosidl_typesupport_introspection_c.h
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_introspection_c.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_introspection_c.so" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_c.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_c.so" to ""
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__type_support.cpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__rosidl_typesupport_introspection_cpp.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/initial_pose__rosidl_typesupport_introspection_cpp.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/srv/detail/control__type_support.cpp
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg
+-- Up-to-date: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__rosidl_typesupport_introspection_cpp.hpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/include/nuturtle_control/nuturtle_control/msg/detail/robot_configuration__type_support.cpp
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_introspection_cpp.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_introspection_cpp.so" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_cpp.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_typesupport_cpp.so" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/environment/pythonpath.sh
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/environment/pythonpath.dsv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control-0.0.1-py3.10.egg-info
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control-0.0.1-py3.10.egg-info/dependency_links.txt
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control-0.0.1-py3.10.egg-info/PKG-INFO
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control-0.0.1-py3.10.egg-info/SOURCES.txt
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control-0.0.1-py3.10.egg-info/top_level.txt
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/nuturtle_control_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/nuturtle_control_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/nuturtle_control_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/_nuturtle_control_s.ep.rosidl_typesupport_c.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/libnuturtle_control__rosidl_generator_py.so
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/_nuturtle_control_s.ep.rosidl_typesupport_introspection_c.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/srv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/srv/_control_s.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/srv/_initial_pose_s.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/srv/_initial_pose.py
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/srv/__init__.py
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/srv/_control.py
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/__init__.py
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/_nuturtle_control_s.ep.rosidl_typesupport_fastrtps_c.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/msg/_robot_configuration_s.c
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/msg/__init__.py
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/msg/_robot_configuration.py
+Listing '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control'...
+Compiling '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/__init__.py'...
+Listing '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/msg'...
+Compiling '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/msg/__init__.py'...
+Compiling '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/msg/_robot_configuration.py'...
+Listing '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/srv'...
+Compiling '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/srv/__init__.py'...
+Compiling '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/srv/_control.py'...
+Compiling '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/srv/_initial_pose.py'...
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/nuturtle_control_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/nuturtle_control_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/nuturtle_control_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/nuturtle_control_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/nuturtle_control_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/python3.10/site-packages/nuturtle_control/nuturtle_control_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_generator_py.so
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/libnuturtle_control__rosidl_generator_py.so" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/msg/RobotConfiguration.idl
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/srv/InitialPose.idl
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/srv/Control.idl
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/msg/RobotConfiguration.msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/srv/InitialPose.srv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/srv/InitialPose_Request.msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/srv/InitialPose_Response.msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/srv/Control.srv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/srv/Control_Request.msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/srv/Control_Response.msg
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/nuturtle_control/turtle_control
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/nuturtle_control/turtle_control" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/nuturtle_control/odometry
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/nuturtle_control/odometry" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/nuturtle_control/circle
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/nuturtle_control/circle" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/launch
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/launch/start_robot.launch.xml
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/config
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/config/turtle_control.rviz
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/nuturtle_control/turtle_control_test
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/nuturtle_control/turtle_control_test" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/nuturtle_control/turtle_odom_test
+-- Set runtime path of "/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/lib/nuturtle_control/turtle_odom_test" to ""
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/ament_index/resource_index/package_run_dependencies/nuturtle_control
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/ament_index/resource_index/parent_prefix_path/nuturtle_control
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/environment/ament_prefix_path.sh
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/environment/ament_prefix_path.dsv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/environment/path.sh
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/environment/path.dsv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/local_setup.bash
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/local_setup.sh
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/local_setup.zsh
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/local_setup.dsv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/package.dsv
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/ament_index/resource_index/packages/nuturtle_control
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/export_nuturtle_control__rosidl_generator_cExport.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/export_nuturtle_control__rosidl_generator_cExport-debug.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/export_nuturtle_control__rosidl_typesupport_fastrtps_cExport.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/export_nuturtle_control__rosidl_typesupport_fastrtps_cExport-debug.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/export_nuturtle_control__rosidl_generator_cppExport.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/export_nuturtle_control__rosidl_typesupport_fastrtps_cppExport.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/export_nuturtle_control__rosidl_typesupport_fastrtps_cppExport-debug.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/nuturtle_control__rosidl_typesupport_introspection_cExport.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/nuturtle_control__rosidl_typesupport_introspection_cExport-debug.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/nuturtle_control__rosidl_typesupport_cExport.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/nuturtle_control__rosidl_typesupport_cExport-debug.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/nuturtle_control__rosidl_typesupport_introspection_cppExport.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/nuturtle_control__rosidl_typesupport_introspection_cppExport-debug.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/nuturtle_control__rosidl_typesupport_cppExport.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/nuturtle_control__rosidl_typesupport_cppExport-debug.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/export_nuturtle_control__rosidl_generator_pyExport.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/export_nuturtle_control__rosidl_generator_pyExport-debug.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/rosidl_cmake-extras.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/ament_cmake_export_dependencies-extras.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/ament_cmake_export_include_directories-extras.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/ament_cmake_export_libraries-extras.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/ament_cmake_export_targets-extras.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/nuturtle_controlConfig.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/cmake/nuturtle_controlConfig-version.cmake
+-- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/nuturtle_control/share/nuturtle_control/package.xml

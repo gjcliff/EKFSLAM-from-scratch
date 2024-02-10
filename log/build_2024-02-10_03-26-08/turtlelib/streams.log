@@ -1,0 +1,53 @@
+[0.200s] Invoking command in '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib': /home/graham/.local/bin/cmake /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/turtlelib -DCMAKE_INSTALL_PREFIX=/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib
+[0.282s] -- The C compiler identification is GNU 11.4.0
+[0.327s] -- The CXX compiler identification is GNU 11.4.0
+[0.335s] -- Detecting C compiler ABI info
+[0.375s] -- Detecting C compiler ABI info - done
+[0.384s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.384s] -- Detecting C compile features
+[0.384s] -- Detecting C compile features - done
+[0.387s] -- Detecting CXX compiler ABI info
+[0.435s] -- Detecting CXX compiler ABI info - done
+[0.444s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.444s] -- Detecting CXX compile features
+[0.444s] -- Detecting CXX compile features - done
+[0.465s] -- Found Doxygen: /usr/bin/doxygen (found version "1.9.1") found components: doxygen dot 
+[0.507s] -- Configuring done
+[0.524s] -- Generating done
+[0.526s] -- Build files have been written to: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib
+[0.534s] Invoked command in '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib' returned '0': /home/graham/.local/bin/cmake /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/turtlelib -DCMAKE_INSTALL_PREFIX=/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib
+[0.534s] Invoking command in '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib': /home/graham/.local/bin/cmake --build /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib -- -j32 -l32
+[0.571s] [  6%] [32mBuilding CXX object CMakeFiles/turtlelib.dir/src/geometry2d.cpp.o[0m
+[0.571s] [ 13%] [32mBuilding CXX object CMakeFiles/turtlelib.dir/src/se2d.cpp.o[0m
+[0.571s] [ 20%] [32mBuilding CXX object CMakeFiles/turtlelib.dir/src/svg.cpp.o[0m
+[0.572s] [ 26%] [32mBuilding CXX object CMakeFiles/turtlelib.dir/src/diff_drive.cpp.o[0m
+[1.065s] [ 33%] [32m[1mLinking CXX static library libturtlelib.a[0m
+[1.082s] [ 33%] Built target turtlelib
+[1.088s] [ 46%] [32mBuilding CXX object CMakeFiles/frame_main.dir/src/frame_main.cpp.o[0m
+[1.089s] [ 46%] [32mBuilding CXX object CMakeFiles/test_geometry2D.dir/tests/test_geometry2d.cpp.o[0m
+[1.089s] [ 60%] [32mBuilding CXX object CMakeFiles/test_svg.dir/tests/test_svg.cpp.o[0m
+[1.089s] [ 60%] [32mBuilding CXX object CMakeFiles/test_se2d.dir/tests/test_se2d.cpp.o[0m
+[1.089s] [ 66%] [32mBuilding CXX object CMakeFiles/test_diffdrive.dir/tests/test_diff_drive.cpp.o[0m
+[1.429s] [ 73%] [32m[1mLinking CXX executable test_geometry2D[0m
+[1.445s] [ 80%] [32m[1mLinking CXX executable test_diffdrive[0m
+[1.495s] [ 86%] [32m[1mLinking CXX executable frame_main[0m
+[1.560s] [ 86%] Built target frame_main
+[1.614s] [ 93%] [32m[1mLinking CXX executable test_svg[0m
+[1.678s] [ 93%] Built target test_diffdrive
+[1.679s] [100%] [32m[1mLinking CXX executable test_se2d[0m
+[1.694s] [100%] Built target test_geometry2D
+[1.875s] [100%] Built target test_svg
+[1.944s] [100%] Built target test_se2d
+[1.964s] Invoked command in '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib' returned '0': /home/graham/.local/bin/cmake --build /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib -- -j32 -l32
+[2.077s] Invoking command in '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib': /home/graham/.local/bin/cmake --install /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib
+[2.101s] -- Install configuration: "Debug"
+[2.101s] -- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib/include/
+[2.101s] -- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib/include//turtlelib
+[2.101s] -- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib/include//turtlelib/se2d.hpp
+[2.101s] -- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib/include//turtlelib/svg.hpp
+[2.101s] -- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib/include//turtlelib/diff_drive.hpp
+[2.101s] -- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib/include//turtlelib/geometry2d.hpp
+[2.101s] -- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib/lib/libturtlelib.a
+[2.102s] -- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib/lib/cmake/turtlelib/turtlelib-config.cmake
+[2.102s] -- Installing: /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/install/turtlelib/lib/cmake/turtlelib/turtlelib-config-debug.cmake
+[2.106s] Invoked command in '/home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib' returned '0': /home/graham/.local/bin/cmake --install /home/graham/classes/Q2/ME495/ws/src/slam-project-gjcliff/build/turtlelib

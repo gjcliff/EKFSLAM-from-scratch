@@ -125,13 +125,14 @@ if(BUILD_TESTING)
   include(CTest)
 
   add_executable(turtle_control_test tests/turtle_control_test.cpp)
-  add_executable(turtle_odom_test tests/turtle_control_test.cpp)
+  add_executable(turtle_odom_test tests/turtle_odom_test.cpp)
 
   target_link_libraries(turtle_control_test
   catch_ros2::catch_ros2_with_node_main)
 
   target_link_libraries(turtle_odom_test
-  catch_ros2::catch_ros2_with_node_main)
+  catch_ros2::catch_ros2_with_node_main
+  "${cpp_typesupport_target}")
 
   ament_target_dependencies(turtle_control_test
     rclcpp
@@ -142,11 +143,8 @@ if(BUILD_TESTING)
 
   ament_target_dependencies(turtle_odom_test
     rclcpp
-    geometry_msgs
-    nuturtlebot_msgs
-    sensor_msgs
+    tf2_ros
   )
-  target_link_libraries(turtle_odom_test "${cpp_typesupport_target}")
 
   install(TARGETS
     turtle_control_test
@@ -154,20 +152,20 @@ if(BUILD_TESTING)
     DESTINATION lib/${PROJECT_NAME}
   )
 
-  # install(FILES
-  #   tests/turtle_control_test.launch.xml
-  #   # tests/turtle_odom_test.launch.xml
-  #   # tests/turtle_circle_test.launch.xml
-  #   DESTINATION share/${PROJECT_NAME}
-  # )
+  install(FILES
+    tests/turtle_control_test.launch.xml
+    tests/turtle_odom_test.launch.xml
+    # tests/turtle_circle_test.launch.xml
+    DESTINATION share/${PROJECT_NAME}
+  )
+  catch_ros2_add_integration_test(TurtleOdomIntegration_TestCpp
+    LAUNCH_FILE turtle_odom_test.launch.xml
+  )
 
   catch_ros2_add_integration_test(TurtleControlIntegration_TestCpp
     LAUNCH_FILE turtle_control_test.launch.xml
   )
 
-  catch_ros2_add_integration_test(TurtleOdomIntegration_TestCpp
-    LAUNCH_FILE turtle_odom_test.launch.xml
-  )
 
   # catch_ros2_add_integration_test(OdometryIntegration_TestCpp
   #   LAUNCH_FILE turtle_odom_test.launch.xml
