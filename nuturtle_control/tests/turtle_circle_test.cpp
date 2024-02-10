@@ -17,7 +17,6 @@ TEST_CASE("test_pure_translation", "[cmd_vel_translation]")
   auto node = rclcpp::Node::make_shared("turtle_circle_test");
 
   node->declare_parameter<double>("test_duration");
-  node->declare_parameter<int>("frequency");
 
   const auto TEST_DURATION =
     node->get_parameter("test_duration").get_parameter_value().get<double>();

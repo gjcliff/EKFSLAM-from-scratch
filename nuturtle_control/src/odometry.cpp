@@ -1,3 +1,29 @@
+/// \file
+/// \brief perform odometry calculations for the turtlebot
+///
+/// PARAMETERS:
+///     body_id (string): The name of the turtlebot's base_footprint frame
+///     odom_id (string): The name of the odom frame
+///     wheel_left (string): The name of the left wheel's joint
+///     wheel_right (string): The name of the right wheel's joint
+///     wheel_radius (double): The radius of the turtlebot's wheels
+///     track_width (double): The total distance between the center of the turtlebot's wheels
+///     motor_cmd_max (double): The max allowable speed of the motor
+///     motor_cmd_per_rad_sec (double): The conversion between motor command values and rads/sec
+///     encoder_ticks_per_rad (double): The conversion between encoder ticks and rads/sec
+///     collision_radius (double): The collision radius of the turtlebot
+/// PUBLISHES:
+///     odom (nav_msgs::msg::Odometry): Publish odometry messages for the turtlebot
+/// SUBSCRIBES:
+///     joint_states (sensor_msgs::msg::JointState): Subscribe to joint state messages for the
+///     turtlebot's wheels
+/// SERVERS:
+///     initial_pose (nuturtle_control::srv::InitialPose): Reset the location of the odometry so
+///     that the robot thinks it's at the requested location
+/// BROADCASTER:
+///     transform_broadcaster (geometry_msgs::msg::TransformStamped): Broadcast the location of the
+///     base link of the turtlebot in relation to the odom frame
+
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -32,10 +58,10 @@ public:
   Odometry()
   : Node("odometry"), count_(0)
   {
-    declare_parameter("body_id", "thing");
-    declare_parameter("odom_id", "odom");
-    declare_parameter("wheel_left", "thing");
-    declare_parameter("wheel_right", "thing");
+    declare_parameter("body_id", rclcpp::PARAMETER_STRING);
+    declare_parameter("odom_id", rclcpp::PARAMETER_STRING);
+    declare_parameter("wheel_left", rclcpp::PARAMETER_STRING);
+    declare_parameter("wheel_right", rclcpp::PARAMETER_STRING);
 
     declare_parameter("wheel_radius", rclcpp::PARAMETER_DOUBLE);
     declare_parameter("track_width", rclcpp::PARAMETER_DOUBLE);
@@ -139,6 +165,9 @@ public:
   }
 
 private:
+  /// @brief reset the location of the odometry calculations
+  /// @param request - the requested new location for odometry calculations
+  /// @param - an empty response
   void initial_pose_callback(
     const std::shared_ptr<nuturtle_control::srv::InitialPose::Request> request,
     std::shared_ptr<nuturtle_control::srv::InitialPose::Response>)
@@ -150,6 +179,10 @@ private:
     robot_odometry_.pose.pose.position.x = request->q.x;
     robot_odometry_.pose.pose.position.y = request->q.y;
   }
+
+  /// @brief perform FK on the joint positions of the turtlebot's wheels
+  /// in radians and update the location of the turtlebot's base frame
+  /// @param msg - the joint positions of the turtlebot's wheels
   void joint_state_callback(const sensor_msgs::msg::JointState msg)
   {
 
@@ -180,6 +213,8 @@ private:
 
 
   }
+
+  /// @brief broadcast the position of the turtlebot's base frame in the odom frame
   void timer_callback()
   {
     turtlelib::Configuration q_now = turtlebot_.get_current_configuration();
@@ -194,31 +229,8 @@ private:
     transform_body.transform.rotation.z = q_now.theta;
 
     tf_broadcaster_->sendTransform(transform_body);
-
-    // geometry_msgs::msg::TransformStamped transform_left_wheel;
-    // transform_left_wheel.header.stamp = get_clock()->now();
-    // transform_left_wheel.header.frame_id = body_id_;
-    // transform_left_wheel.child_frame_id = wheel_left_;
-    // transform_left_wheel.transform.translation.x = 0.0;
-    // transform_left_wheel.transform.translation.y = track_width_ / 2;
-    // transform_left_wheel.transform.translation.z = 0.0;
-    // transform_left_wheel.transform.rotation.x = 0.707;
-    // transform_left_wheel.transform.rotation.w = 0.707;
-
-    // tf_broadcaster_->sendTransform(transform_left_wheel);
-
-    // geometry_msgs::msg::TransformStamped transform_right_wheel;
-    // transform_right_wheel.header.stamp = get_clock()->now();
-    // transform_right_wheel.header.frame_id = body_id_;
-    // transform_right_wheel.child_frame_id = wheel_right_;
-    // transform_right_wheel.transform.translation.x = 0.0;
-    // transform_right_wheel.transform.translation.y = -track_width_ / 2;
-    // transform_right_wheel.transform.translation.z = 0.0;
-    // transform_right_wheel.transform.rotation.x = 0.707;
-    // transform_right_wheel.transform.rotation.w = 0.707;
-
-    // tf_broadcaster_->sendTransform(transform_right_wheel);
   }
+
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_publisher_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;

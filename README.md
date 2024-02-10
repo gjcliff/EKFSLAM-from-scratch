@@ -5,17 +5,14 @@
 This repository consists of several ROS packages
 - **nuturtle_description** - This package contains urdf files and basic debugging, testing, and visualization code for turtlebot3s.
 - **nusim** - This package contains ros nodes and lauchfiles that display turtlebots inside a user-defined arena with user-defined obstacles.
-- **turtlelib** - This library contains functions for performing geometry operations in se(2) space and displaying these operations in svg files for testing. This is a C++ library with unit tests for confirming functionality.
-# How to Run
-In your main computer terminal:
-```console
-$ ros2 launch nuturtle_control start_robot.launch.xml use_rviz:=true robot:=none cmd_src:=circle
-```
+- **nuturtle_control** - This package enables control of the turtlebot via geometry_msgs/msg/Twist messages on the cmd_vel topic.
+    - This package contains three nodes:
+        * **turtle_control** - Manage the flow of information between all nodes. Convert twists into wheel command values, and motor encoder values into joint states.
+        * **odometry** - Perform odometry calculations for the turtlebot, and publish them for other nodes to see
+        * **circle** - Command the robot to move in a circle, and offer some additional movement related services (stopping and reversing)
 
-In your turtlebot3 terminal:
-```console
-$ ros2 launch nuturtle_control start_robot.launch.xml use_rviz:=false robot:=localhost
-```
+This repository also consists of a custom c++ library:
+- **turtlelib** - This library contains functions for performing geometry operations in se(2) space and displaying these operations in svg files for testing. This is a C++ library with unit tests for confirming functionality.
 
 Video:
 

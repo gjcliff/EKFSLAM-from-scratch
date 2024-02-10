@@ -5,9 +5,9 @@
 ///     wheel_radius (double): The radius of the turtlebot's wheels
 ///     track_width (double): The total distance between the center of the turtlebot's wheels
 ///     motor_cmd_max (double): The max allowable speed of the motor
-///     motor_cmd_per_rad_sec (double):
-///     encoder_ticks_per_rad (double):
-///     collision_radius (double):
+///     motor_cmd_per_rad_sec (double): The conversion between motor command values and rads/sec
+///     encoder_ticks_per_rad (double): The conversion between encoder ticks and rads/sec
+///     collision_radius (double): The collision radius of the turtlebot
 /// PUBLISHES:
 ///     wheel_cmd (nuturtlebot_msgs::msg::WheelCOmmands): Commands that make the turtlebot follow a specified twist
 ///     joint_states (sensor_msgs::msg::JointState): Provide the angle (rad) and velocity (rad/sec) of the turtlebot's wheels
@@ -114,14 +114,12 @@ public:
     my_joint_state_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>(
       "joint_states", 10);
 
-    // create timer
-    timer_ = this->create_wall_timer(
-      500ms, std::bind(&TurtleControl::timer_callback, this));
-
     prev_encoder_tic_time_ = this->get_clock()->now();
   }
 
 private:
+  /// @brief compute a wheel command message converted from a twist
+  /// @param msg - the twist to be converted into motor command values
   void cmd_callback(const geometry_msgs::msg::Twist & msg)
   {
     nuturtlebot_msgs::msg::WheelCommands wheel_cmd_msg;
@@ -142,6 +140,9 @@ private:
     wheel_cmd_publisher_->publish(wheel_cmd_msg);
   }
 
+  /// @brief convert sensor data (encoder ticks) into a joint state for the
+  /// turtlebot's two wheels
+  /// @param msg - the encoder ticks
   void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData & msg)
   {
     RCLCPP_INFO_STREAM_ONCE(get_logger(), "got sensor_data msg");
@@ -165,10 +166,6 @@ private:
     my_joint_state_publisher_->publish(joint_state);
   }
 
-  void timer_callback()
-  {
-  }
-  rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_subscriber_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_subscriber_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr my_joint_state_publisher_;

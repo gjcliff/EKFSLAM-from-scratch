@@ -1,3 +1,16 @@
+/// \file
+/// \brief A brief description of what the file does
+///
+/// PARAMETERS:
+///     frequency (int): The frequency at which circle publishes cmd_vel messages
+/// PUBLISHES:
+///     cmd_vel (geometry_msgs::msg::Twist): Publish twists for the turtlebot to follow
+/// SERVERS:
+///     control (nuturtle_control::srv::Control): Command the robot to move in a circle,
+///     specifying an angular velocity and a radius
+///     reverse (std_srvs::srv::Empty): Command the robot to reverse it's current trajectory
+///     stop (std_srvs::srv::Empty): Command the robot to stop
+
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -47,6 +60,9 @@ public:
   }
 
 private:
+  /// @brief convert an angular velocity and a radius of a circle into a twist
+  /// @param request - an angular velocity and a radius
+  /// @param - an empty response
   void control_callback(
     const std::shared_ptr<nuturtle_control::srv::Control::Request> request,
     std::shared_ptr<nuturtle_control::srv::Control::Response>)
@@ -56,6 +72,10 @@ private:
     cmd_vel_msg_.angular.z = request->velocity;
     cmd_vel_msg_.linear.x = vx;
   }
+
+  /// @brief command the robot to reverse its trajectory
+  /// @param - an empty request
+  /// @param - an empty response
   void reverse_callback(
     const std::shared_ptr<std_srvs::srv::Empty::Request>,
     std::shared_ptr<std_srvs::srv::Empty::Response>)
@@ -63,6 +83,10 @@ private:
     cmd_vel_msg_.angular.z *= -1.0;
     cmd_vel_msg_.linear.x *= -1.0;
   }
+
+  /// @brief command the robot to stop
+  /// @param - an empty request
+  /// @param - an empty response
   void stop_callback(
     const std::shared_ptr<std_srvs::srv::Empty::Request>,
     std::shared_ptr<std_srvs::srv::Empty::Response>)
@@ -70,6 +94,9 @@ private:
     cmd_vel_msg_.angular.z = 0.0;
     cmd_vel_msg_.linear.x = 0.0;
   }
+
+  /// @brief constantly publish a twist for the robot to follow, sometimes
+  /// this twist tells the robot to do nothing
   void timer_callback()
   {
     cmd_vel_publisher_->publish(cmd_vel_msg_);

@@ -9,6 +9,23 @@ if(NOT CMAKE_BUILD_TYPE)        # If no build type is set, set one
   set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Type of build." FORCE)
 endif()
 
+find_package(Doxygen)
+# Building documentation should be optional.
+# To build documentation pass -DBUILD_DOCS=ON when generating the build system
+option(BUILD_DOCS "Build the documentation" ON)
+
+# build just because Doxygen is missing
+if(${DOXYGEN_FOUND} AND ${BUILD_DOCS})
+    # Turn the README.md into the homepage of the doxygen docs
+    set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
+
+    # Tell Doxygen where to find the documentation
+    doxygen_add_docs(doxygen include/ src/ README.md ALL)
+
+    # The documentation will be in the build/html directory
+    # The main page is build/html/index.html
+endif()
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(nuturtle_description REQUIRED)
@@ -23,7 +40,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(numsr_turtlebot REQUIRED)
-find_package(Doxygen)
+
 
 # find libraries
 find_package(turtlelib REQUIRED)
