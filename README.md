@@ -18,4 +18,4 @@ $ ros2 launch nuturtle_control start_robot.launch.xml use_rviz:=false robot:=loc
 ```
 
 Video:  
-![video](https://github.com/ME495-Navigation/slam-project-gjcliff/issues/1#issue-2128276540)
+https://github.com/ME495-Navigation/slam-project-gjcliff/issues/1#issue-2128276540
