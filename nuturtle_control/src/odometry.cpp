@@ -32,6 +32,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "nav_msgs/msg/path.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -148,6 +149,9 @@ public:
     odometry_publisher_ = create_publisher<nav_msgs::msg::Odometry>(
       "odom", 10);
 
+    path_publisher_ = create_publisher<nav_msgs::msg::Path>(
+      "~/path", 10);
+
     // create subscribers
     joint_state_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
       "joint_states", 10, std::bind(&Odometry::joint_state_callback, this, _1));
@@ -228,15 +232,28 @@ private:
     transform_body.transform.rotation.z = q_now.theta;
 
     tf_broadcaster_->sendTransform(transform_body);
+
+    geometry_msgs::msg::PoseStamped pose;
+    pose.pose.position.x = q_now.x;
+    pose.pose.position.y = q_now.y;
+    tf2::Quaternion q_tf2;
+    q_tf2.setRPY(0, 0, q_now.theta);
+    pose.pose.orientation = tf2::toMsg(q_tf2);
+    pose.header.stamp = get_clock()->now();
+    path_.header.stamp = get_clock()->now();
+    path_.poses.push_back(pose);
+    path_publisher_->publish(path_);
   }
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_publisher_;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_publisher_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_service_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   turtlelib::DiffDrive turtlebot_;
   nav_msgs::msg::Odometry robot_odometry_;
+  nav_msgs::msg::Path path_;
   std::string body_id_;
   std::string odom_id_;
   std::string wheel_left_;

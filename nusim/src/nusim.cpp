@@ -296,6 +296,7 @@ private:
     tf_broadcaster_->sendTransform(t);
 
     nav_msgs::msg::Path path = construct_path_msg();
+    path_publisher_->publish(path);
 
     // keep track of the current timestep
     current_timestep_ += 1;
