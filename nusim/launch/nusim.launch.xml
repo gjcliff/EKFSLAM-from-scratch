@@ -1,5 +1,5 @@
 <launch>
-    <arg name="rate" default="5" description="the period of the timer callback in nusim in milliseconds (ms)"/>
+    <arg name="rate" default="10" description="the period of the timer callback in nusim in milliseconds (ms)"/>
     <arg name="config_file" default="$(find-pkg-share nusim)/config/basic_world.yaml" description="select the file to configure the simulator with"/>
     <arg name="diff_params" default="$(find-pkg-share nuturtle_description)/config/diff_params.yaml" description="select the file to configure the robot with"/>
     <arg name="arena_length_x" default="3.0" description="the length of the arena in the x direction"/>

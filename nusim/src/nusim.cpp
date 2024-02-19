@@ -27,7 +27,7 @@ class TurtleSimulation : public rclcpp::Node
 {
 public:
   TurtleSimulation()
-  : Node("nusim"), count_(0)
+  : Node("nusim")
   {
     // declare parameters
     declare_parameter("rate", 5);
@@ -111,7 +111,7 @@ public:
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     tf_broadcaster_->sendTransform(construct_transform_msg(x_, y_, theta_));
     timer_ = create_wall_timer(
-      (std::chrono::milliseconds)get_parameter("rate").as_int(),
+      static_cast<std::chrono::milliseconds>(rate_),
       std::bind(&TurtleSimulation::timer_callback, this));
 
     visualization_msgs::msg::MarkerArray wall_array = construct_wall_array();
@@ -323,8 +323,6 @@ private:
   double arena_y_length_;
   double wall_height_ = 0.25;
   double wall_thickness_ = 0.05;
-  double max_trans_vel = 0.22; // m/s
-  double max_rot_vel = 2.84; // rad/s
   double wheel_radius_;
   double track_width_;
   int motor_cmd_max_;
@@ -337,7 +335,6 @@ private:
   std::vector<double> obstacles_y;
   double obstacle_radius_;
   double obstacle_height_ = 0.25;
-  size_t count_;
   unsigned int current_timestep_ = 0;
 };
 

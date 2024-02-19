@@ -44,7 +44,6 @@
 #include "turtlelib/diff_drive.hpp"
 
 #include <string>
-#include <vector>
 
 using namespace std::chrono_literals;
 using std::placeholders::_1, std::placeholders::_2;
