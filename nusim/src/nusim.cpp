@@ -13,7 +13,9 @@
 #include "std_msgs/msg/u_int64.hpp"
 #include "std_srvs/srv/empty.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
+#include "nav_msgs/msg/path.hpp"
 #include "visualization_msgs/msg/marker.hpp"
+#include "nav_msgs/msg/path.hpp"
 
 #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
@@ -89,6 +91,7 @@ public:
     obstacles_publisher_ = create_publisher<visualization_msgs::msg::MarkerArray>(
       "~/obstacles", qos);
     sensor_data_publisher_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("sensor_data", 10);
+    path_publisher_ = create_publisher<nav_msgs::msg::Path>("~/path", qos);
 
     // declare subscribers
     wheel_commands_subscriber_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
@@ -242,6 +245,24 @@ private:
 
     return t;
   }
+  
+  nav_msgs::msg::Path construct_path_msg()
+  {
+    nav_msgs::msg::Path path;
+    path.header.frame_id = "nusim/world";
+    path.header.stamp = get_clock()->now();
+
+    geometry_msgs::msg::PoseStamped pose;
+    pose.pose.position.x = x_;
+    pose.pose.position.y = y_;
+
+    tf2::Quaternion q_tf2;
+    q_tf2.setRPY(0, 0, theta_);
+    pose.pose.orientation = tf2::toMsg(q_tf2);
+
+    path.poses.push_back(pose);
+    return path;
+  }
 
   void teleport_callback(
     const std::shared_ptr<nusim::srv::Teleport::Request> request,
@@ -274,6 +295,8 @@ private:
     geometry_msgs::msg::TransformStamped t = construct_transform_msg(x_, y_, theta_);
     tf_broadcaster_->sendTransform(t);
 
+    nav_msgs::msg::Path path = construct_path_msg();
+
     // keep track of the current timestep
     current_timestep_ += 1;
     auto timestep_message = std_msgs::msg::UInt64();
@@ -302,6 +325,7 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr walls_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_publisher_;
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_publisher_;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_publisher_;
   // subscribers
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheel_commands_subscriber_;
   // transform broadcaster

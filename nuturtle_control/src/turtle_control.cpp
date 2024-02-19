@@ -173,6 +173,7 @@ private:
   nuturtlebot_msgs::msg::SensorData sensor_data_;
   geometry_msgs::msg::Twist cmd_vel_;
   turtlelib::DiffDrive turtlebot_;
+
   vector<double> wheel_velocities_;
   rclcpp::Time prev_encoder_tic_time_;
   double prev_left_rad_ = 0.0;

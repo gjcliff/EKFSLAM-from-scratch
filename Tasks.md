@@ -36,4 +36,6 @@ Task E.5: Complete 2/8/2024
 Task F.1: Complete 2/9/2024
 Task F.2: Complete 2/9/2024
 Task F.5: Complete 2/9/2024
-Task F.6: Complete
+Task F.6: Complete 2/18/2024
+
+Task V.1: Complete 2/18/2024

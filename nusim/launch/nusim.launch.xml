@@ -5,18 +5,11 @@
     <arg name="arena_length_x" default="3.0" description="the length of the arena in the x direction"/>
     <arg name="arena_length_y" default="3.0" description="the length of the arena in the y direction"/>
     <arg name="obstacles/r" default="0.038" description="the default radius of all column obstacles"/>
-    <arg name="use_rviz" default="false" description="use rviz or not"/>
+    <arg name="use_rviz" default="true" description="use rviz or not"/>
     <arg name="robot_color" default="red" description="the color of the robot"/>
-    <arg name="load_robot" default="false" description="load any robots or not"/>
+    <arg name="load_robot" default="true" description="load any robots or not"/>
 
-    
-    <include if="$(eval '\'$(var load_robot)\' == \'true\'')"  file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
-        <arg name="use_rviz" value="false"/>
-        <arg name="use_jsp" value="true"/>
-        <arg name="color" value="$(var robot_color)"/>
-    </include>
     <node pkg="rviz2" exec="rviz2" if="$(eval '\'$(var use_rviz)\' == \'true\'')" args="-d $(find-pkg-share nusim)/config/nusim.rviz"/>
-
     <node pkg="nusim" exec="nusim_exec">
         <param name="rate" value="$(var rate)"/>
         <param from="$(var config_file)"/>
@@ -27,4 +20,11 @@
         <remap from="/wheel_cmd" to="/$(var robot_color)/wheel_cmd"/>
         <remap from="/sensor_data" to="/$(var robot_color)/sensor_data"/>
     </node>
+    
+    <include if="$(eval '\'$(var load_robot)\' == \'true\'')"  file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <arg name="use_rviz" value="false"/>
+        <arg name="use_jsp" value="true"/>
+        <arg name="color" value="$(var robot_color)"/>
+    </include>
+
 </launch>

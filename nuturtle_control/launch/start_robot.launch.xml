@@ -80,7 +80,7 @@ finish unit testing -->
         <node pkg="numsr_turtlebot" exec="numsr_turtlebot"/>
         <include file="$(find-pkg-share hls_lfcd_lds_driver)/launch/hlds_laser.launch.py">
             <arg name = "port" value="/dev/ttyUSB0"/>
-        </indlude>
+        </include>
     </group>
 
     <group if="$(eval '\'$(var robot)\' == \'none\'')">
