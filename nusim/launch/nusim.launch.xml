@@ -1,13 +1,11 @@
 <launch>
-    <arg name="rate" default="10" description="the period of the timer callback in nusim in milliseconds (ms)"/>
+    <arg name="rate" default="5" description="the period of the timer callback in nusim in milliseconds (ms)"/>
     <arg name="config_file" default="$(find-pkg-share nusim)/config/basic_world.yaml" description="select the file to configure the simulator with"/>
     <arg name="diff_params" default="$(find-pkg-share nuturtle_description)/config/diff_params.yaml" description="select the file to configure the robot with"/>
     <arg name="arena_length_x" default="3.0" description="the length of the arena in the x direction"/>
     <arg name="arena_length_y" default="3.0" description="the length of the arena in the y direction"/>
     <arg name="obstacles/r" default="0.038" description="the default radius of all column obstacles"/>
     <arg name="use_rviz" default="true" description="use rviz or not"/>
-    <arg name="robot_color" default="red" description="the color of the robot"/>
-    <arg name="load_robot" default="true" description="load any robots or not"/>
 
     <node pkg="rviz2" exec="rviz2" if="$(eval '\'$(var use_rviz)\' == \'true\'')" args="-d $(find-pkg-share nusim)/config/nusim.rviz"/>
     <node pkg="nusim" exec="nusim_exec">
@@ -17,14 +15,14 @@
         <param name="arena_length_x" value="$(var arena_length_x)"/>
         <param name="arena_length_y" value="$(var arena_length_y)"/>
         <param name="obstacles/r" value="$(var obstacles/r)"/>
-        <remap from="/wheel_cmd" to="/$(var robot_color)/wheel_cmd"/>
-        <remap from="/sensor_data" to="/$(var robot_color)/sensor_data"/>
+        <remap from="wheel_cmd" to="red/wheel_cmd"/>
+        <remap from="sensor_data" to="red/sensor_data"/>
     </node>
     
     <include if="$(eval '\'$(var load_robot)\' == \'true\'')"  file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
         <arg name="use_rviz" value="false"/>
         <arg name="use_jsp" value="true"/>
-        <arg name="color" value="$(var robot_color)"/>
+        <arg name="color" value="red"/>
     </include>
 
 </launch>
