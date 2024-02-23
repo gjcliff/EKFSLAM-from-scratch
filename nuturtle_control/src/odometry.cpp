@@ -185,12 +185,15 @@ private:
   /// @param msg - the joint positions of the turtlebot's wheels
   void joint_state_callback(const sensor_msgs::msg::JointState msg)
   {
-
-    RCLCPP_INFO_STREAM_ONCE(get_logger(), "joint state callback");
     double phi_l = msg.position.at(0);
     double phi_r = msg.position.at(1);
 
-    turtlelib::Twist2D Vb = turtlebot_.FK(phi_l, phi_r);
+    double phi_delta_l = phi_l - phi_l_prev_;
+    double phi_delta_r = phi_r - phi_r_prev_;
+    phi_l_prev_ = phi_l;
+    phi_r_prev_ = phi_r;
+
+    turtlelib::Twist2D Vb = turtlebot_.FK(phi_delta_l, phi_delta_r);
     turtlelib::Configuration q_now = turtlebot_.update_configuration(Vb);
 
     tf2::Quaternion tf2_quat;
@@ -210,8 +213,6 @@ private:
     robot_odometry_.twist.twist.linear.y = Vb.y;
 
     odometry_publisher_->publish(robot_odometry_);
-
-
   }
 
   /// @brief broadcast the position of the turtlebot's base frame in the odom frame
@@ -261,6 +262,8 @@ private:
   double motor_cmd_per_rad_sec_;
   double encoder_ticks_per_rad_;
   double collision_radius_;
+  double phi_l_prev_ = 0.0;
+  double phi_r_prev_ = 0.0;
 };
 
 int main(int argc, char * argv[])

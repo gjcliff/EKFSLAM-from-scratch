@@ -40,8 +40,7 @@ class TurtleControl : public rclcpp::Node
 public:
   TurtleControl()
   : Node("turtle_control"),
-    wheel_velocities_({0.0, 0.0}),
-    count_(0)
+    wheel_velocities_({0.0, 0.0})
   {
     // declare parameters
     declare_parameter("wheel_radius", rclcpp::PARAMETER_DOUBLE);
@@ -145,15 +144,13 @@ private:
   /// @param msg - the encoder ticks
   void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData & msg)
   {
-    RCLCPP_INFO_STREAM_ONCE(get_logger(), "got sensor_data msg");
-
     double phi_l = msg.left_encoder / encoder_ticks_per_rad_;
     double phi_r = msg.right_encoder / encoder_ticks_per_rad_;
 
     double left_wheel_velocity = (phi_l - prev_left_rad_) /
-      (prev_encoder_tic_time_.nanoseconds() / 1e9);
+      prev_encoder_tic_time_.seconds();
     double right_wheel_velocity = (phi_r - prev_right_rad_) /
-      (prev_encoder_tic_time_.nanoseconds() / 1e9);
+      prev_encoder_tic_time_.seconds();
     prev_left_rad_ = phi_l;
     prev_right_rad_ = phi_r;
 
@@ -164,6 +161,7 @@ private:
     joint_state.velocity = {left_wheel_velocity, right_wheel_velocity};
 
     my_joint_state_publisher_->publish(joint_state);
+    prev_encoder_tic_time_ = get_clock()->now();
   }
 
   rclcpp::Subscription<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_subscriber_;
@@ -186,7 +184,6 @@ private:
   double motor_cmd_per_rad_sec_;
   double encoder_ticks_per_rad_;
   double collision_radius_;
-  size_t count_;
 };
 
 int main(int argc, char * argv[])

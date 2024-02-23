@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <cmath>
 
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/transform_broadcaster.h"
@@ -79,7 +80,7 @@ public:
 
     // check whether or not the obstacle arrays are the same size
     if (obstacles_x_.size() != obstacles_y_.size()) {
-      RCLCPP_ERROR(get_logger(), "obstacles_x_ and obstacles_y_ are not the same size");
+      RCLCPP_ERROR_STREAM(get_logger(), "obstacles_x_ and obstacles_y_ are not the same size");
       rclcpp::shutdown();
     }
 
@@ -277,6 +278,7 @@ private:
   {
     left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
     right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+    RCLCPP_INFO_STREAM(get_logger(), "wheel velocities: " << left_wheel_velocity_ << " " << right_wheel_velocity_);
   }
 
   void timer_callback()
@@ -297,9 +299,11 @@ private:
     turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity_, right_wheel_velocity_);
 
     // calculate the current encoder ticks
-    vector<double> wheel_pos_rad = turtlebot_.IK(Vb);
-    left_encoder_ticks_ += static_cast<int>(wheel_pos_rad.at(0) * encoder_ticks_per_rad_);
-    right_encoder_ticks_ += static_cast<int>(wheel_pos_rad.at(1) * encoder_ticks_per_rad_);
+    left_encoder_ticks_ += left_wheel_velocity_ * encoder_ticks_per_rad_;
+    right_encoder_ticks_ += right_wheel_velocity_ * encoder_ticks_per_rad_;
+
+    int rounded_left_encoder_ticks_ = static_cast<int>(std::round(left_encoder_ticks_));
+    int rounded_right_encoder_ticks_ = static_cast<int>(std::round(right_encoder_ticks_));
 
     // update the configuration of the red robot in the world frame
     turtlelib::Configuration qv = turtlebot_.update_configuration(Vb);
@@ -317,8 +321,8 @@ private:
 
     // publish the encoder data
     nuturtlebot_msgs::msg::SensorData sensor_data_msg;
-    sensor_data_msg.left_encoder = left_encoder_ticks_;
-    sensor_data_msg.right_encoder = right_encoder_ticks_;
+    sensor_data_msg.left_encoder = rounded_left_encoder_ticks_;
+    sensor_data_msg.right_encoder = rounded_right_encoder_ticks_;
     sensor_data_msg.stamp = get_clock()->now();
 
     sensor_data_publisher_->publish(sensor_data_msg);
