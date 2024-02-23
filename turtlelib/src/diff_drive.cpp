@@ -65,7 +65,7 @@ Twist2D DiffDrive::FK(double phi_l_p, double phi_r_p)
   return {Vb_mat.at(0), Vb_mat.at(1), Vb_mat.at(2)};
 }
 
-vector<Configuration> DiffDrive::update_configuration(Twist2D Vb)
+Configuration DiffDrive::update_configuration(Twist2D Vb)
 {
   Transform2D Tbb_prime = integrate_twist(Vb);
 
@@ -74,13 +74,13 @@ vector<Configuration> DiffDrive::update_configuration(Twist2D Vb)
   Transform2D Twb({q.x, q.y}, q.theta);
   Transform2D Twb_prime = Twb * Tbb_prime;
 
-  Configuration q_dot{Twb_prime.rotation(), Twb_prime.translation().x, Twb_prime.translation().y};
+  Configuration q_new{Twb_prime.rotation(), Twb_prime.translation().x, Twb_prime.translation().y};
 
-  q.theta = q_dot.theta;
-  q.x = q_dot.x;
-  q.y = q_dot.y;
+  q.theta = q_new.theta;
+  q.x = q_new.x;
+  q.y = q_new.y;
 
-  return {q, q_dot};
+  return q_new;
 }
 
 vector<double> DiffDrive::IK(Twist2D twist)

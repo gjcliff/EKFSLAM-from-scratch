@@ -70,10 +70,8 @@ public:
 
   /// @brief update the configuration of the robot given a body twist
   /// @param Vb - the body twist
-  /// @return - an array of configurations, the first of which is the current
-  /// configuration of the robot in the body frame, and the second of which is
-  /// the change in configuration since the last time FK() was called.
-  vector<Configuration> update_configuration(Twist2D Vb);
+  /// @return - The current configuration of the robot in the body frame.
+  Configuration update_configuration(Twist2D Vb);
 
   /// @brief compute the wheel velocities required to make the robot move
   /// at a given body twist

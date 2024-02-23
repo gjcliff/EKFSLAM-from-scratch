@@ -49,14 +49,11 @@
 using namespace std::chrono_literals;
 using std::placeholders::_1, std::placeholders::_2;
 
-/* This example creates a subclass of Node and uses std::bind() to register a
-* member function as a callback from the timer. */
-
 class Odometry : public rclcpp::Node
 {
 public:
   Odometry()
-  : Node("odometry"), count_(0)
+  : Node("odometry")
   {
     declare_parameter("body_id", rclcpp::PARAMETER_STRING);
     declare_parameter("odom_id", rclcpp::PARAMETER_STRING);
@@ -194,7 +191,7 @@ private:
     double phi_r = msg.position.at(1);
 
     turtlelib::Twist2D Vb = turtlebot_.FK(phi_l, phi_r);
-    turtlelib::Configuration q_now = turtlebot_.update_configuration(Vb).at(0);
+    turtlelib::Configuration q_now = turtlebot_.update_configuration(Vb);
 
     tf2::Quaternion tf2_quat;
     tf2_quat.setRPY(0.0, 0.0, q_now.theta);
@@ -264,7 +261,6 @@ private:
   double motor_cmd_per_rad_sec_;
   double encoder_ticks_per_rad_;
   double collision_radius_;
-  size_t count_;
 };
 
 int main(int argc, char * argv[])

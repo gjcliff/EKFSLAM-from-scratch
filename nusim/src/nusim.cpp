@@ -57,8 +57,8 @@ public:
     theta_ = get_parameter("theta0").as_double();
     arena_x_length_ = get_parameter("arena_length_x").as_double();
     arena_y_length_ = get_parameter("arena_length_y").as_double();
-    obstacles_x = get_parameter("obstacles/x").as_double_array();
-    obstacles_y = get_parameter("obstacles/y").as_double_array();
+    obstacles_x_ = get_parameter("obstacles/x").as_double_array();
+    obstacles_y_ = get_parameter("obstacles/y").as_double_array();
     obstacle_height_ = get_parameter("obstacles/height").as_double();
     obstacle_radius_ = get_parameter("obstacles/r").as_double();
 
@@ -78,8 +78,8 @@ public:
     og_theta_ = theta_;
 
     // check whether or not the obstacle arrays are the same size
-    if (obstacles_x.size() != obstacles_y.size()) {
-      RCLCPP_ERROR(get_logger(), "obstacles_x and obstacles_y are not the same size");
+    if (obstacles_x_.size() != obstacles_y_.size()) {
+      RCLCPP_ERROR(get_logger(), "obstacles_x_ and obstacles_y_ are not the same size");
       rclcpp::shutdown();
     }
 
@@ -95,7 +95,7 @@ public:
 
     // declare subscribers
     wheel_commands_subscriber_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
-      "/wheel_cmd", 10, std::bind(&TurtleSimulation::wheel_commands_callback, this, _1));
+      "wheel_cmd", 10, std::bind(&TurtleSimulation::wheel_commands_callback, this, _1));
 
     // declare static transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
@@ -123,35 +123,18 @@ public:
   }
 
 private:
-  void wheel_commands_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
-  {
-    double left_wheel_velocity = msg.left_velocity * motor_cmd_per_rad_sec_;
-    double right_wheel_velocity = msg.right_velocity * motor_cmd_per_rad_sec_;
-
-    turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity, right_wheel_velocity);
-    vector<turtlelib::Configuration> qv = turtlebot_.update_configuration(Vb);
-
-    x_ = qv.at(0).x;
-    y_ = qv.at(0).y;
-    theta_ = qv.at(0).theta;
-
-    vector<double> wheel_pos_rad = turtlebot_.IK(Vb);
-    left_encoder_ticks_ += static_cast<int>(wheel_pos_rad.at(0) * encoder_ticks_per_rad_);
-    right_encoder_ticks_ += static_cast<int>(wheel_pos_rad.at(1) * encoder_ticks_per_rad_);
-  }
-
   visualization_msgs::msg::MarkerArray construct_obstacle_array()
   {
     visualization_msgs::msg::MarkerArray arr;
-    for (int i = 0; i < (int)obstacles_x.size(); i++) {
+    for (int i = 0; i < (int)obstacles_x_.size(); i++) {
       visualization_msgs::msg::Marker marker;
       marker.header.frame_id = "nusim/world";
       marker.header.stamp = get_clock()->now();
       marker.id = i;
       marker.type = visualization_msgs::msg::Marker::CYLINDER;
       marker.action = visualization_msgs::msg::Marker::ADD;
-      marker.pose.position.x = obstacles_x[i];
-      marker.pose.position.y = obstacles_y[i];
+      marker.pose.position.x = obstacles_x_[i];
+      marker.pose.position.y = obstacles_y_[i];
       marker.pose.position.z = wall_height_ / 2;
       marker.pose.orientation.x = 0;
       marker.pose.orientation.y = 0;
@@ -290,14 +273,14 @@ private:
     theta_ = og_theta_;
   }
 
+  void wheel_commands_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
+  {
+    left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+    right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+  }
+
   void timer_callback()
   {
-    geometry_msgs::msg::TransformStamped t = construct_transform_msg(x_, y_, theta_);
-    tf_broadcaster_->sendTransform(t);
-
-    nav_msgs::msg::Path path = construct_path_msg();
-    path_publisher_->publish(path);
-
     // keep track of the current timestep
     current_timestep_ += 1;
     auto timestep_message = std_msgs::msg::UInt64();
@@ -309,16 +292,36 @@ private:
 
     visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array();
     obstacles_publisher_->publish(obstacle_array);
+    
+    // get the body twist
+    turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity_, right_wheel_velocity_);
 
+    // calculate the current encoder ticks
+    vector<double> wheel_pos_rad = turtlebot_.IK(Vb);
+    left_encoder_ticks_ += static_cast<int>(wheel_pos_rad.at(0) * encoder_ticks_per_rad_);
+    right_encoder_ticks_ += static_cast<int>(wheel_pos_rad.at(1) * encoder_ticks_per_rad_);
 
+    // update the configuration of the red robot in the world frame
+    turtlelib::Configuration qv = turtlebot_.update_configuration(Vb);
+    x_ = qv.x;
+    y_ = qv.y;
+    theta_ = qv.theta;
+
+    // broadcast the position of the red robot in the world frame
+    geometry_msgs::msg::TransformStamped t = construct_transform_msg(x_, y_, theta_);
+    tf_broadcaster_->sendTransform(t);
+
+    // publish the path of the red robot
+    nav_msgs::msg::Path path = construct_path_msg();
+    path_publisher_->publish(path);
+
+    // publish the encoder data
     nuturtlebot_msgs::msg::SensorData sensor_data_msg;
     sensor_data_msg.left_encoder = left_encoder_ticks_;
     sensor_data_msg.right_encoder = right_encoder_ticks_;
     sensor_data_msg.stamp = get_clock()->now();
 
     sensor_data_publisher_->publish(sensor_data_msg);
-    left_encoder_ticks_ = 0.0;
-    right_encoder_ticks_ = 0.0;
   }
   rclcpp::TimerBase::SharedPtr timer_;
   // publishers
@@ -356,8 +359,10 @@ private:
   double collision_radius_;
   double left_encoder_ticks_;
   double right_encoder_ticks_;
-  std::vector<double> obstacles_x;
-  std::vector<double> obstacles_y;
+  double left_wheel_velocity_;
+  double right_wheel_velocity_;
+  std::vector<double> obstacles_x_;
+  std::vector<double> obstacles_y_;
   double obstacle_radius_;
   double obstacle_height_ = 0.25;
   unsigned int current_timestep_ = 0;

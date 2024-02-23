@@ -67,10 +67,14 @@ private:
     const std::shared_ptr<nuturtle_control::srv::Control::Request> request,
     std::shared_ptr<nuturtle_control::srv::Control::Response>)
   {
-    double vx = request->velocity * request->radius;
     geometry_msgs::msg::Twist msg;
-    cmd_vel_msg_.angular.z = request->velocity;
-    cmd_vel_msg_.linear.x = vx;
+    if (request->radius == 0.0) {
+      cmd_vel_msg_.angular.z = 0.0;
+      cmd_vel_msg_.linear.x = request->velocity;
+    } else {
+      cmd_vel_msg_.angular.z = request->velocity;
+      cmd_vel_msg_.linear.x = request->velocity * request->radius;
+    }
   }
 
   /// @brief command the robot to reverse its trajectory

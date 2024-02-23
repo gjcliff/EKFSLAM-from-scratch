@@ -17,7 +17,7 @@ TEST_CASE("Test FK translation forward only", "[FK_translation_forward]")
   double radians_l = deg2rad(90);
   double radians_r = deg2rad(90);
   Twist2D Vb = turtlebot.FK(radians_l, radians_r);
-  Configuration q_dot = turtlebot.update_configuration(Vb).at(1);
+  Configuration q_dot = turtlebot.update_configuration(Vb);
 
   // generating test case, from eq. 13.15 in Modern Robotics textbook
   vector<double> q_dot_tmp(3, 0.0);
@@ -52,7 +52,7 @@ TEST_CASE("Test FK translation backward only", "[FK_translation_backward]")
   double radians_l = deg2rad(-90);
   double radians_r = deg2rad(-90);
   Twist2D Vb = turtlebot.FK(radians_l, radians_r);
-  Configuration q_dot = turtlebot.update_configuration(Vb).at(1);
+  Configuration q_dot = turtlebot.update_configuration(Vb);
 
   // generating test case, from eq. 13.15 in Modern Robotics textbook
   vector<double> q_dot_tmp(3, 0.0);
@@ -87,7 +87,7 @@ TEST_CASE("Test FK rotation CW only", "[FK_rotation_CW]")
   double radians_l = deg2rad(90);
   double radians_r = 0.0;
   Twist2D Vb = turtlebot.FK(radians_l, radians_r);
-  Configuration q_dot = turtlebot.update_configuration(Vb).at(1);
+  Configuration q_dot = turtlebot.update_configuration(Vb);
 
   // generating test case, from eq. 13.15 in Modern Robotics textbook
   vector<double> q_dot_tmp(3, 0.0);
@@ -122,7 +122,7 @@ TEST_CASE("Test FK rotation CCW only", "[FK_rotation_CCW]")
   double radians_l = 0.0;
   double radians_r = deg2rad(90);
   Twist2D Vb = turtlebot.FK(radians_l, radians_r);
-  Configuration q_dot = turtlebot.update_configuration(Vb).at(1);
+  Configuration q_dot = turtlebot.update_configuration(Vb);
 
   // generating test case, from eq. 13.15 in Modern Robotics textbook
   vector<double> q_dot_tmp(3, 0.0);
@@ -152,7 +152,7 @@ TEST_CASE("Test FK rotation and translation", "[FK_rotation_translation]")
   double radians_l = deg2rad(90);
   double radians_r = deg2rad(180);
   Twist2D Vb = turtlebot.FK(radians_l, radians_r);
-  Configuration q = turtlebot.update_configuration(Vb).at(0);
+  Configuration q = turtlebot.update_configuration(Vb);
 
   RobotDimensions rd = turtlebot.get_robot_dimensions();
 
@@ -171,7 +171,7 @@ TEST_CASE("Test FK rotation and translation inverse", "[FK_rotation_translation_
   double radians_l = deg2rad(-90);
   double radians_r = deg2rad(-180);
   Twist2D Vb = turtlebot.FK(radians_l, radians_r);
-  Configuration q = turtlebot.update_configuration(Vb).at(0);
+  Configuration q = turtlebot.update_configuration(Vb);
 
   RobotDimensions rd = turtlebot.get_robot_dimensions();
 
