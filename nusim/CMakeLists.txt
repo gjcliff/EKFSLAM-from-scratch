@@ -25,6 +25,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(turtlelib REQUIRED)
 find_package(nuturtlebot_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 set(srv_files
   "srv/Teleport.srv"

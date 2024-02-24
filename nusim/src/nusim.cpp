@@ -17,6 +17,7 @@
 #include "nav_msgs/msg/path.hpp"
 #include "visualization_msgs/msg/marker.hpp"
 #include "nav_msgs/msg/path.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 
 #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
@@ -92,7 +93,8 @@ public:
     obstacles_publisher_ = create_publisher<visualization_msgs::msg::MarkerArray>(
       "~/obstacles", qos);
     sensor_data_publisher_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("sensor_data", 10);
-    path_publisher_ = create_publisher<nav_msgs::msg::Path>("~/path", qos);
+    path_publisher_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
+    laser_scan_publisher_ = create_publisher<sensor_msgs::msg::LaserScan>("~/scan", 10);
 
     // declare subscribers
     wheel_commands_subscriber_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
@@ -124,7 +126,14 @@ public:
   }
 
 private:
-  visualization_msgs::msg::MarkerArray construct_obstacle_array()
+  struct Color
+  {
+    double r;
+    double g;
+    double b;
+  };
+
+  visualization_msgs::msg::MarkerArray construct_obstacle_array(vector<double> marker_array_x, vector<double> marker_array_y, Color c)
   {
     visualization_msgs::msg::MarkerArray arr;
     for (int i = 0; i < (int)obstacles_x_.size(); i++) {
@@ -134,8 +143,8 @@ private:
       marker.id = i;
       marker.type = visualization_msgs::msg::Marker::CYLINDER;
       marker.action = visualization_msgs::msg::Marker::ADD;
-      marker.pose.position.x = obstacles_x_[i];
-      marker.pose.position.y = obstacles_y_[i];
+      marker.pose.position.x = marker_array_x[i];
+      marker.pose.position.y = marker_array_y[i];
       marker.pose.position.z = wall_height_ / 2;
       marker.pose.orientation.x = 0;
       marker.pose.orientation.y = 0;
@@ -145,7 +154,9 @@ private:
       marker.scale.y = obstacle_radius_;
       marker.scale.z = obstacle_height_;
       marker.color.a = 1.0;
-      marker.color.r = 1.0;
+      marker.color.r = c.r;
+      marker.color.g = c.g;
+      marker.color.b = c.b;
 
       arr.markers.push_back(marker);
     }
@@ -155,7 +166,8 @@ private:
 
   visualization_msgs::msg::Marker construct_marker(
     double pos_x, double pos_y, double scale_x,
-    double scale_y, int id)
+    double scale_y, int id,
+    Color c)
   {
     visualization_msgs::msg::Marker marker;
     marker.header.frame_id = "nusim/world";
@@ -174,11 +186,13 @@ private:
     marker.scale.y = scale_y;
     marker.scale.z = wall_height_;
     marker.color.a = 1.0;
-    marker.color.r = 1.0;
+    marker.color.r = c.r;
+    marker.color.g = c.g;
+    marker.color.b = c.b;
     return marker;
   }
 
-  visualization_msgs::msg::MarkerArray construct_wall_array()
+  visualization_msgs::msg::MarkerArray construct_wall_array(Color c)
   {
     visualization_msgs::msg::MarkerArray wall_array;
 
@@ -188,19 +202,19 @@ private:
     wall_array.markers.push_back(
       construct_marker(
         arena_x_length_ / 2, 0.0, wall_thickness_,
-        x_length, 0));
+        x_length, 0, c));
     wall_array.markers.push_back(
       construct_marker(
         0.0, arena_y_length_ / 2, y_length,
-        wall_thickness_, 1));
+        wall_thickness_, 1, c));
     wall_array.markers.push_back(
       construct_marker(
         -arena_x_length_ / 2, 0.0, wall_thickness_,
-        x_length, 2));
+        x_length, 2, c));
     wall_array.markers.push_back(
       construct_marker(
         0.0, -arena_y_length_ / 2, y_length,
-        wall_thickness_, 3));
+        wall_thickness_, 1, c));
 
     return wall_array;
   }
@@ -289,11 +303,14 @@ private:
     timestep_message.data = current_timestep_;
     timestep_publisher_->publish(timestep_message);
 
-    visualization_msgs::msg::MarkerArray wall_array = construct_wall_array();
+    visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
     walls_publisher_->publish(wall_array);
 
-    visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array();
+    visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array(obstacles_x_, obstacles_y_, red);
     obstacles_publisher_->publish(obstacle_array);
+
+    visualization_msgs::msg::MarkerArray relative_obstacle_array= construct_obstacle_array(relative_obstacles_x_, relative_obstacles_y_, yellow);
+    obstacles_publisher_->publish(relative_obstacle_array);
     
     // get the body twist
     turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity_, right_wheel_velocity_);
@@ -334,6 +351,7 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_publisher_;
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_publisher_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_publisher_;
+  rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr laser_scan_publisher_;
   // subscribers
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheel_commands_subscriber_;
   // transform broadcaster
@@ -343,6 +361,12 @@ private:
   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_service_;
 
   turtlelib::DiffDrive turtlebot_;
+
+  Color red = {1.0, 0.0, 0.0};
+  Color green = {0.0, 1.0, 0.0};
+  Color blue = {0.0, 0.0, 1.0};
+  Color yellow = {1.0, 1.0, 0.0};
+  Color purple = {1.0, 0.0, 1.0};
 
   int rate_ = 0;
   double x_ = 0.0;
@@ -367,6 +391,8 @@ private:
   double right_wheel_velocity_;
   std::vector<double> obstacles_x_;
   std::vector<double> obstacles_y_;
+  std::vector<double> relative_obstacles_x_;
+  std::vector<double> relative_obstacles_y_;
   double obstacle_radius_;
   double obstacle_height_ = 0.25;
   unsigned int current_timestep_ = 0;

@@ -193,6 +193,7 @@ private:
     phi_l_prev_ = phi_l;
     phi_r_prev_ = phi_r;
 
+
     turtlelib::Twist2D Vb = turtlebot_.FK(phi_delta_l, phi_delta_r);
     turtlelib::Configuration q_now = turtlebot_.update_configuration(Vb);
 
