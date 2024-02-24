@@ -44,6 +44,7 @@ public:
     declare_parameter("obstacles/y", std::vector<double>({0.0, 0.0}));
     declare_parameter("obstacles/height", 0.25);
     declare_parameter("obstacles/r", 0.25);
+    declare_parameter("draw_only", false);
 
     declare_parameter("wheel_radius", 0.1);
     declare_parameter("track_width", 1.0);
@@ -63,6 +64,7 @@ public:
     obstacles_y_ = get_parameter("obstacles/y").as_double_array();
     obstacle_height_ = get_parameter("obstacles/height").as_double();
     obstacle_radius_ = get_parameter("obstacles/r").as_double();
+    draw_only_ = get_parameter("draw_only").as_bool();
 
     wheel_radius_ = get_parameter("wheel_radius").as_double();
     track_width_ = get_parameter("track_width").as_double();
@@ -244,13 +246,11 @@ private:
     return t;
   }
   
-  nav_msgs::msg::Path construct_path_msg()
+  geometry_msgs::msg::PoseStamped construct_path_msg()
   {
-    nav_msgs::msg::Path path;
-    path.header.frame_id = "nusim/world";
-    path.header.stamp = get_clock()->now();
-
     geometry_msgs::msg::PoseStamped pose;
+    pose.header.stamp = get_clock()->now();
+    pose.header.frame_id = "nusim/world";
     pose.pose.position.x = x_;
     pose.pose.position.y = y_;
 
@@ -258,8 +258,7 @@ private:
     q_tf2.setRPY(0, 0, theta_);
     pose.pose.orientation = tf2::toMsg(q_tf2);
 
-    path.poses.push_back(pose);
-    return path;
+    return pose;
   }
 
   void teleport_callback(
@@ -297,52 +296,67 @@ private:
 
   void timer_callback()
   {
-    // keep track of the current timestep
-    current_timestep_ += 1;
-    auto timestep_message = std_msgs::msg::UInt64();
-    timestep_message.data = current_timestep_;
-    timestep_publisher_->publish(timestep_message);
+    if (draw_only_) {
+      // keep track of the current timestep
+      current_timestep_ += 1;
+      auto timestep_message = std_msgs::msg::UInt64();
+      timestep_message.data = current_timestep_;
+      timestep_publisher_->publish(timestep_message);
 
-    visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
-    walls_publisher_->publish(wall_array);
+      visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
+      walls_publisher_->publish(wall_array);
 
-    visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array(obstacles_x_, obstacles_y_, red);
-    obstacles_publisher_->publish(obstacle_array);
+      visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array(obstacles_x_, obstacles_y_, red);
+      obstacles_publisher_->publish(obstacle_array);
+    } else {
+      // keep track of the current timestep
+      current_timestep_ += 1;
+      auto timestep_message = std_msgs::msg::UInt64();
+      timestep_message.data = current_timestep_;
+      timestep_publisher_->publish(timestep_message);
 
-    visualization_msgs::msg::MarkerArray relative_obstacle_array= construct_obstacle_array(relative_obstacles_x_, relative_obstacles_y_, yellow);
-    obstacles_publisher_->publish(relative_obstacle_array);
-    
-    // get the body twist
-    turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity_, right_wheel_velocity_);
+      visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
+      walls_publisher_->publish(wall_array);
 
-    // calculate the current encoder ticks
-    left_encoder_ticks_ += left_wheel_velocity_ * encoder_ticks_per_rad_;
-    right_encoder_ticks_ += right_wheel_velocity_ * encoder_ticks_per_rad_;
+      visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array(obstacles_x_, obstacles_y_, red);
+      obstacles_publisher_->publish(obstacle_array);
 
-    int rounded_left_encoder_ticks_ = static_cast<int>(std::round(left_encoder_ticks_));
-    int rounded_right_encoder_ticks_ = static_cast<int>(std::round(right_encoder_ticks_));
+      visualization_msgs::msg::MarkerArray relative_obstacle_array= construct_obstacle_array(relative_obstacles_x_, relative_obstacles_y_, yellow);
+      obstacles_publisher_->publish(relative_obstacle_array);
+      
+      // get the body twist
+      turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity_, right_wheel_velocity_);
 
-    // update the configuration of the red robot in the world frame
-    turtlelib::Configuration qv = turtlebot_.update_configuration(Vb);
-    x_ = qv.x;
-    y_ = qv.y;
-    theta_ = qv.theta;
+      // calculate the current encoder ticks
+      left_encoder_ticks_ += left_wheel_velocity_ * encoder_ticks_per_rad_;
+      right_encoder_ticks_ += right_wheel_velocity_ * encoder_ticks_per_rad_;
 
-    // broadcast the position of the red robot in the world frame
-    geometry_msgs::msg::TransformStamped t = construct_transform_msg(x_, y_, theta_);
-    tf_broadcaster_->sendTransform(t);
+      int rounded_left_encoder_ticks_ = static_cast<int>(std::round(left_encoder_ticks_));
+      int rounded_right_encoder_ticks_ = static_cast<int>(std::round(right_encoder_ticks_));
 
-    // publish the path of the red robot
-    nav_msgs::msg::Path path = construct_path_msg();
-    path_publisher_->publish(path);
+      // update the configuration of the red robot in the world frame
+      turtlelib::Configuration qv = turtlebot_.update_configuration(Vb);
+      x_ = qv.x;
+      y_ = qv.y;
+      theta_ = qv.theta;
 
-    // publish the encoder data
-    nuturtlebot_msgs::msg::SensorData sensor_data_msg;
-    sensor_data_msg.left_encoder = rounded_left_encoder_ticks_;
-    sensor_data_msg.right_encoder = rounded_right_encoder_ticks_;
-    sensor_data_msg.stamp = get_clock()->now();
+      // broadcast the position of the red robot in the world frame
+      geometry_msgs::msg::TransformStamped t = construct_transform_msg(x_, y_, theta_);
+      tf_broadcaster_->sendTransform(t);
 
-    sensor_data_publisher_->publish(sensor_data_msg);
+      // publish the path of the red robot
+      path_.poses.push_back(construct_path_msg());
+      path_.header.stamp = get_clock()->now();
+      path_publisher_->publish(path_);
+
+      // publish the encoder data
+      nuturtlebot_msgs::msg::SensorData sensor_data_msg;
+      sensor_data_msg.left_encoder = rounded_left_encoder_ticks_;
+      sensor_data_msg.right_encoder = rounded_right_encoder_ticks_;
+      sensor_data_msg.stamp = get_clock()->now();
+
+      sensor_data_publisher_->publish(sensor_data_msg);
+    }
   }
   rclcpp::TimerBase::SharedPtr timer_;
   // publishers
@@ -361,6 +375,7 @@ private:
   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_service_;
 
   turtlelib::DiffDrive turtlebot_;
+  nav_msgs::msg::Path path_;
 
   Color red = {1.0, 0.0, 0.0};
   Color green = {0.0, 1.0, 0.0};
@@ -381,6 +396,8 @@ private:
   double wall_thickness_ = 0.05;
   double wheel_radius_;
   double track_width_;
+  bool draw_only_;
+
   int motor_cmd_max_;
   double motor_cmd_per_rad_sec_;
   double encoder_ticks_per_rad_;

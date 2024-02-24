@@ -26,6 +26,7 @@
 
 #include <chrono>
 #include <functional>
+#include <geometry_msgs/msg/detail/pose_stamped__struct.hpp>
 #include <memory>
 #include <string>
 
@@ -165,6 +166,20 @@ public:
   }
 
 private:
+  geometry_msgs::msg::PoseStamped construct_path_msg()
+  {
+    geometry_msgs::msg::PoseStamped pose;
+    pose.header.stamp = get_clock()->now();
+    pose.header.frame_id = odom_id_;
+    pose.pose.position.x = x_;
+    pose.pose.position.y = y_;
+
+    tf2::Quaternion q_tf2;
+    q_tf2.setRPY(0, 0, theta_);
+    pose.pose.orientation = tf2::toMsg(q_tf2);
+
+    return pose;
+  }
   /// @brief reset the location of the odometry calculations
   /// @param request - the requested new location for odometry calculations
   /// @param - an empty response
@@ -178,6 +193,10 @@ private:
     robot_odometry_.pose.pose.orientation = tf2::toMsg(tf2_quat);
     robot_odometry_.pose.pose.position.x = request->q.x;
     robot_odometry_.pose.pose.position.y = request->q.y;
+
+    x_ = request->q.x;
+    y_ = request->q.y;
+    theta_ = request->q.theta;
   }
 
   /// @brief perform FK on the joint positions of the turtlebot's wheels
@@ -190,12 +209,16 @@ private:
 
     double phi_delta_l = phi_l - phi_l_prev_;
     double phi_delta_r = phi_r - phi_r_prev_;
+
     phi_l_prev_ = phi_l;
     phi_r_prev_ = phi_r;
 
-
     turtlelib::Twist2D Vb = turtlebot_.FK(phi_delta_l, phi_delta_r);
     turtlelib::Configuration q_now = turtlebot_.update_configuration(Vb);
+
+    x_ = q_now.x;
+    y_ = q_now.y;
+    theta_ = q_now.theta;
 
     tf2::Quaternion tf2_quat;
     tf2_quat.setRPY(0.0, 0.0, q_now.theta);
@@ -219,29 +242,21 @@ private:
   /// @brief broadcast the position of the turtlebot's base frame in the odom frame
   void timer_callback()
   {
-    turtlelib::Configuration q_now = turtlebot_.get_current_configuration();
     geometry_msgs::msg::TransformStamped transform_body;
 
     transform_body.header.stamp = get_clock()->now();
     transform_body.header.frame_id = odom_id_;
     transform_body.child_frame_id = body_id_;
-    transform_body.transform.translation.x = q_now.x;
-    transform_body.transform.translation.y = q_now.y;
-    transform_body.transform.translation.z = 0.0;
-    transform_body.transform.rotation.z = q_now.theta;
+    transform_body.transform.translation.x = x_;
+    transform_body.transform.translation.y = y_;
+    transform_body.transform.rotation.z = theta_;
 
     tf_broadcaster_->sendTransform(transform_body);
 
-    geometry_msgs::msg::PoseStamped pose;
-    pose.pose.position.x = q_now.x;
-    pose.pose.position.y = q_now.y;
-    tf2::Quaternion q_tf2;
-    q_tf2.setRPY(0, 0, q_now.theta);
-    pose.pose.orientation = tf2::toMsg(q_tf2);
-    pose.header.stamp = get_clock()->now();
+    path_.poses.push_back(construct_path_msg());
     path_.header.stamp = get_clock()->now();
-    path_.poses.push_back(pose);
     path_publisher_->publish(path_);
+
   }
 
   rclcpp::TimerBase::SharedPtr timer_;
@@ -265,6 +280,9 @@ private:
   double collision_radius_;
   double phi_l_prev_ = 0.0;
   double phi_r_prev_ = 0.0;
+  double x_;
+  double y_;
+  double theta_;
 };
 
 int main(int argc, char * argv[])
