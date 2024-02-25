@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <random>
 
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/transform_broadcaster.h"
@@ -79,6 +80,9 @@ public:
     input_noise_ = get_parameter("input_noise").as_double();
     slip_fraction_ = get_parameter("slip_fraction").as_double();
 
+    g_ = std::normal_distribution<>(0.0, input_noise_);
+    u_ = std::uniform_real_distribution(-slip_fraction_, slip_fraction_);
+
     turtlelib::RobotDimensions rd{0.0, track_width_ / 2, wheel_radius_};
     turtlebot_.set_robot_dimensions(rd);
 
@@ -140,6 +144,16 @@ private:
     double g;
     double b;
   };
+
+  std::mt19937 & get_random()
+  {
+    // static variables inside a function are created once and persist for the remainder of the program
+    static std::random_device rd{}; 
+    static std::mt19937 mt{rd()};
+    // we return a reference to the pseudo-random number genrator object. This is always the
+    // same object every time get_random is called
+    return mt;
+  }
 
   visualization_msgs::msg::MarkerArray construct_obstacle_array(vector<double> marker_array_x, vector<double> marker_array_y, Color c)
   {
@@ -295,9 +309,17 @@ private:
 
   void wheel_commands_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
   {
-    left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
-    right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
-    RCLCPP_INFO_STREAM(get_logger(), "wheel velocities: " << left_wheel_velocity_ << " " << right_wheel_velocity_);
+    if (msg.left_velocity == 0 && msg.right_velocity == 0){
+      left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+      right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+    } else {
+      double noise = g_(get_random());
+      left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+      right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) + noise;
+
+      left_wheel_velocity_ *= (1 + u_(get_random()));
+      right_wheel_velocity_ *= (1 + u_(get_random()));
+    }
   }
 
   void timer_callback()
@@ -320,7 +342,8 @@ private:
       auto timestep_message = std_msgs::msg::UInt64();
       timestep_message.data = current_timestep_;
       timestep_publisher_->publish(timestep_message);
-
+      
+      // add the walls and obstacles to the world
       visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
       walls_publisher_->publish(wall_array);
 
@@ -388,6 +411,9 @@ private:
   Color blue = {0.0, 0.0, 1.0};
   Color yellow = {1.0, 1.0, 0.0};
   Color purple = {1.0, 0.0, 1.0};
+
+  std::normal_distribution<> g_;
+  std::uniform_real_distribution<> u_;
 
   int rate_ = 0;
   double x_ = 0.0;

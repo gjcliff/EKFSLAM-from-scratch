@@ -26,6 +26,9 @@ find_package(turtlelib REQUIRED)
 find_package(nuturtlebot_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(Armadillo REQUIRED)
+
+include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 set(srv_files
   "srv/Teleport.srv"
@@ -40,7 +43,7 @@ ament_export_dependencies(rosidl_default_runtime)
 
 add_executable(nusim_exec src/nusim.cpp)
 
-target_link_libraries(nusim_exec turtlelib::turtlelib)
+target_link_libraries(nusim_exec ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
 
 ament_target_dependencies(
   nusim_exec

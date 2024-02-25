@@ -23,7 +23,7 @@ Task C.5: Complete 1/22/2024
 Task C.6: Complete 1/22/2024
 Task C.7: Complete 1/23/2024
 Task C.7(hw2) Complete 2/9/2024
-Task C.9: 
+Task C.9: Complete 2/25/2025
 Task C.10: 
 Task C.11: 
 Task C.12: 
