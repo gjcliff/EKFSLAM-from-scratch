@@ -18,6 +18,10 @@
             <param name="arena_length_y" value="$(var arena_length_y)"/>
             <param name="obstacles/r" value="$(var obstacles/r)"/>
             <param name="draw_only" value="false"/>
+            <param name="input_noise" value="0.0"/>
+            <param name="slip_fraction" value="0.0"/>
+            <param name="basic_sensor_variance" value="0.0"/>
+            <param name="max_range" value="3.0"/>
             <remap from="wheel_cmd" to="red/wheel_cmd"/>
             <remap from="sensor_data" to="red/sensor_data"/>
         </node>
@@ -39,6 +43,8 @@
             <param name="draw_only" value="true"/>
             <param name="input_noise" value="0.0"/>
             <param name="slip_fraction" value="0.0"/>
+            <param name="basic_sensor_variance" value="0.0"/>
+            <param name="max_range" value="3.0"/>
             <remap from="~/walls" to="nuwall/walls"/>
             <remap from="~/obstacles" to="nuwall/obstacles"/>
         </node>

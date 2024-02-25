@@ -5,6 +5,7 @@
 #include <vector>
 #include <cmath>
 #include <random>
+#include <armadillo>
 
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/transform_broadcaster.h"
@@ -56,6 +57,8 @@ public:
 
     declare_parameter("input_noise", 0.0);
     declare_parameter("slip_fraction", 0.0);
+    declare_parameter("basic_sensor_variance", 0.0);
+    declare_parameter("max_range", 2.0);
 
     // set parameters
     rate_ = get_parameter("rate").as_int();
@@ -79,9 +82,12 @@ public:
 
     input_noise_ = get_parameter("input_noise").as_double();
     slip_fraction_ = get_parameter("slip_fraction").as_double();
+    basic_sensor_variance_ = get_parameter("basic_sensor_variance").as_double();
+    max_range_ = get_parameter("max_range").as_double();
 
-    g_ = std::normal_distribution<>(0.0, input_noise_);
-    u_ = std::uniform_real_distribution(-slip_fraction_, slip_fraction_);
+    input_noise_generator_ = std::normal_distribution<>(0.0, input_noise_);
+    slip_fraction_generator_ = std::uniform_real_distribution(-slip_fraction_, slip_fraction_);
+    sensor_variance_generator_ = std::normal_distribution<>(0.0, basic_sensor_variance_);
 
     turtlelib::RobotDimensions rd{0.0, track_width_ / 2, wheel_radius_};
     turtlebot_.set_robot_dimensions(rd);
@@ -104,6 +110,8 @@ public:
     walls_publisher_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/walls", qos);
     obstacles_publisher_ = create_publisher<visualization_msgs::msg::MarkerArray>(
       "~/obstacles", qos);
+    fake_obstacles_publisher_ = create_publisher<visualization_msgs::msg::MarkerArray>(
+        "/fake_sensor", qos);
     sensor_data_publisher_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("sensor_data", 10);
     path_publisher_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
     laser_scan_publisher_ = create_publisher<sensor_msgs::msg::LaserScan>("~/scan", 10);
@@ -131,8 +139,11 @@ public:
     timer_ = create_wall_timer(
       static_cast<std::chrono::milliseconds>(rate_),
       std::bind(&TurtleSimulation::timer_callback, this));
+    slow_timer_ = create_wall_timer(
+      200ms,
+      std::bind(&TurtleSimulation::slow_timer_callback, this));
 
-    visualization_msgs::msg::MarkerArray wall_array = construct_wall_array();
+    visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
     walls_publisher_->publish(wall_array);
 
   }
@@ -179,6 +190,12 @@ private:
       marker.color.r = c.r;
       marker.color.g = c.g;
       marker.color.b = c.b;
+
+      arma::vec2 tmp = {marker_array_x.at(i) - x_, marker_array_y.at(i) - y_};
+      double dist = arma::norm(tmp);
+      if (dist > max_range_) {
+        marker.action = visualization_msgs::msg::Marker::DELETE;
+      }
 
       arr.markers.push_back(marker);
     }
@@ -313,12 +330,12 @@ private:
       left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
       right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
     } else {
-      double noise = g_(get_random());
+      double noise = input_noise_generator_(get_random());
       left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
       right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) + noise;
 
-      left_wheel_velocity_ *= (1 + u_(get_random()));
-      right_wheel_velocity_ *= (1 + u_(get_random()));
+      left_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
+      right_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
     }
   }
 
@@ -350,9 +367,6 @@ private:
       visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array(obstacles_x_, obstacles_y_, red);
       obstacles_publisher_->publish(obstacle_array);
 
-      visualization_msgs::msg::MarkerArray relative_obstacle_array= construct_obstacle_array(relative_obstacles_x_, relative_obstacles_y_, yellow);
-      obstacles_publisher_->publish(relative_obstacle_array);
-      
       // get the body twist
       turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity_, right_wheel_velocity_);
 
@@ -387,11 +401,26 @@ private:
       sensor_data_publisher_->publish(sensor_data_msg);
     }
   }
+
+  void slow_timer_callback()
+  {
+    double noise;
+    for (int i = 0; i < (int)obstacles_x_.size(); i++) {
+      noise = sensor_variance_generator_(get_random());
+      fake_obstacles_x_.at(i) = obstacles_x_.at(i) + noise;
+      noise = sensor_variance_generator_(get_random());
+      fake_obstacles_y_.at(i) = obstacles_y_.at(i) + noise;
+    }
+    visualization_msgs::msg::MarkerArray relative_obstacle_array = construct_obstacle_array(fake_obstacles_x_, fake_obstacles_y_, yellow);
+    fake_obstacles_publisher_->publish(relative_obstacle_array);
+  }
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::TimerBase::SharedPtr slow_timer_;
   // publishers
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr walls_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_publisher_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr fake_obstacles_publisher_;
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_publisher_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_publisher_;
   rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr laser_scan_publisher_;
@@ -412,8 +441,9 @@ private:
   Color yellow = {1.0, 1.0, 0.0};
   Color purple = {1.0, 0.0, 1.0};
 
-  std::normal_distribution<> g_;
-  std::uniform_real_distribution<> u_;
+  std::normal_distribution<> input_noise_generator_;
+  std::uniform_real_distribution<> slip_fraction_generator_;
+  std::normal_distribution<> sensor_variance_generator_;
 
   int rate_ = 0;
   double x_ = 0.0;
@@ -430,6 +460,8 @@ private:
   double track_width_;
   double input_noise_;
   double slip_fraction_;
+  double basic_sensor_variance_;
+  double max_range_;
   bool draw_only_;
 
   int motor_cmd_max_;
@@ -442,8 +474,8 @@ private:
   double right_wheel_velocity_;
   std::vector<double> obstacles_x_;
   std::vector<double> obstacles_y_;
-  std::vector<double> relative_obstacles_x_;
-  std::vector<double> relative_obstacles_y_;
+  std::vector<double> fake_obstacles_x_;
+  std::vector<double> fake_obstacles_y_;
   double obstacle_radius_;
   double obstacle_height_ = 0.25;
   unsigned int current_timestep_ = 0;
