@@ -53,6 +53,9 @@ public:
     declare_parameter("encoder_ticks_per_rad", 500.0);
     declare_parameter("collision_radius", 0.2);
 
+    declare_parameter("input_noise", 0.0);
+    declare_parameter("slip_fraction", 0.0);
+
     // set parameters
     rate_ = get_parameter("rate").as_int();
     x_ = get_parameter("x0").as_double();
@@ -72,6 +75,9 @@ public:
     motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
     encoder_ticks_per_rad_ = get_parameter("encoder_ticks_per_rad").as_double();
     collision_radius_ = get_parameter("collision_radius").as_double();
+
+    input_noise_ = get_parameter("input_noise").as_double();
+    slip_fraction_ = get_parameter("slip_fraction").as_double();
 
     turtlelib::RobotDimensions rd{0.0, track_width_ / 2, wheel_radius_};
     turtlebot_.set_robot_dimensions(rd);
@@ -396,6 +402,8 @@ private:
   double wall_thickness_ = 0.05;
   double wheel_radius_;
   double track_width_;
+  double input_noise_;
+  double slip_fraction_;
   bool draw_only_;
 
   int motor_cmd_max_;
