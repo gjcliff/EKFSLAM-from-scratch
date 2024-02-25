@@ -23,3 +23,4 @@
 [24] https://stackoverflow.com/questions/62030341/what-is-this-catching-polymorphic-type-x-by-value-wcatch-value
 [25] Leo Chen
 [26] https://docs.ros2.org/latest/api/ament_index_cpp/get__package__share__directory_8hpp_source.html
+[27] https://arma.sourceforge.net/docs.html#norm

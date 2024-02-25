@@ -191,8 +191,7 @@ private:
       marker.color.g = c.g;
       marker.color.b = c.b;
 
-      arma::vec2 tmp = {marker_array_x.at(i) - x_, marker_array_y.at(i) - y_};
-      double dist = arma::norm(tmp);
+      double dist = turtlelib::magnitude({marker_array_x.at(i) - x_, marker_array_y.at(i) - y_});
       if (dist > max_range_) {
         marker.action = visualization_msgs::msg::Marker::DELETE;
       }
@@ -338,6 +337,26 @@ private:
       right_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
     }
   }
+  
+  /// @brief This function checks if the red robot is in collision with an
+  /// obstacle. If so, it returns updated coordinates so that the collision
+  /// radius of the robot is tangent with the collisoin radius of the obstacle.
+  /// @return A vector of doubles containing the new x and y coordinates of the
+  /// robot.
+  vector<double> check_collision()
+  {
+    double x_new = x_;
+    double y_new = y_;
+    for (int i = 0; i < (int)obstacles_x_.size(); i++) {
+      double dist = turtlelib::magnitude({obstacles_x_.at(i) - x_, obstacles_y_.at(i) - y_});
+      if (dist < collision_radius_ + obstacle_radius_) {
+        turtlelib::Vector2D v = turtlelib::normalize_vector({obstacles_x_.at(i) - x_, obstacles_y_.at(i) - y_});
+        x_new += (collision_radius_ + obstacle_radius_ - dist) * v.x;
+        y_new += (collision_radius_ + obstacle_radius_ - dist) * v.y;
+      }
+    }
+    return {x_new, y_new};
+  }
 
   void timer_callback()
   {
@@ -382,6 +401,8 @@ private:
       x_ = qv.x;
       y_ = qv.y;
       theta_ = qv.theta;
+
+      vector<double> new_coords = check_collision();
 
       // broadcast the position of the red robot in the world frame
       geometry_msgs::msg::TransformStamped t = construct_transform_msg(x_, y_, theta_);

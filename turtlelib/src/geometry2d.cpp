@@ -139,7 +139,7 @@ std::istream & operator>>(std::istream & is, Vector2D & v)
 
 Vector2D normalize_vector(Vector2D v)
 {
-  return v * (1 / (std::sqrt(std::pow(v.x, 2) + std::pow(v.y, 2))));
+  return v * (1 / (magnitude(v)));
 }
 
 
