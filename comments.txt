@@ -1,0 +1,5 @@
+some tests fail
+
+The way the robot reacts to cmd_vel messages in simulation is strange. There is not smooth continuous movement in real time but rather the robot moves my the full amount of the twist as soon as it receives the message. This needs to be fixed so that time elapses in the simulator at a real-time speed.  The robot should move 1 meter in 10 seconds when given cmd_vel of .1m/s.
+
+There can be a timeout when the robot stops if it does not receive cmd_vel after a set time period, but in general, when the .1m/s cmd_vel is received it should make the robot start moving at .1m/s

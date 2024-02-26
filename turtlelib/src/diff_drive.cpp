@@ -6,13 +6,13 @@
 namespace turtlelib
 {
 
-DiffDrive::DiffDrive()
+    DiffDrive::DiffDrive() // initializer lists
 {
   H = construct_H_matrix();
   H_pseudo = construct_H_pseudo_matrix();
 }
 
-DiffDrive::DiffDrive(double phi_right, double phi_left)
+    DiffDrive::DiffDrive(double phi_right, double phi_left) // initiailzer lists
 {
   phi_r = phi_right;
   phi_l = phi_left;
