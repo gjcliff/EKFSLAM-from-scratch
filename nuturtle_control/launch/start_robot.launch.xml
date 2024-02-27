@@ -2,10 +2,13 @@
     <arg name="cmd_src" default="none" description="decides what control method to use for the robot"/>
     <arg name="robot" default="nusim" description="decides whether to control a real robot, a fake robot, or nothing"/>
     <arg name="use_rviz" default="false" description="decides whether or not to use rviz"/>
+    <arg name="slam" default="false" description="decides whether or not to use slam"/>
 
     <!-- Handle the use_rviz argument -->
     <group if="$(eval '\'$(var use_rviz)\' == \'true\'')">
-        <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nuturtle_control)/config/turtle_control.rviz"/>
+        <node pkg="rviz2" exec="rviz2" if="$(eval '\'$(var robot)\' == \'nusim\' and \'$(var slam)\' == \'false\'')" args="-d $(find-pkg-share nuturtle_control)/config/v2.rviz"/>
+        <node pkg="rviz2" exec="rviz2" if="$(eval '\'$(var robot)\' == \'none\' and \'$(var slam)\' == \'false\'')"  args="-d $(find-pkg-share nuturtle_control)/config/v3.rviz"/>
+        <node pkg="rviz2" exec="rviz2" if="$(eval '\'$(var robot)\' == \'nusim\' and \'$(var slam)\' == \'true\'')" args="-d $(find-pkg-share nuturtle_control)/config/slam.rviz"/>
         <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
             <arg name="use_rviz" value="false"/>
             <arg name="use_jsp" value="false"/>
@@ -47,13 +50,6 @@
         
     <group if="$(eval '\'$(var robot)\' == \'localhost\'')">
         <let name="use_rviz" value="false"/>
-        <include file="$(find-pkg-share nusim)/launch/nusim.launch.xml">
-            <arg name="use_rviz" value="false"/>
-            <arg name="robot_color" value="red"/>
-            <arg name="config_file" value="$(find-pkg-share nusim)/config/nuturtle_control_world.yaml"/>
-            <arg name="diff_params" value="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
-            <arg name="draw_only" value="true"/>
-        </include>
         <node pkg="nuturtle_control" exec="odometry">
             <param name="body_id" value="blue/base_footprint"/>
             <param name="odom_id" value="odom"/>
@@ -73,11 +69,17 @@
     </group>
 
     <group if="$(eval '\'$(var robot)\' == \'none\'')">
-        <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nuturtle_control)/config/real_robot_with_odometry.rviz"/>
         <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
             <arg name="use_rviz" value="false"/>
             <arg name="use_jsp" value="false"/>
             <arg name="color" value="blue"/>
+        </include>
+        <include file="$(find-pkg-share nusim)/launch/nusim.launch.xml">
+            <arg name="use_rviz" value="false"/>
+            <arg name="robot_color" value="red"/>
+            <arg name="config_file" value="$(find-pkg-share nusim)/config/nuturtle_control_world.yaml"/>
+            <arg name="diff_params" value="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+            <arg name="draw_only" value="true"/>
         </include>
     </group>
 

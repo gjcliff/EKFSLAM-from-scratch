@@ -114,6 +114,7 @@ public:
       "joint_states", 10);
 
     prev_encoder_tic_time_ = this->get_clock()->now();
+
   }
 
 private:

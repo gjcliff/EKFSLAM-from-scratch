@@ -22,6 +22,14 @@
             <param name="slip_fraction" value="0.0"/>
             <param name="basic_sensor_variance" value="0.0"/>
             <param name="max_range" value="3.0"/>
+            <param name="laser_min_angle" value="0.0"/>
+            <param name="laser_max_angle" value="6.2657318115234375"/>
+            <param name="laser_angle_increment" value="0.01745329238474369"/>
+            <param name="laser_time_increment" value="0.0005592841189354658"/>
+            <param name="laser_scan_time" value="0.20134228467941284"/>
+            <param name="laser_min_range" value="0.11999999731779099"/>
+            <param name="laser_max_range" value="3.5"/>
+            <param name="laser_variance" value="0.0"/>
             <remap from="wheel_cmd" to="red/wheel_cmd"/>
             <remap from="sensor_data" to="red/sensor_data"/>
         </node>

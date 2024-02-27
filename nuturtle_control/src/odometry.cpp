@@ -163,6 +163,8 @@ public:
 
     robot_odometry_.header.frame_id = odom_id_;
     robot_odometry_.child_frame_id = body_id_;
+
+    path_.header.frame_id = odom_id_;
   }
 
 private:

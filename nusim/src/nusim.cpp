@@ -1,7 +1,9 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <rclcpp/logging.hpp>
 #include <string>
+#include <turtlelib/geometry2d.hpp>
 #include <vector>
 #include <cmath>
 #include <random>
@@ -60,6 +62,15 @@ public:
     declare_parameter("basic_sensor_variance", 0.0);
     declare_parameter("max_range", 2.0);
 
+    declare_parameter("laser_min_angle", 0.0);
+    declare_parameter("laser_max_angle", 0.0);
+    declare_parameter("laser_angle_increment", 0.0);
+    declare_parameter("laser_time_increment", 0.0);
+    declare_parameter("laser_scan_time", 0.0);
+    declare_parameter("laser_min_range", 0.0);
+    declare_parameter("laser_max_range", 0.0);
+    declare_parameter("laser_variance", 0.0);
+
     // set parameters
     rate_ = get_parameter("rate").as_int();
     x_ = get_parameter("x0").as_double();
@@ -69,6 +80,8 @@ public:
     arena_y_length_ = get_parameter("arena_length_y").as_double();
     obstacles_x_ = get_parameter("obstacles/x").as_double_array();
     obstacles_y_ = get_parameter("obstacles/y").as_double_array();
+    fake_obstacles_x_ = obstacles_x_;
+    fake_obstacles_y_ = obstacles_y_;
     obstacle_height_ = get_parameter("obstacles/height").as_double();
     obstacle_radius_ = get_parameter("obstacles/r").as_double();
     draw_only_ = get_parameter("draw_only").as_bool();
@@ -85,17 +98,30 @@ public:
     basic_sensor_variance_ = get_parameter("basic_sensor_variance").as_double();
     max_range_ = get_parameter("max_range").as_double();
 
+    laser_angle_min_ = get_parameter("laser_min_angle").as_double();
+    laser_angle_max_ = get_parameter("laser_max_angle").as_double();
+    laser_angle_increment_ = get_parameter("laser_angle_increment").as_double();
+    laser_time_increment_ = get_parameter("laser_time_increment").as_double();
+    laser_scan_time_ = get_parameter("laser_scan_time").as_double();
+    laser_min_range_ = get_parameter("laser_min_range").as_double();
+    laser_max_range_ = get_parameter("laser_max_range").as_double();
+    laser_variance_ = get_parameter("laser_variance").as_double();
+
     input_noise_generator_ = std::normal_distribution<>(0.0, input_noise_);
     slip_fraction_generator_ = std::uniform_real_distribution(-slip_fraction_, slip_fraction_);
     sensor_variance_generator_ = std::normal_distribution<>(0.0, basic_sensor_variance_);
+    laser_noise_generator_ = std::normal_distribution<>(0.0, laser_variance_);
 
     turtlelib::RobotDimensions rd{0.0, track_width_ / 2, wheel_radius_};
     turtlebot_.set_robot_dimensions(rd);
 
-    // set miscellaneous variables
-    og_x_ = x_;
-    og_y_ = y_;
-    og_theta_ = theta_;
+    // the first point is repeated at the end of the array to make looping
+    // through the array easier
+    wall_pos_array_ = {{arena_x_length_ / 2, arena_y_length_ / 2},
+      {arena_x_length_ / 2, -arena_y_length_ / 2},
+      {-arena_x_length_ / 2, -arena_y_length_ / 2},
+      {-arena_x_length_ / 2, arena_y_length_ / 2},
+      {arena_x_length_ / 2, arena_y_length_ / 2}};
 
     // check whether or not the obstacle arrays are the same size
     if (obstacles_x_.size() != obstacles_y_.size()) {
@@ -146,6 +172,12 @@ public:
     visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
     walls_publisher_->publish(wall_array);
 
+    // set miscellaneous variables
+    og_x_ = x_;
+    og_y_ = y_;
+    og_theta_ = theta_;
+    max_arena_dist_ = std::sqrt(std::pow(arena_x_length_,2) + std::pow(arena_y_length_,2));
+
   }
 
 private:
@@ -169,7 +201,7 @@ private:
   visualization_msgs::msg::MarkerArray construct_obstacle_array(vector<double> marker_array_x, vector<double> marker_array_y, Color c)
   {
     visualization_msgs::msg::MarkerArray arr;
-    for (int i = 0; i < (int)obstacles_x_.size(); i++) {
+    for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
       visualization_msgs::msg::Marker marker;
       marker.header.frame_id = "nusim/world";
       marker.header.stamp = get_clock()->now();
@@ -178,7 +210,7 @@ private:
       marker.action = visualization_msgs::msg::Marker::ADD;
       marker.pose.position.x = marker_array_x[i];
       marker.pose.position.y = marker_array_y[i];
-      marker.pose.position.z = wall_height_ / 2;
+      marker.pose.position.z = obstacle_height_ / 2;
       marker.pose.orientation.x = 0;
       marker.pose.orientation.y = 0;
       marker.pose.orientation.z = 0;
@@ -252,7 +284,7 @@ private:
     wall_array.markers.push_back(
       construct_marker(
         0.0, -arena_y_length_ / 2, y_length,
-        wall_thickness_, 1, c));
+        wall_thickness_, 3, c));
 
     return wall_array;
   }
@@ -347,7 +379,7 @@ private:
   {
     double x_new = x_;
     double y_new = y_;
-    for (int i = 0; i < (int)obstacles_x_.size(); i++) {
+    for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
       double dist = turtlelib::magnitude({obstacles_x_.at(i) - x_, obstacles_y_.at(i) - y_});
       if (dist < collision_radius_ + obstacle_radius_) {
         turtlelib::Vector2D v = turtlelib::normalize_vector({obstacles_x_.at(i) - x_, obstacles_y_.at(i) - y_});
@@ -423,10 +455,116 @@ private:
     }
   }
 
+  /// @brief This function calculates the range of the laser scan
+  vector<float> find_ranges()
+  {
+    vector<float> ranges;
+    
+    for (int i = 0; i < static_cast<int>(laser_angle_max_/laser_angle_increment_); i++) {
+      // need to pick an arbitrary point outside the arena, I'm going to choose
+      // one that follows the vector v, that has a length of the diagonal of the
+      // arena.
+      turtlelib::Vector2D v = {
+        laser_max_range_ * std::cos(laser_angle_increment_ * i) - laser_min_range_ * std::cos(laser_angle_increment_ * i),
+        laser_max_range_ * std::sin(laser_angle_increment_ * i) - laser_min_range_ * std::sin(laser_angle_increment_ * i)
+      };
+
+      // check if the laser can see one of the obstacles
+      int sgn = 0;
+      v.y < 0 ? sgn = -1 : sgn = 1;
+
+      double d_r = std::sqrt(std::pow(v.x,2) + std::pow(v.y,2));
+      double D = (x_ * (y_ + v.y) - (x_ + v.x) * y_);
+      double delta = std::pow(obstacle_radius_,2) * std::pow(d_r,2) - std::pow(D,2);
+      RCLCPP_INFO_STREAM(get_logger(), "delta: " << delta << " v: " << v);
+
+      if (delta > 1e-5) {
+        RCLCPP_INFO(get_logger(), "found obstacle two points");
+        double xi1 = (D * v.y + sgn * v.x * std::sqrt(delta)) / std::pow(d_r,2) + laser_noise_generator_(get_random());
+        double yi1 = (-D * v.x + std::abs(v.y) * std::sqrt(delta)) / std::pow(d_r,2) + laser_noise_generator_(get_random());
+
+        double xi2 = (D * v.y - sgn * v.x * std::sqrt(delta)) / std::pow(d_r,2) + laser_noise_generator_(get_random());
+        double yi2 = (-D * v.x + std::abs(v.y) * std::sqrt(delta)) / std::pow(d_r,2) + laser_noise_generator_(get_random());
+
+        double range1 = turtlelib::magnitude(turtlelib::Vector2D{xi1-x_, yi1-y_});
+        double range2 = turtlelib::magnitude(turtlelib::Vector2D{xi2-x_, yi2-y_});
+
+        range1 > range2 ? ranges.push_back(range1) : ranges.push_back(range2);
+        continue;
+        
+      } else {
+        RCLCPP_INFO(get_logger(), "found obstacle one points");
+        double xi = (D * v.y + sgn * v.x * std::sqrt(delta)) / std::pow(d_r,2);
+        double yi = (-D * v.x + std::abs(v.y) * std::sqrt(delta)) / std::pow(d_r,2);
+
+        double range = turtlelib::magnitude(turtlelib::Vector2D{xi-x_, yi-y_});
+        ranges.push_back(range);
+        continue;
+      }
+
+      // check if the laser can see one of the walls
+      bool hit_wall = false;
+      for (int j = 0; j < static_cast<int>(wall_pos_array_.size()) - 1; j++) {
+        vector<double> point1 = {x_, y_};
+        vector<double> point2 = {x_ + v.x, y_ + v.y};
+        vector<double> point3 = {wall_pos_array_.at(j).at(0), wall_pos_array_.at(j).at(1)};
+        vector<double> point4 = {wall_pos_array_.at(j+1).at(0), wall_pos_array_.at(j+1).at(1)};
+
+        // BEGIN CITATION [28]
+        // find the intersection of the laser and the wall, if there is one
+        double x = arma::det(arma::mat{{arma::det(arma::mat{{point1.at(0), point1.at(1)}, {point2.at(0), point2.at(1)}}), point1.at(0) - point2.at(0)},
+                                       {arma::det(arma::mat{{point3.at(0), point3.at(1)}, {point4.at(0), point4.at(1)}}), point3.at(0) - point4.at(0)}}) /
+                   arma::det(arma::mat{{point1.at(0) - point2.at(0), point1.at(1) - point2.at(1)},
+                                       {point3.at(0) - point4.at(0), point3.at(1) - point4.at(1)}});
+        double y = arma::det(arma::mat{{arma::det(arma::mat{{point1.at(0), point1.at(1)}, {point2.at(0), point2.at(1)}}), point1.at(1) - point2.at(1)},
+                                       {arma::det(arma::mat{{point3.at(0), point3.at(1)}, {point4.at(0), point4.at(1)}}), point3.at(1) - point4.at(1)}}) /
+                   arma::det(arma::mat{{point1.at(0) - point2.at(0), point1.at(1) - point2.at(1)},
+                                       {point3.at(0) - point4.at(0), point3.at(1) - point4.at(1)}});
+        // END CITATION [28]
+
+        if (x > std::min(point1.at(0), point2.at(0)) && x < std::max(point1.at(0), point2.at(0)) &&
+            y > std::min(point1.at(1), point2.at(1)) && y < std::max(point1.at(1), point2.at(1)) &&
+            x > std::min(point3.at(0), point4.at(0)) && x < std::max(point3.at(0), point4.at(0)) &&
+            y > std::min(point3.at(1), point4.at(1)) && y < std::max(point3.at(1), point4.at(1))) {
+          RCLCPP_INFO(get_logger(), "hit wall");
+          x += laser_noise_generator_(get_random());
+          y += laser_noise_generator_(get_random());
+          double range = turtlelib::magnitude(turtlelib::Vector2D{x-x_, y-y_});
+          ranges.push_back(range);
+          hit_wall = true;
+          continue;
+        } 
+        ranges.push_back(0.0);
+      }
+      if (!hit_wall) {
+        ranges.push_back(0.0);
+      }
+    }
+
+    return ranges;
+  }
+
+  sensor_msgs::msg::LaserScan construct_laser_scan()
+  {
+    sensor_msgs::msg::LaserScan laser_scan;
+    laser_scan.header.stamp = get_clock()->now();
+    laser_scan.header.frame_id = "red/base_scan";
+    laser_scan.angle_min = laser_angle_min_;
+    laser_scan.angle_max = laser_angle_max_;
+    laser_scan.angle_increment = laser_angle_increment_;
+    laser_scan.time_increment = laser_time_increment_;
+    laser_scan.scan_time = laser_scan_time_;
+    laser_scan.range_min = laser_min_range_;
+    laser_scan.range_max = laser_max_range_;
+    laser_scan.ranges = find_ranges();
+
+    return laser_scan;
+  }
+
   void slow_timer_callback()
   {
     double noise;
-    for (int i = 0; i < (int)obstacles_x_.size(); i++) {
+    for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
       noise = sensor_variance_generator_(get_random());
       fake_obstacles_x_.at(i) = obstacles_x_.at(i) + noise;
       noise = sensor_variance_generator_(get_random());
@@ -434,6 +572,10 @@ private:
     }
     visualization_msgs::msg::MarkerArray relative_obstacle_array = construct_obstacle_array(fake_obstacles_x_, fake_obstacles_y_, yellow);
     fake_obstacles_publisher_->publish(relative_obstacle_array);
+
+    // publish simulated laser scan data
+    sensor_msgs::msg::LaserScan laser_scan = construct_laser_scan();
+    laser_scan_publisher_->publish(laser_scan);
   }
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::TimerBase::SharedPtr slow_timer_;
@@ -465,6 +607,7 @@ private:
   std::normal_distribution<> input_noise_generator_;
   std::uniform_real_distribution<> slip_fraction_generator_;
   std::normal_distribution<> sensor_variance_generator_;
+  std::normal_distribution<> laser_noise_generator_;
 
   int rate_ = 0;
   double x_ = 0.0;
@@ -475,14 +618,24 @@ private:
   double og_theta_;
   double arena_x_length_;
   double arena_y_length_;
+  double max_arena_dist_;
   double wall_height_ = 0.25;
   double wall_thickness_ = 0.05;
+  vector<vector<double>> wall_pos_array_;
   double wheel_radius_;
   double track_width_;
   double input_noise_;
   double slip_fraction_;
   double basic_sensor_variance_;
   double max_range_;
+  double laser_angle_min_;
+  double laser_angle_max_;
+  double laser_angle_increment_;
+  double laser_time_increment_;
+  double laser_scan_time_;
+  double laser_min_range_;
+  double laser_max_range_;
+  double laser_variance_;
   bool draw_only_;
 
   int motor_cmd_max_;
