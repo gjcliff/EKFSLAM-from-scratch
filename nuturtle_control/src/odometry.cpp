@@ -204,7 +204,7 @@ private:
   /// @brief perform FK on the joint positions of the turtlebot's wheels
   /// in radians and update the location of the turtlebot's base frame
   /// @param msg - the joint positions of the turtlebot's wheels
-  void joint_state_callback(const sensor_msgs::msg::JointState msg)
+  void joint_state_callback(const sensor_msgs::msg::JointState & msg)
   {
     double phi_l = msg.position.at(0);
     double phi_r = msg.position.at(1);

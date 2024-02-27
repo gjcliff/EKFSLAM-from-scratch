@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>nuslam</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>a package for running a SLAM algorithm with an extended kalman filter, machine learning, odometry, and mystery</description>
   <maintainer email="gclifford@u.northwestern.edu">Graham Clifford</maintainer>
   <license>APLv2</license>

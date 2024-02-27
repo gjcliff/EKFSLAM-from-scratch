@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /MarkerArray1/Topic1
         - /MarkerArray2/Topic1
+        - /LaserScan1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -346,7 +347,7 @@ Visualization Manager:
         Min Value: -10
         Value: true
       Axis: Z
-      Channel Name: intensity
+      Channel Name: x
       Class: rviz_default_plugins/LaserScan
       Color: 255; 255; 255
       Color Transformer: Intensity
@@ -354,9 +355,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
+      Max Intensity: 1.593833327293396
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: -1.6080373525619507
       Name: LaserScan
       Position Transformer: XYZ
       Selectable: true
@@ -369,7 +370,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /nusim/scan
+        Value: /red/scan
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -419,25 +420,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.402219772338867
+      Distance: 3.747328519821167
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.013522209599614143
-        Y: 0.2161169946193695
-        Z: -0.20696164667606354
+        X: -0.08542121201753616
+        Y: 0.04381737485527992
+        Z: -0.2869994044303894
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7647976875305176
+      Pitch: 0.5702028274536133
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.14040610194206238
+      Yaw: 5.958581447601318
     Saved: ~
 Window Geometry:
   Displays:
@@ -456,4 +457,4 @@ Window Geometry:
     collapsed: false
   Width: 1920
   X: 0
-  Y: 27
+  Y: 188

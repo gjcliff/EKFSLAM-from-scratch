@@ -7,9 +7,40 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(turtlelib REQUIRED)
+find_package(Armadillo REQUIRED)
+
+include_directories(${ARMADILLO_INCLUDE_DIRS})
+
+add_executable(slam src/slam.cpp)
+
+target_link_libraries(nusim_exec ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
+
+ament_target_dependencies(
+    slam 
+    rclcpp
+    turtlelib
+    Armadillo
+)
+
+
+install(TARGETS
+  nusim_exec
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# install launch files
+install(
+  DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+)
+
+# # install config directory
+# install(
+#   DIRECTORY config/
+#   DESTINATION share/${PROJECT_NAME}/config
+# )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

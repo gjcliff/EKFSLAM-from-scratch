@@ -1,11 +1,5 @@
 #include <chrono>
-#include <functional>
-#include <geometry_msgs/msg/detail/transform__struct.hpp>
-#include <geometry_msgs/msg/detail/transform_stamped__struct.hpp>
-#include <memory>
-#include <rclcpp/logging.hpp>
 #include <string>
-#include <turtlelib/geometry2d.hpp>
 #include <vector>
 #include <cmath>
 #include <random>
@@ -30,6 +24,7 @@
 #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
 #include "turtlelib/diff_drive.hpp"
+#include <turtlelib/geometry2d.hpp>
 #include "nusim/srv/teleport.hpp"
 
 using namespace std::chrono_literals;
@@ -84,8 +79,6 @@ public:
     arena_y_length_ = get_parameter("arena_length_y").as_double();
     obstacles_x_ = get_parameter("obstacles/x").as_double_array();
     obstacles_y_ = get_parameter("obstacles/y").as_double_array();
-    fake_obstacles_x_ = obstacles_x_;
-    fake_obstacles_y_ = obstacles_y_;
     obstacle_height_ = get_parameter("obstacles/height").as_double();
     obstacle_radius_ = get_parameter("obstacles/r").as_double();
     draw_only_ = get_parameter("draw_only").as_bool();
@@ -144,7 +137,7 @@ public:
         "/fake_sensor", qos);
     sensor_data_publisher_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("sensor_data", 10);
     path_publisher_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
-    laser_scan_publisher_ = create_publisher<sensor_msgs::msg::LaserScan>("~/scan", 10);
+    laser_scan_publisher_ = create_publisher<sensor_msgs::msg::LaserScan>("/red/scan", 10);
     annoying_publisher_ = create_publisher<visualization_msgs::msg::Marker>("~/annoying", qos);
 
     // declare subscribers
@@ -224,6 +217,42 @@ private:
       }
   }
 
+  visualization_msgs::msg::MarkerArray construct_fake_obstacle_array(vector<double> marker_array_x, vector<double> marker_array_y, Color c)
+  {
+    visualization_msgs::msg::MarkerArray arr;
+    for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
+      visualization_msgs::msg::Marker marker;
+      marker.header.frame_id = "blue/base_footprint";
+      marker.header.stamp = get_clock()->now();
+      marker.id = i;
+      marker.type = visualization_msgs::msg::Marker::CYLINDER;
+      marker.action = visualization_msgs::msg::Marker::ADD;
+      marker.pose.position.x = marker_array_x[i];
+      marker.pose.position.y = marker_array_y[i];
+      marker.pose.position.z = obstacle_height_ / 2;
+      marker.pose.orientation.x = 0;
+      marker.pose.orientation.y = 0;
+      marker.pose.orientation.z = 0;
+      marker.pose.orientation.w = 1.0;
+      marker.scale.x = obstacle_radius_ * 2;
+      marker.scale.y = obstacle_radius_ * 2;
+      marker.scale.z = obstacle_height_;
+      marker.color.a = 1.0;
+      marker.color.r = c.r;
+      marker.color.g = c.g;
+      marker.color.b = c.b;
+
+      double dist = turtlelib::magnitude({marker_array_x.at(i), marker_array_y.at(i)});
+      if (dist > max_range_) {
+        marker.action = visualization_msgs::msg::Marker::DELETE;
+      }
+
+      arr.markers.push_back(marker);
+    }
+
+    return arr;
+  }
+
   visualization_msgs::msg::MarkerArray construct_obstacle_array(vector<double> marker_array_x, vector<double> marker_array_y, Color c)
   {
     visualization_msgs::msg::MarkerArray arr;
@@ -248,12 +277,6 @@ private:
       marker.color.r = c.r;
       marker.color.g = c.g;
       marker.color.b = c.b;
-
-      double dist = turtlelib::magnitude({marker_array_x.at(i) - x_, marker_array_y.at(i) - y_});
-      if (dist > max_range_) {
-        marker.action = visualization_msgs::msg::Marker::DELETE;
-      }
-
       arr.markers.push_back(marker);
     }
 
@@ -501,24 +524,21 @@ private:
         laser_max_range_ * std::sin(current_angle)
       };
 
-      visualization_msgs::msg::Marker marker = construct_marker(v.x + scan_x, v.y + scan_y, wall_thickness_/4, wall_thickness_/4, 4, purple);
-      annoying_publisher_->publish(marker);
-
       // check if the laser can see one of the obstacles
       int sgn = 0;
       v.y < 0 ? sgn = -1 : sgn = 1;
 
       bool hit_obstacle = false;
       for (int j = 0; j < static_cast<int>(fake_obstacles_x_.size()); j++) {
-        turtlelib::Vector2D v_dir = {fake_obstacles_x_.at(j) - scan_x, fake_obstacles_y_.at(j) - scan_y};
+        turtlelib::Vector2D v_dir = {fake_obstacles_x_.at(j), fake_obstacles_y_.at(j)};
         if (turtlelib::dot(v, v_dir) < 0) {
           continue;
         }
 
-        double x1 = scan_x - fake_obstacles_x_.at(j);
-        double y1 = scan_y - fake_obstacles_y_.at(j);
-        double x2 = v.x + scan_x - fake_obstacles_x_.at(j);
-        double y2 = v.y + scan_y - fake_obstacles_y_.at(j);
+        double x1 = -fake_obstacles_x_.at(j);
+        double y1 = -fake_obstacles_y_.at(j);
+        double x2 = v.x - fake_obstacles_x_.at(j);
+        double y2 = v.y - fake_obstacles_y_.at(j);
         double d_x = x2 - x1;
         double d_y = y2 - y1;
         double d_r = std::sqrt(std::pow(d_x,2) + std::pow(d_y,2));
@@ -637,21 +657,29 @@ private:
     return laser_scan;
   }
 
+  void update_fake_obstacles()
+  {
+    if (fake_obstacles_x_.empty()) {
+      fake_obstacles_x_ = obstacles_x_;
+      fake_obstacles_y_ = obstacles_y_;
+    }
+    for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
+      fake_obstacles_x_.at(i) = obstacles_x_.at(i) - x_ + sensor_variance_generator_(get_random());
+      fake_obstacles_y_.at(i) = obstacles_y_.at(i) - y_ + sensor_variance_generator_(get_random());
+    }
+  }
+
   void slow_timer_callback()
   {
-    double noise;
-    for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
-      noise = sensor_variance_generator_(get_random());
-      fake_obstacles_x_.at(i) = obstacles_x_.at(i) + noise;
-      noise = sensor_variance_generator_(get_random());
-      fake_obstacles_y_.at(i) = obstacles_y_.at(i) + noise;
-    }
+    // update the positions of the fake obstacles and publish them
+    update_fake_obstacles();
     visualization_msgs::msg::MarkerArray relative_obstacle_array = construct_obstacle_array(fake_obstacles_x_, fake_obstacles_y_, yellow);
     fake_obstacles_publisher_->publish(relative_obstacle_array);
 
     // publish simulated laser scan data
     sensor_msgs::msg::LaserScan laser_scan = construct_laser_scan();
     laser_scan_publisher_->publish(laser_scan);
+
   }
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::TimerBase::SharedPtr slow_timer_;
