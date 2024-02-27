@@ -459,88 +459,120 @@ private:
   vector<float> find_ranges()
   {
     vector<float> ranges;
+
+    RCLCPP_INFO_STREAM(get_logger(), "ranges_size: " << ranges.size());
     
-    for (int i = 0; i < static_cast<int>(laser_angle_max_/laser_angle_increment_); i++) {
+    for (int i = 1; i < 360; i++) {
       // need to pick an arbitrary point outside the arena, I'm going to choose
       // one that follows the vector v, that has a length of the diagonal of the
       // arena.
+      double current_angle = laser_angle_increment_ * i;
+
       turtlelib::Vector2D v = {
-        laser_max_range_ * std::cos(laser_angle_increment_ * i) - laser_min_range_ * std::cos(laser_angle_increment_ * i),
-        laser_max_range_ * std::sin(laser_angle_increment_ * i) - laser_min_range_ * std::sin(laser_angle_increment_ * i)
+        laser_max_range_ * std::cos(current_angle) - laser_min_range_ * std::cos(current_angle),
+        laser_max_range_ * std::sin(current_angle) - laser_min_range_ * std::sin(current_angle)
       };
+
 
       // check if the laser can see one of the obstacles
       int sgn = 0;
       v.y < 0 ? sgn = -1 : sgn = 1;
 
-      double d_r = std::sqrt(std::pow(v.x,2) + std::pow(v.y,2));
-      double D = (x_ * (y_ + v.y) - (x_ + v.x) * y_);
-      double delta = std::pow(obstacle_radius_,2) * std::pow(d_r,2) - std::pow(D,2);
-      RCLCPP_INFO_STREAM(get_logger(), "delta: " << delta << " v: " << v);
+      bool hit_obstacle = false;
+      for (int j = 0; j < static_cast<int>(fake_obstacles_x_.size()) - 2; j++) {
+        turtlelib::Vector2D v_dir = {fake_obstacles_x_.at(j) - x_, fake_obstacles_y_.at(j) - y_};
+        if (turtlelib::dot(v, v_dir) < 0) {
+          continue;
+        }
 
-      if (delta > 1e-5) {
-        RCLCPP_INFO(get_logger(), "found obstacle two points");
-        double xi1 = (D * v.y + sgn * v.x * std::sqrt(delta)) / std::pow(d_r,2) + laser_noise_generator_(get_random());
-        double yi1 = (-D * v.x + std::abs(v.y) * std::sqrt(delta)) / std::pow(d_r,2) + laser_noise_generator_(get_random());
+        double x = x_ - fake_obstacles_x_.at(j);
+        double y = y_ - fake_obstacles_y_.at(j);
+        double d_r = turtlelib::magnitude(v);
+        double D = (x * (y + v.y) - (x + v.x) * y);
+        double delta = std::pow(obstacle_radius_,2) * std::pow(d_r,2) - std::pow(D,2);
+        RCLCPP_INFO_STREAM(get_logger(), "delta: " << delta << " v: " << v << " D: " << D << " d_r: " << d_r << " x: " << x << " y: " << y << " sgn: " << sgn << " angle: " << current_angle);
 
-        double xi2 = (D * v.y - sgn * v.x * std::sqrt(delta)) / std::pow(d_r,2) + laser_noise_generator_(get_random());
-        double yi2 = (-D * v.x + std::abs(v.y) * std::sqrt(delta)) / std::pow(d_r,2) + laser_noise_generator_(get_random());
+        if (delta > 1e-5) {
 
-        double range1 = turtlelib::magnitude(turtlelib::Vector2D{xi1-x_, yi1-y_});
-        double range2 = turtlelib::magnitude(turtlelib::Vector2D{xi2-x_, yi2-y_});
+          double xi1 = ((D * v.y + sgn * v.x * std::sqrt(delta)) / std::pow(d_r,2)) + laser_noise_generator_(get_random());
+          double yi1 = ((-D * v.x + std::abs(v.y) * std::sqrt(delta)) / std::pow(d_r,2)) + laser_noise_generator_(get_random());
 
-        range1 > range2 ? ranges.push_back(range1) : ranges.push_back(range2);
-        continue;
-        
-      } else {
-        RCLCPP_INFO(get_logger(), "found obstacle one points");
-        double xi = (D * v.y + sgn * v.x * std::sqrt(delta)) / std::pow(d_r,2);
-        double yi = (-D * v.x + std::abs(v.y) * std::sqrt(delta)) / std::pow(d_r,2);
+          double xi2 = ((D * v.y - sgn * v.x * std::sqrt(delta)) / std::pow(d_r,2)) + laser_noise_generator_(get_random());
+          double yi2 = ((-D * v.x - std::abs(v.y) * std::sqrt(delta)) / std::pow(d_r,2)) + laser_noise_generator_(get_random());
 
-        double range = turtlelib::magnitude(turtlelib::Vector2D{xi-x_, yi-y_});
-        ranges.push_back(range);
+          // move the obstacle to the world frame
+          xi1 += fake_obstacles_x_.at(j);
+          yi1 += fake_obstacles_y_.at(j);
+          xi2 += fake_obstacles_x_.at(j);
+          yi2 += fake_obstacles_y_.at(j);
+
+          double range1 = turtlelib::magnitude(turtlelib::Vector2D{xi1-x_, yi1-y_});
+          double range2 = turtlelib::magnitude(turtlelib::Vector2D{xi2-x_, yi2-y_});
+
+          range1 > range2 ? ranges.push_back(range2) : ranges.push_back(range1);
+          RCLCPP_INFO_STREAM(get_logger(), "HERE");
+          hit_obstacle = true;
+          continue;
+        } else if (delta > -1e-5 && delta <= 1e-5) {
+          double xi = (D * v.y + sgn * v.x * std::sqrt(delta)) / std::pow(d_r,2);
+          double yi = (-D * v.x + std::abs(v.y) * std::sqrt(delta)) / std::pow(d_r,2);
+
+          // move the obstacle to the world frame
+          xi += fake_obstacles_x_.at(j);
+          yi += fake_obstacles_y_.at(j);
+
+          double range = turtlelib::magnitude(turtlelib::Vector2D{xi-x_, yi-y_});
+          RCLCPP_INFO_STREAM(get_logger(), "HERE TOO FAST");
+          ranges.push_back(range);
+          hit_obstacle = true;
+          continue;
+        }
+      }
+
+      if (hit_obstacle) {
         continue;
       }
 
       // check if the laser can see one of the walls
       bool hit_wall = false;
-      for (int j = 0; j < static_cast<int>(wall_pos_array_.size()) - 1; j++) {
-        vector<double> point1 = {x_, y_};
-        vector<double> point2 = {x_ + v.x, y_ + v.y};
-        vector<double> point3 = {wall_pos_array_.at(j).at(0), wall_pos_array_.at(j).at(1)};
-        vector<double> point4 = {wall_pos_array_.at(j+1).at(0), wall_pos_array_.at(j+1).at(1)};
-
-        // BEGIN CITATION [28]
-        // find the intersection of the laser and the wall, if there is one
-        double x = arma::det(arma::mat{{arma::det(arma::mat{{point1.at(0), point1.at(1)}, {point2.at(0), point2.at(1)}}), point1.at(0) - point2.at(0)},
-                                       {arma::det(arma::mat{{point3.at(0), point3.at(1)}, {point4.at(0), point4.at(1)}}), point3.at(0) - point4.at(0)}}) /
-                   arma::det(arma::mat{{point1.at(0) - point2.at(0), point1.at(1) - point2.at(1)},
-                                       {point3.at(0) - point4.at(0), point3.at(1) - point4.at(1)}});
-        double y = arma::det(arma::mat{{arma::det(arma::mat{{point1.at(0), point1.at(1)}, {point2.at(0), point2.at(1)}}), point1.at(1) - point2.at(1)},
-                                       {arma::det(arma::mat{{point3.at(0), point3.at(1)}, {point4.at(0), point4.at(1)}}), point3.at(1) - point4.at(1)}}) /
-                   arma::det(arma::mat{{point1.at(0) - point2.at(0), point1.at(1) - point2.at(1)},
-                                       {point3.at(0) - point4.at(0), point3.at(1) - point4.at(1)}});
-        // END CITATION [28]
-
-        if (x > std::min(point1.at(0), point2.at(0)) && x < std::max(point1.at(0), point2.at(0)) &&
-            y > std::min(point1.at(1), point2.at(1)) && y < std::max(point1.at(1), point2.at(1)) &&
-            x > std::min(point3.at(0), point4.at(0)) && x < std::max(point3.at(0), point4.at(0)) &&
-            y > std::min(point3.at(1), point4.at(1)) && y < std::max(point3.at(1), point4.at(1))) {
-          RCLCPP_INFO(get_logger(), "hit wall");
-          x += laser_noise_generator_(get_random());
-          y += laser_noise_generator_(get_random());
-          double range = turtlelib::magnitude(turtlelib::Vector2D{x-x_, y-y_});
-          ranges.push_back(range);
-          hit_wall = true;
-          continue;
-        } 
+      // for (int j = 0; j < static_cast<int>(wall_pos_array_.size()) - 1; j++) {
+      //   vector<double> point1 = {x_, y_};
+      //   vector<double> point2 = {x_ + v.x, y_ + v.y};
+      //   vector<double> point3 = {wall_pos_array_.at(j).at(0), wall_pos_array_.at(j).at(1)};
+      //   vector<double> point4 = {wall_pos_array_.at(j+1).at(0), wall_pos_array_.at(j+1).at(1)};
+      //
+      //   // BEGIN CITATION [28]
+      //   // find the intersection of the laser and the wall, if there is one
+      //   double x = arma::det(arma::mat{{arma::det(arma::mat{{point1.at(0), point1.at(1)}, {point2.at(0), point2.at(1)}}), point1.at(0) - point2.at(0)},
+      //                                  {arma::det(arma::mat{{point3.at(0), point3.at(1)}, {point4.at(0), point4.at(1)}}), point3.at(0) - point4.at(0)}}) /
+      //              arma::det(arma::mat{{point1.at(0) - point2.at(0), point1.at(1) - point2.at(1)},
+      //                                  {point3.at(0) - point4.at(0), point3.at(1) - point4.at(1)}});
+      //   double y = arma::det(arma::mat{{arma::det(arma::mat{{point1.at(0), point1.at(1)}, {point2.at(0), point2.at(1)}}), point1.at(1) - point2.at(1)},
+      //                                  {arma::det(arma::mat{{point3.at(0), point3.at(1)}, {point4.at(0), point4.at(1)}}), point3.at(1) - point4.at(1)}}) /
+      //              arma::det(arma::mat{{point1.at(0) - point2.at(0), point1.at(1) - point2.at(1)},
+      //                                  {point3.at(0) - point4.at(0), point3.at(1) - point4.at(1)}});
+      //   // END CITATION [28]
+      //
+      //   if (x > std::min(point1.at(0), point2.at(0)) && x < std::max(point1.at(0), point2.at(0)) &&
+      //       y > std::min(point1.at(1), point2.at(1)) && y < std::max(point1.at(1), point2.at(1)) &&
+      //       x > std::min(point3.at(0), point4.at(0)) && x < std::max(point3.at(0), point4.at(0)) &&
+      //       y > std::min(point3.at(1), point4.at(1)) && y < std::max(point3.at(1), point4.at(1))) {
+      //     RCLCPP_INFO(get_logger(), "hit wall");
+      //     x += laser_noise_generator_(get_random());
+      //     y += laser_noise_generator_(get_random());
+      //     double range = turtlelib::magnitude(turtlelib::Vector2D{x-x_, y-y_});
+      //     ranges.push_back(range);
+      //     hit_wall = true;
+      //     continue;
+      //   } 
+      // }
+      if (!hit_wall && !hit_obstacle) {
         ranges.push_back(0.0);
+        RCLCPP_INFO_STREAM(get_logger(), "i'm in trouble");
       }
-      if (!hit_wall) {
-        ranges.push_back(0.0);
-      }
+      RCLCPP_INFO_STREAM(get_logger(), " i: " << i);
     }
-
+    RCLCPP_INFO_STREAM(get_logger(), "ranges_size: " << ranges.size());
     return ranges;
   }
 

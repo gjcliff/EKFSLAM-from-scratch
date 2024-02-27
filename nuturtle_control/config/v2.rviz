@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /MarkerArray1/Topic1
         - /MarkerArray2/Topic1
-        - /LaserScan1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -26,7 +25,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: LaserScan
 Visualization Manager:
   Class: ""
   Displays:
@@ -300,6 +299,18 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /nusim/obstacles
       Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /fake_sensor
+      Value: true
     - Alpha: 1
       Buffer Length: 10
       Class: rviz_default_plugins/Path
@@ -338,7 +349,7 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz_default_plugins/LaserScan
       Color: 255; 255; 255
-      Color Transformer: ""
+      Color Transformer: Intensity
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
@@ -347,7 +358,7 @@ Visualization Manager:
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: LaserScan
-      Position Transformer: ""
+      Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.009999999776482582
@@ -423,10 +434,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6497973203659058
+      Pitch: 0.7647976875305176
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.7503981590270996
+      Yaw: 0.14040610194206238
     Saved: ~
 Window Geometry:
   Displays:
@@ -445,4 +456,4 @@ Window Geometry:
     collapsed: false
   Width: 1920
   X: 0
-  Y: 188
+  Y: 27
