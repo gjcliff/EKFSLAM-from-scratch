@@ -1,5 +1,6 @@
 #include <chrono>
 #include <string>
+#include <turtlelib/se2d.hpp>
 #include <vector>
 #include <cmath>
 #include <random>
@@ -7,6 +8,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
+
 #include "turtlelib/diff_drive.hpp"
 #include "turtlelib/geometry2d.hpp"
 
@@ -17,7 +20,7 @@ class Slam : public rclcpp::Node
 {
   public:
     Slam()
-    : Node("slam"), count_(0)
+    : Node("slam")
     {
       declare_parameter("wheel_radius", rclcpp::PARAMETER_DOUBLE);
       declare_parameter("track_width", rclcpp::PARAMETER_DOUBLE);
@@ -100,14 +103,28 @@ class Slam : public rclcpp::Node
       turtlelib::RobotDimensions rd{0.0, track_width_ / 2, wheel_radius_};
       turtlebot_.set_robot_dimensions(rd);
 
+      // create subscribers
       joint_state_subscription_ = create_subscription<sensor_msgs::msg::JointState>(
         "joint_states", 10, std::bind(&Slam::joint_state_callback, this, _1));
+
+      laser_scan_subscription_ = create_subscription<sensor_msgs::msg::LaserScan>(
+        "scan", 10, std::bind(&Slam::laser_scan_callback, this, _1));
 
       timer_ = this->create_wall_timer(
       200ms, std::bind(&Slam::timer_callback, this));
     }
 
   private:
+    void laser_scan_callback(const sensor_msgs::msg::LaserScan & msg) {
+      if (map_.empty()) {
+        map_ = vector<double>(static_cast<int>(std::round(msg.angle_max/msg.angle_increment)) + 1, 0.0);
+      }
+      for (int i = 0; i < static_cast<int>(msg.angle_max/msg.angle_increment/2); i++) {
+        map_.at(i * 2) = msg.ranges.at(i) * std::cos(msg.angle_increment * i);
+        map_.at(i * 2 + 1) = msg.ranges.at(i) * std::sin(msg.angle_increment * i);
+      }
+    }
+
     void joint_state_callback(const sensor_msgs::msg::JointState & msg)
     {
       double phi_l = msg.position.at(0);
@@ -119,17 +136,31 @@ class Slam : public rclcpp::Node
       phi_l_prev_ = phi_l;
       phi_r_prev_ = phi_r;
 
-      turtlelib::Twist2D Vb = turtlebot_.FK(phi_delta_l, phi_delta_r);
-
+      turtlelib::Twist2D Vb_ = turtlebot_.FK(phi_delta_l, phi_delta_r);
+      q_ = turtlebot_.update_configuration(Vb_);
+      if (q_prev_.theta >= -1e-5 && q_prev_.theta <= 1e-5 &&
+          q_prev_.x >= -1e-5 && q_prev_.x <= 1e-5 &&
+          q_prev_.y >= -1e-5 && q_prev_.y <= 1e-5)
+      {
+        q_prev_ = q_;
+      }
     }
     void timer_callback()
     {
-      
+      if (Vb_.omega >= -1e-5 && Vb_.omega <= 1e-5) {
+        // turtlelib::Transform2D Twb_prime = turtlelib::Transform2D({q_prev_.x + Vb_.x * std::cos(q_prev_.theta), q_prev_.y + Vb_.x * std::sin(q_prev_.theta)}, q_prev_.theta);
+        // arma::mat hmm = {q_, map_};
+      }
     }
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscription_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_scan_subscription_;
 
     turtlelib::DiffDrive turtlebot_;
+    turtlelib::Twist2D Vb_;
+    turtlelib::Configuration q_;
+    turtlelib::Configuration q_prev_;
+
     std::string body_id_;
     std::string odom_id_;
     std::string wheel_left_;
@@ -142,8 +173,8 @@ class Slam : public rclcpp::Node
     double collision_radius_;
     double phi_l_prev_ = 0.0;
     double phi_r_prev_ = 0.0;
+    vector<double> map_;
 
-    size_t count_;
 };
 
 int main(int argc, char * argv[])

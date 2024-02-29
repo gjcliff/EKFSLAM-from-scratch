@@ -1,5 +1,6 @@
 #include <chrono>
 #include <string>
+#include <turtlelib/se2d.hpp>
 #include <vector>
 #include <cmath>
 #include <random>
@@ -137,7 +138,7 @@ public:
         "/fake_sensor", qos);
     sensor_data_publisher_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("sensor_data", 10);
     path_publisher_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
-    laser_scan_publisher_ = create_publisher<sensor_msgs::msg::LaserScan>("/red/scan", 10);
+    laser_scan_publisher_ = create_publisher<sensor_msgs::msg::LaserScan>("/scan", 10);
     annoying_publisher_ = create_publisher<visualization_msgs::msg::Marker>("~/annoying", qos);
 
     // declare subscribers
@@ -222,7 +223,7 @@ private:
     visualization_msgs::msg::MarkerArray arr;
     for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
       visualization_msgs::msg::Marker marker;
-      marker.header.frame_id = "blue/base_footprint";
+      marker.header.frame_id = "red/base_footprint";
       marker.header.stamp = get_clock()->now();
       marker.id = i;
       marker.type = visualization_msgs::msg::Marker::CYLINDER;
@@ -392,6 +393,7 @@ private:
     x_ = request->x;
     y_ = request->y;
     theta_ = request->theta;
+    world_to_robot_ = turtlelib::Transform2D({x_, y_}, theta_);
   }
 
   void reset_callback(
@@ -402,6 +404,7 @@ private:
     x_ = og_x_;
     y_ = og_y_;
     theta_ = og_theta_;
+    world_to_robot_ = turtlelib::Transform2D({x_, y_}, theta_);
   }
 
   void wheel_commands_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
@@ -410,9 +413,8 @@ private:
       left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
       right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
     } else {
-      double noise = input_noise_generator_(get_random());
-      left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
-      right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) + noise;
+      left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) + input_noise_generator_(get_random());
+      right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) + input_noise_generator_(get_random());
 
       left_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
       right_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
@@ -482,6 +484,7 @@ private:
       x_ = qv.x;
       y_ = qv.y;
       theta_ = qv.theta;
+      world_to_robot_ = turtlelib::Transform2D({x_, y_}, theta_);
 
       vector<double> new_coords = check_collision();
 
@@ -512,6 +515,8 @@ private:
     geometry_msgs::msg::TransformStamped t = get_transform("nusim/world", "red/base_scan");
     double scan_x = t.transform.translation.x;
     double scan_y = t.transform.translation.y;
+    turtlelib::Transform2D scan_to_world = turtlelib::Transform2D({scan_x, scan_y}, theta_);
+    turtlelib::Transform2D world_to_scan = scan_to_world.inv();
     
     for (int i = 0; i < 360; i++) {
       // need to pick an arbitrary point outside the arena, I'm going to choose
@@ -535,8 +540,8 @@ private:
           continue;
         }
 
-        double x1 = -fake_obstacles_x_.at(j);
-        double y1 = -fake_obstacles_y_.at(j);
+        double x1 = scan_x - fake_obstacles_x_.at(j);
+        double y1 = scan_y - fake_obstacles_y_.at(j);
         double x2 = v.x - fake_obstacles_x_.at(j);
         double y2 = v.y - fake_obstacles_y_.at(j);
         double d_x = x2 - x1;
@@ -595,14 +600,14 @@ private:
       // check if the laser can see one of the walls
       bool hit_wall = false;
       for (int j = 0; j < static_cast<int>(wall_pos_array_.size()) - 1; j++) {
-        double x1 = scan_x;
-        double y1 = scan_y;
-        double x2 = v.x + scan_x;
-        double y2 = v.y + scan_y;
-        double x3 = wall_pos_array_.at(j).at(0);
-        double y3 = wall_pos_array_.at(j).at(1);
-        double x4 = wall_pos_array_.at(j+1).at(0);
-        double y4 = wall_pos_array_.at(j+1).at(1);
+        double x1 = 0.0;
+        double y1 = 0.0;
+        double x2 = v.x;
+        double y2 = v.y;
+        double x3 = world_to_scan(turtlelib::Point2D{wall_pos_array_.at(j).at(0), wall_pos_array_.at(j).at(1)}).x;
+        double y3 = world_to_scan(turtlelib::Point2D{wall_pos_array_.at(j).at(0), wall_pos_array_.at(j).at(1)}).y;
+        double x4 = world_to_scan(turtlelib::Point2D{wall_pos_array_.at(j + 1).at(0), wall_pos_array_.at(j + 1).at(1)}).x;
+        double y4 = world_to_scan(turtlelib::Point2D{wall_pos_array_.at(j + 1).at(0), wall_pos_array_.at(j + 1).at(1)}).y;
         
         // BEGIN CITATION [28]
         // find the intersection of the laser and the wall, if there is one
@@ -662,10 +667,20 @@ private:
     if (fake_obstacles_x_.empty()) {
       fake_obstacles_x_ = obstacles_x_;
       fake_obstacles_y_ = obstacles_y_;
+      for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
+        turtlelib::Transform2D world_to_obstacle({obstacles_x_.at(i), obstacles_y_.at(i)});
+        turtlelib::Transform2D robot_to_obstacle = world_to_robot_.inv() * world_to_obstacle;
+        fake_obstacles_x_.at(i) = robot_to_obstacle.translation().x + laser_noise_generator_(get_random());
+        fake_obstacles_y_.at(i) = robot_to_obstacle.translation().y + laser_noise_generator_(get_random());
+      }
     }
-    for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
-      fake_obstacles_x_.at(i) = obstacles_x_.at(i) - x_ + sensor_variance_generator_(get_random());
-      fake_obstacles_y_.at(i) = obstacles_y_.at(i) - y_ + sensor_variance_generator_(get_random());
+    else {
+      for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
+          turtlelib::Transform2D world_to_obstacle({obstacles_x_.at(i), obstacles_y_.at(i)});
+          turtlelib::Transform2D robot_to_obstacle = world_to_robot_.inv() * world_to_obstacle;
+          fake_obstacles_x_.at(i) = robot_to_obstacle.translation().x + laser_noise_generator_(get_random());
+          fake_obstacles_y_.at(i) = robot_to_obstacle.translation().y + laser_noise_generator_(get_random());
+      }
     }
   }
 
@@ -673,7 +688,7 @@ private:
   {
     // update the positions of the fake obstacles and publish them
     update_fake_obstacles();
-    visualization_msgs::msg::MarkerArray relative_obstacle_array = construct_obstacle_array(fake_obstacles_x_, fake_obstacles_y_, yellow);
+    visualization_msgs::msg::MarkerArray relative_obstacle_array = construct_fake_obstacle_array(fake_obstacles_x_, fake_obstacles_y_, yellow);
     fake_obstacles_publisher_->publish(relative_obstacle_array);
 
     // publish simulated laser scan data
@@ -720,6 +735,7 @@ private:
   double x_ = 0.0;
   double y_ = 0.0;
   double theta_ = 0.0;
+  turtlelib::Transform2D world_to_robot_;
   double og_x_;
   double og_y_;
   double og_theta_;

@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(turtlelib REQUIRED)
 find_package(Armadillo REQUIRED)
 
@@ -15,18 +16,19 @@ include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 add_executable(slam src/slam.cpp)
 
-target_link_libraries(nusim_exec ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
+target_link_libraries(slam ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
 
 ament_target_dependencies(
     slam 
     rclcpp
+    sensor_msgs
     turtlelib
     Armadillo
 )
 
 
 install(TARGETS
-  nusim_exec
+  slam
   DESTINATION lib/${PROJECT_NAME}
 )
 

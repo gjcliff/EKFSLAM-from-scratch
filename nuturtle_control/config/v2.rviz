@@ -4,10 +4,19 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /TF1
+        - /TF1/Tree1
+        - /TF1/Tree1/nusim/world1
+        - /TF1/Tree1/nusim/world1/red/base_footprint1
+        - /TF1/Tree1/nusim/world1/red/base_footprint1/red/base_link1
+        - /Odometry1
+        - /Odometry1/Shape1
         - /MarkerArray1/Topic1
         - /MarkerArray2/Topic1
         - /LaserScan1
-      Splitter Ratio: 0.5
+        - /LaserScan1/Status1
+        - /LaserScan1/Topic1
+      Splitter Ratio: 0.8058823347091675
     Tree Height: 719
   - Class: rviz_common/Selection
     Name: Selection
@@ -26,7 +35,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -255,7 +264,7 @@ Visualization Manager:
           Value: true
         Value: true
       Enabled: true
-      Keep: 10
+      Keep: 1
       Name: Odometry
       Position Tolerance: 0.10000000149011612
       Shape:
@@ -263,10 +272,10 @@ Visualization Manager:
         Axes Length: 1
         Axes Radius: 0.10000000149011612
         Color: 255; 25; 0
-        Head Length: 0.30000001192092896
+        Head Length: 0.10000000149011612
         Head Radius: 0.10000000149011612
-        Shaft Length: 1
-        Shaft Radius: 0.05000000074505806
+        Shaft Length: 0.4000000059604645
+        Shaft Radius: 0.03999999910593033
         Value: Arrow
       Topic:
         Depth: 5
@@ -355,9 +364,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1.593833327293396
+      Max Intensity: 1.5776753425598145
       Min Color: 0; 0; 0
-      Min Intensity: -1.6080373525619507
+      Min Intensity: -1.6125686168670654
       Name: LaserScan
       Position Transformer: XYZ
       Selectable: true
@@ -365,12 +374,12 @@ Visualization Manager:
       Size (m): 0.009999999776482582
       Style: Flat Squares
       Topic:
-        Depth: 5
+        Depth: 10
         Durability Policy: Volatile
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /red/scan
+        Value: /scan
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -420,7 +429,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.747328519821167
+      Distance: 3.103924512863159
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -457,4 +466,4 @@ Window Geometry:
     collapsed: false
   Width: 1920
   X: 0
-  Y: 188
+  Y: 27
