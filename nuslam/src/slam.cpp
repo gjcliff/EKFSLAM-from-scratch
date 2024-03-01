@@ -118,10 +118,10 @@ class Slam : public rclcpp::Node
         A = arma::eye(3 + 2*n_,3 + 2*n_) + A;
       } else {
         arma::mat tmp = {{0,0,0},
-                         {-Vb.x / Vb.omega * std::cos(xi_(2)) + Vb.x/Vb.omega * std::cos(xi_(2) + Vb.omega),0,0},
-                         {-Vb.x / Vb.omega * std::sin(xi_(2)) + Vb.x / Vb.omega * std::sin(xi_(2) + Vb.omega),0,0}};
-        tmp = arma::join_vert(tmp, arma::zeros(2*n_, 3));
-        A = arma::join_horiz(tmp,arma::zeros(3+2*n_,2*n_));
+                         {-Vb.x / Vb.omega * std::cos(xi_(2)) + Vb.x / Vb.omega * std::cos(turtlelib::normalize_angle(xi_(2) + Vb.omega)),0,0},
+                         {-Vb.x / Vb.omega * std::sin(xi_(2)) + Vb.x / Vb.omega * std::sin(turtlelib::normalize_angle(xi_(2) + Vb.omega)),0,0}};
+        tmp = arma::join_vert(tmp, arma::zeros(2 * n_, 3));
+        A = arma::join_horiz(tmp,arma::zeros(3 + 2 * n_, 2 * n_));
         A = arma::eye(3+2*n_,3+2*n_) + A;
       }
 
@@ -157,8 +157,8 @@ class Slam : public rclcpp::Node
                                      Vb.x * std::sin(xi_(2))}, arma::zeros(2*n_));
       } else {
         return xi_ + arma::join_vert(arma::colvec{Vb.omega,
-            -Vb.x/Vb.omega * std::sin(xi_(2)) + Vb.x/Vb.omega * std::sin(xi_(2) + Vb.omega),
-            Vb.x/Vb.omega * std::cos(xi_(2) - Vb.x/Vb.omega) * std::cos(xi_(2) + Vb.omega)}, arma::zeros(2*n_));
+            -Vb.x/Vb.omega * std::sin(xi_(2)) + Vb.x/Vb.omega * std::sin(turtlelib::normalize_angle(xi_(2) + Vb.omega)),
+            Vb.x/Vb.omega * std::cos(xi_(2)) - Vb.x/Vb.omega * std::cos(turtlelib::normalize_angle(xi_(2) + Vb.omega))}, arma::zeros(2*n_));
       }
     }
 
@@ -190,10 +190,10 @@ class Slam : public rclcpp::Node
         arma::mat Hj = calc_Hj(x,y,j);
 
         // perform the SLAM update
+        // TODO: Clean this up
         if (count_ == 0) {
           arma::mat sigma_minus = A_ * sigma_ * A_.t() + Qbar_;
           arma::mat K = sigma_minus * Hj.t() * arma::inv(Hj * sigma_minus * Hj.t() + R_);
-
           arma::colvec z(2, arma::fill::zeros);
           z(0) = std::sqrt(std::pow(xi_(2 + j*2) - xi_(0), 2) + std::pow(xi_(2 + j*2 + 1) - xi_(1), 2));
           z(1) = turtlelib::normalize_angle(std::atan2(xi_(2+j*2+1) - xi_(1), xi_(2 + j*2) - xi_(0)) - xi_(2));
@@ -206,8 +206,7 @@ class Slam : public rclcpp::Node
           xi_ = xi_ + K * (z - z_hat);
           sigma_ = (arma::eye(9,9) - K * Hj) * sigma_minus;
         } else {
-          arma::mat sigma_minus = A_ * sigma_ * A_.t() + Qbar_;
-          arma::mat K = sigma_minus * Hj.t() * arma::inv(Hj * sigma_minus * Hj.t() + R_);
+          arma::mat K = sigma_ * Hj.t() * arma::inv(Hj * sigma_ * Hj.t() + R_);
           arma::colvec z(2, arma::fill::zeros);
           z(0) = std::sqrt(std::pow(xi_(2 + j*2) - xi_(0), 2) + std::pow(xi_(2 + j*2 + 1) - xi_(1), 2));
           z(1) = turtlelib::normalize_angle(std::atan2(xi_(2+j*2+1) - xi_(1), xi_(2 + j*2) - xi_(0)) - xi_(2));
@@ -215,7 +214,7 @@ class Slam : public rclcpp::Node
           z_hat(0) = std::sqrt(std::pow(x - xi_(0), 2) + std::pow(y - xi_(1), 2));
           z_hat(1) = turtlelib::normalize_angle(std::atan2(y - xi_(1), x - xi_(0)) - xi_(2));
           xi_ = xi_ + K * (z - z_hat);
-          sigma_ = (arma::eye(9,9) - K * Hj) * sigma_minus;
+          sigma_ = (arma::eye(9,9) - K * Hj) * sigma_;
         }
 
       geometry_msgs::msg::TransformStamped t;

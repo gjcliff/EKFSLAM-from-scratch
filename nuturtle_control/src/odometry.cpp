@@ -164,7 +164,7 @@ public:
     robot_odometry_.header.frame_id = odom_id_;
     robot_odometry_.child_frame_id = body_id_;
 
-    path_.header.frame_id = odom_id_;
+    path_.header.frame_id = "nusim/world";
   }
 
 private:
@@ -172,7 +172,7 @@ private:
   {
     geometry_msgs::msg::PoseStamped pose;
     pose.header.stamp = get_clock()->now();
-    pose.header.frame_id = odom_id_;
+    pose.header.frame_id = "nusim/world";
     pose.pose.position.x = x_;
     pose.pose.position.y = y_;
 
