@@ -25,3 +25,5 @@
 [26] https://docs.ros2.org/latest/api/ament_index_cpp/get__package__share__directory_8hpp_source.html
 [27] https://arma.sourceforge.net/docs.html#norm
 [28] https://mathworld.wolfram.com/Line-LineIntersection.html
+[29] https://answers.ros.org/question/339528/quaternion-to-rpy-ros2/
+[30] https://arma.sourceforge.net/docs.html#join

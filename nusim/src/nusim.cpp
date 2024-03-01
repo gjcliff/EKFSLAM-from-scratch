@@ -321,19 +321,19 @@ private:
 
     wall_array.markers.push_back(
       construct_marker(
-        arena_x_length_ / 2, 0.0, wall_thickness_,
+        arena_x_length_ / 2 + wall_thickness_/2, 0.0, wall_thickness_,
         x_length, 0, c));
     wall_array.markers.push_back(
       construct_marker(
-        0.0, arena_y_length_ / 2, y_length,
+        0.0, arena_y_length_ / 2 + wall_thickness_/2, y_length,
         wall_thickness_, 1, c));
     wall_array.markers.push_back(
       construct_marker(
-        -arena_x_length_ / 2, 0.0, wall_thickness_,
+        -arena_x_length_ / 2 - wall_thickness_/2, 0.0, wall_thickness_,
         x_length, 2, c));
     wall_array.markers.push_back(
       construct_marker(
-        0.0, -arena_y_length_ / 2, y_length,
+        0.0, -arena_y_length_ / 2 - wall_thickness_/2, y_length,
         wall_thickness_, 3, c));
 
     return wall_array;
@@ -381,14 +381,13 @@ private:
 
   void teleport_callback(
     const std::shared_ptr<nusim::srv::Teleport::Request> request,
-    std::shared_ptr<nusim::srv::Teleport::Response> response)
+    std::shared_ptr<nusim::srv::Teleport::Response>)
   {
     geometry_msgs::msg::TransformStamped t = construct_transform_msg(
       request->x, request->y,
       request->theta);
 
     tf_broadcaster_->sendTransform(t);
-    (void) response;
 
     x_ = request->x;
     y_ = request->y;
@@ -409,16 +408,14 @@ private:
 
   void wheel_commands_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
   {
-    if (msg.left_velocity == 0 && msg.right_velocity == 0){
-      left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
-      right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
-    } else {
-      left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) + input_noise_generator_(get_random());
-      right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) + input_noise_generator_(get_random());
+    left_wheel_velocity_no_noise = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+    right_wheel_velocity_no_noise = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
 
-      left_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
-      right_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
-    }
+    left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) + input_noise_generator_(get_random());
+    right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) + input_noise_generator_(get_random());
+
+    left_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
+    right_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
   }
   
   /// @brief This function checks if the red robot is in collision with an
@@ -433,7 +430,7 @@ private:
     for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
       double dist = turtlelib::magnitude({obstacles_x_.at(i) - x_, obstacles_y_.at(i) - y_});
       if (dist < collision_radius_ + obstacle_radius_) {
-        turtlelib::Vector2D v = turtlelib::normalize_vector({obstacles_x_.at(i) - x_, obstacles_y_.at(i) - y_});
+        turtlelib::Vector2D v = turtlelib::normalize_vector({x_ - obstacles_x_.at(i), y_ - obstacles_y_.at(i)});
         x_new += (collision_radius_ + obstacle_radius_ - dist) * v.x;
         y_new += (collision_radius_ + obstacle_radius_ - dist) * v.y;
       }
@@ -470,23 +467,20 @@ private:
       obstacles_publisher_->publish(obstacle_array);
 
       // get the body twist
-      turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity_, right_wheel_velocity_);
-
-      // calculate the current encoder ticks
-      left_encoder_ticks_ += left_wheel_velocity_ * encoder_ticks_per_rad_;
-      right_encoder_ticks_ += right_wheel_velocity_ * encoder_ticks_per_rad_;
-
-      int rounded_left_encoder_ticks_ = static_cast<int>(std::round(left_encoder_ticks_));
-      int rounded_right_encoder_ticks_ = static_cast<int>(std::round(right_encoder_ticks_));
+      turtlelib::Twist2D Vb = turtlebot_.FK(left_wheel_velocity_no_noise, right_wheel_velocity_no_noise);
 
       // update the configuration of the red robot in the world frame
       turtlelib::Configuration qv = turtlebot_.update_configuration(Vb);
       x_ = qv.x;
       y_ = qv.y;
       theta_ = qv.theta;
-      world_to_robot_ = turtlelib::Transform2D({x_, y_}, theta_);
 
       vector<double> new_coords = check_collision();
+      x_ = new_coords.at(0);
+      y_ = new_coords.at(1);
+      turtlebot_.set_current_configuration(turtlelib::Configuration{theta_, x_, y_});
+
+      world_to_robot_ = turtlelib::Transform2D({x_, y_}, theta_);
 
       // broadcast the position of the red robot in the world frame
       geometry_msgs::msg::TransformStamped t = construct_transform_msg(x_, y_, theta_);
@@ -496,6 +490,13 @@ private:
       path_.poses.push_back(construct_path_msg());
       path_.header.stamp = get_clock()->now();
       path_publisher_->publish(path_);
+
+      // calculate the current encoder ticks
+      left_encoder_ticks_ += left_wheel_velocity_ * encoder_ticks_per_rad_;
+      right_encoder_ticks_ += right_wheel_velocity_ * encoder_ticks_per_rad_;
+
+      int rounded_left_encoder_ticks_ = static_cast<int>(std::round(left_encoder_ticks_));
+      int rounded_right_encoder_ticks_ = static_cast<int>(std::round(right_encoder_ticks_));
 
       // publish the encoder data
       nuturtlebot_msgs::msg::SensorData sensor_data_msg;
@@ -515,10 +516,10 @@ private:
     geometry_msgs::msg::TransformStamped t = get_transform("nusim/world", "red/base_scan");
     double scan_x = t.transform.translation.x;
     double scan_y = t.transform.translation.y;
-    turtlelib::Transform2D scan_to_world = turtlelib::Transform2D({scan_x, scan_y}, theta_);
-    turtlelib::Transform2D world_to_scan = scan_to_world.inv();
+    turtlelib::Transform2D world_to_scan = turtlelib::Transform2D({scan_x, scan_y}, theta_);
+    turtlelib::Transform2D scan_to_world = world_to_scan.inv();
     
-    for (int i = 0; i < 360; i++) {
+    for (int i = 0; i < static_cast<int>(std::round(laser_angle_max_/laser_angle_increment_)); i++) {
       // need to pick an arbitrary point outside the arena, I'm going to choose
       // one that follows the vector v, that has a length of the diagonal of the
       // arena.
@@ -534,16 +535,21 @@ private:
       v.y < 0 ? sgn = -1 : sgn = 1;
 
       bool hit_obstacle = false;
-      for (int j = 0; j < static_cast<int>(fake_obstacles_x_.size()); j++) {
-        turtlelib::Vector2D v_dir = {fake_obstacles_x_.at(j), fake_obstacles_y_.at(j)};
-        if (turtlelib::dot(v, v_dir) < 0) {
+      for (int j = 0; j < static_cast<int>(obstacles_x_.size()); j++) {
+        turtlelib::Transform2D world_to_obstacle = turtlelib::Transform2D({obstacles_x_.at(j), obstacles_y_.at(j)});
+        turtlelib::Transform2D scan_to_obstacle = scan_to_world * world_to_obstacle;
+        turtlelib::Transform2D obstacle_to_scan = scan_to_obstacle.inv();
+
+        turtlelib::Vector2D v_world = world_to_scan(v);
+        turtlelib::Vector2D v_dir = {obstacles_x_.at(j), obstacles_y_.at(j)};
+        if (turtlelib::dot(v_world, v_dir) < 0) {
           continue;
         }
 
-        double x1 = scan_x - fake_obstacles_x_.at(j);
-        double y1 = scan_y - fake_obstacles_y_.at(j);
-        double x2 = v.x - fake_obstacles_x_.at(j);
-        double y2 = v.y - fake_obstacles_y_.at(j);
+        double x1 = (scan_to_obstacle.inv()).translation().x;
+        double y1 = (scan_to_obstacle.inv()).translation().y;
+        double x2 = obstacle_to_scan(v).x;
+        double y2 = obstacle_to_scan(v).y;
         double d_x = x2 - x1;
         double d_y = y2 - y1;
         double d_r = std::sqrt(std::pow(d_x,2) + std::pow(d_y,2));
@@ -554,18 +560,15 @@ private:
 
           double xi1 = ((D * d_y + sgn * d_x * std::sqrt(delta)) / std::pow(d_r,2)) + laser_noise_generator_(get_random());
           double yi1 = ((-D * d_x + std::abs(d_y) * std::sqrt(delta)) / std::pow(d_r,2)) + laser_noise_generator_(get_random());
+          turtlelib::Vector2D v1 = {xi1, yi1};
 
           double xi2 = ((D * d_y - sgn * d_x * std::sqrt(delta)) / std::pow(d_r,2)) + laser_noise_generator_(get_random());
           double yi2 = ((-D * d_x - std::abs(d_y) * std::sqrt(delta)) / std::pow(d_r,2)) + laser_noise_generator_(get_random());
+          turtlelib::Vector2D v2 = {xi2, yi2};
 
           // move the obstacle to the world frame
-          xi1 += fake_obstacles_x_.at(j);
-          yi1 += fake_obstacles_y_.at(j);
-          xi2 += fake_obstacles_x_.at(j);
-          yi2 += fake_obstacles_y_.at(j);
-
-          double range1 = turtlelib::magnitude(turtlelib::Vector2D{xi1, yi1});
-          double range2 = turtlelib::magnitude(turtlelib::Vector2D{xi2, yi2});
+          double range1 = turtlelib::magnitude(scan_to_obstacle(v1));
+          double range2 = turtlelib::magnitude(scan_to_obstacle(v2));
 
           if (range1 > laser_max_range_ || range1 < laser_min_range_) {
             ranges.push_back(0.0);
@@ -581,12 +584,11 @@ private:
         } else if (delta > -1e-5 && delta <= 1e-5) {
           double xi = ((D * d_y + sgn * d_x * std::sqrt(delta)) / std::pow(d_r,2)) + laser_noise_generator_(get_random());
           double yi = ((-D * d_x - std::abs(d_y) * std::sqrt(delta)) / std::pow(d_r,2)) + laser_noise_generator_(get_random());
+          turtlelib::Vector2D v = {xi, yi};
 
           // move the obstacle to the world frame
-          xi += fake_obstacles_x_.at(j);
-          yi += fake_obstacles_y_.at(j);
 
-          double range = turtlelib::magnitude(turtlelib::Vector2D{xi, yi});
+          double range = turtlelib::magnitude(scan_to_obstacle.inv()(v));
           ranges.push_back(range);
           hit_obstacle = true;
           continue;
@@ -604,10 +606,10 @@ private:
         double y1 = 0.0;
         double x2 = v.x;
         double y2 = v.y;
-        double x3 = world_to_scan(turtlelib::Point2D{wall_pos_array_.at(j).at(0), wall_pos_array_.at(j).at(1)}).x;
-        double y3 = world_to_scan(turtlelib::Point2D{wall_pos_array_.at(j).at(0), wall_pos_array_.at(j).at(1)}).y;
-        double x4 = world_to_scan(turtlelib::Point2D{wall_pos_array_.at(j + 1).at(0), wall_pos_array_.at(j + 1).at(1)}).x;
-        double y4 = world_to_scan(turtlelib::Point2D{wall_pos_array_.at(j + 1).at(0), wall_pos_array_.at(j + 1).at(1)}).y;
+        double x3 = world_to_scan.inv()(turtlelib::Point2D{wall_pos_array_.at(j).at(0), wall_pos_array_.at(j).at(1)}).x;
+        double y3 = world_to_scan.inv()(turtlelib::Point2D{wall_pos_array_.at(j).at(0), wall_pos_array_.at(j).at(1)}).y;
+        double x4 = world_to_scan.inv()(turtlelib::Point2D{wall_pos_array_.at(j + 1).at(0), wall_pos_array_.at(j + 1).at(1)}).x;
+        double y4 = world_to_scan.inv()(turtlelib::Point2D{wall_pos_array_.at(j + 1).at(0), wall_pos_array_.at(j + 1).at(1)}).y;
         
         // BEGIN CITATION [28]
         // find the intersection of the laser and the wall, if there is one
@@ -653,7 +655,7 @@ private:
     laser_scan.angle_min = laser_angle_min_;
     laser_scan.angle_max = laser_angle_max_;
     laser_scan.angle_increment = laser_angle_increment_;
-    laser_scan.time_increment = laser_time_increment_;
+    // laser_scan.time_increment = laser_time_increment_;
     laser_scan.scan_time = laser_scan_time_;
     laser_scan.range_min = laser_min_range_;
     laser_scan.range_max = laser_max_range_;
@@ -769,6 +771,8 @@ private:
   double right_encoder_ticks_;
   double left_wheel_velocity_;
   double right_wheel_velocity_;
+  double left_wheel_velocity_no_noise;
+  double right_wheel_velocity_no_noise;
   std::vector<double> obstacles_x_;
   std::vector<double> obstacles_y_;
   std::vector<double> fake_obstacles_x_;

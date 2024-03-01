@@ -14,6 +14,21 @@
         <arg name="use_rviz" value="false"/>
         <arg name="slam" value="true"/>
     </include>
-    <node pkg="slam" exec="slam"/>
+    <node pkg="slam" exec="slam">
+        <param name="laser_angle_increment" value="0.01745329238474369"/>
+        <param name="laser_angle_min" value="0.0"/>
+        <param name="laser_angle_max" value="6.2657318115234375"/>
+    </node>
+    <!-- Launch the static_transform publisher --> 
+    <node pkg="tf2_ros" exec="static_transform_publisher" args=
+        "--x 0
+        --y 0
+        --z 0
+        --yaw 0
+        --pitch 0
+        --roll 0
+        --frame-id world
+        --child-frame-id map"
+    />
 
 </launch>

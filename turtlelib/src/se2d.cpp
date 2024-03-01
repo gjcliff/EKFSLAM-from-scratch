@@ -81,8 +81,8 @@ Point2D Transform2D::operator()(Point2D p) const
 Vector2D Transform2D::operator()(Vector2D v) const
 {
   vector<vector<double>> tmp_t = t;
-  tmp_t[0][2] = 0.0;       // set the x translation portion of the transformatoin matrix equal to 0
-  tmp_t[1][2] = 0.0;       // set the y translation portion of the transformation matrix equal to 0
+  // tmp_t[0][2] = 0.0;       // set the x translation portion of the transformatoin matrix equal to 0
+  // tmp_t[1][2] = 0.0;       // set the y translation portion of the transformation matrix equal to 0
   // this might not be the right way to do this
   vector<double> mat_v = {v.x, v.y, 1.0};
   vector<double> output(3, 0.0);

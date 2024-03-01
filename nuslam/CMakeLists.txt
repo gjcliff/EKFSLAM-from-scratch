@@ -8,7 +8,9 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(visualization_msgs REQUIRED)
 find_package(turtlelib REQUIRED)
 find_package(Armadillo REQUIRED)
 
@@ -21,7 +23,9 @@ target_link_libraries(slam ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
 ament_target_dependencies(
     slam 
     rclcpp
-    sensor_msgs
+    visualization_msgs
+    nav_msgs
+    tf2_ros
     turtlelib
     Armadillo
 )

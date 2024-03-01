@@ -145,7 +145,7 @@ public:
 
     // create publishers
     odometry_publisher_ = create_publisher<nav_msgs::msg::Odometry>(
-      "odom", 10);
+      odom_id_, 10);
 
     path_publisher_ = create_publisher<nav_msgs::msg::Path>(
       "~/path", 10);
