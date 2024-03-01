@@ -1,11 +1,9 @@
 #include <chrono>
 #include <string>
-#include <turtlelib/se2d.hpp>
 #include <vector>
 #include <cmath>
 #include <random>
 #include <armadillo>
-#include <visualization_msgs/msg/marker_array.hpp>
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
@@ -16,10 +14,9 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
+#include "visualization_msgs/msg/marker_array.hpp"
 
-
-#include "turtlelib/diff_drive.hpp"
-#include "turtlelib/geometry2d.hpp"
+#include "turtlelib/se2d.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -31,10 +28,10 @@ public:
   : Node("slam"), count_(0)
   {
     odometry_sub_ = create_subscription<nav_msgs::msg::Odometry>(
-      "green/odom", 10, std::bind(&Slam::odometry_callback, this, _1));
+      "/green/odom", 10, std::bind(&Slam::odometry_callback, this, _1));
 
     fake_sensor_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
-      "fake_sensor", 10, std::bind(&Slam::fake_sensor_callback, this, _1));
+      "/fake_sensor", 10, std::bind(&Slam::fake_sensor_callback, this, _1));
 
     // declare static transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
@@ -51,8 +48,8 @@ public:
     H_ = arma::zeros(9, 9);
     xi_ = arma::zeros(9, 1);
     map_ = arma::zeros(6, 1);
-    Qfactor_ = 5.0;
-    Rfactor_ = 5.0;
+    Qfactor_ = 0.01;
+    Rfactor_ = 1000.0;
     R_ = arma::eye(2, 2) * Rfactor_;
 
     noise_generator_ = std::normal_distribution<>(0, Rfactor_);
@@ -74,6 +71,8 @@ private:
     map_.zeros(msg.markers.size() * 2, 1);
     n_ = msg.markers.size();
     for (int i = 0; i < static_cast<int>(msg.markers.size()); i++) {
+      map_(2 * i) = msg.markers.at(i).pose.position.x;
+      map_(2 * i + 1) = msg.markers.at(i).pose.position.y;
       map_ids_.push_back(msg.markers.at(i).id);
     }
   }
@@ -96,12 +95,10 @@ private:
 
   void initialize_sigma()
   {
-    RCLCPP_INFO(this->get_logger(), "Initializing sigma");
     arma::mat sigma_q = arma::zeros(3, 3);
     arma::mat sigma_m = arma::ones(2 * n_, 2 * n_) * 1000000.0;
     arma::mat sigma_qz = arma::join_vert(sigma_q, arma::zeros(2 * n_, 3));
     arma::mat sigma_mz = arma::join_vert(arma::zeros(3, 2 * n_), sigma_m);
-
     sigma_ = arma::join_horiz(sigma_qz, sigma_mz);
   }
 
@@ -184,15 +181,17 @@ private:
 
     // TODO: Clean this up
 
-    if (map_.size() == 0 && A_.size() == 0) {
+    // if (map_.size() == 0 && A_.size() == 0) {
+    if (count_ == 0) {
       initialize_map(msg);
       initialize_xi();
       initialize_Q();
       initialize_sigma();
-      return;
-    } else if (A_.size() == 0) {
-      return;
     }
+    //   return;
+    // } else if (A_.size() == 0) {
+    //   return;
+    // }
 
     for (int j = 0; j < static_cast<int>(msg.markers.size()); j++) {
       // make some useful variables
@@ -211,12 +210,12 @@ private:
         z(0) =
           std::sqrt(
           std::pow(
-            xi_(2 + j * 2) - xi_(0),
-            2) + std::pow(xi_(2 + j * 2 + 1) - xi_(1), 2));
+            map_(j*2) - xi_(0),
+            2) + std::pow(map_(j*2+1) - xi_(1), 2));
         z(1) =
           turtlelib::normalize_angle(
           std::atan2(
-            xi_(2 + j * 2 + 1) - xi_(1), xi_(2 + j * 2) - xi_(
+            map_(j*2+1) - xi_(1), map_(j*2) - xi_(
               0)) - xi_(2));
         arma::colvec z_hat(2, arma::fill::zeros);
         z_hat(0) = std::sqrt(std::pow(x - xi_(0), 2) + std::pow(y - xi_(1), 2));
@@ -227,22 +226,31 @@ private:
         xi_ = xi_ + K * (z - z_hat);
         sigma_ = (arma::eye(9, 9) - K * Hj) * sigma_minus;
       } else {
+
         arma::mat K = sigma_ * Hj.t() * arma::inv(Hj * sigma_ * Hj.t() + R_);
         arma::colvec z(2, arma::fill::zeros);
-        z(0) =
-          std::sqrt(
-          std::pow(
-            xi_(2 + j * 2) - xi_(0),
-            2) + std::pow(xi_(2 + j * 2 + 1) - xi_(1), 2));
+        arma::colvec z_hat(2, arma::fill::zeros);
+        z_hat(0) = std::sqrt(std::pow(x - xi_(0), 2) + std::pow(y - xi_(1), 2));
+        z(0) = std::sqrt(std::pow(map_(j*2) - xi_(0),2) + std::pow(map_(j*2 + 1) - xi_(1), 2));
+        RCLCPP_INFO_STREAM(get_logger(), "z: " << z);
+        RCLCPP_INFO_STREAM(get_logger(), "z_hat: " << z_hat);
+        RCLCPP_INFO_STREAM(get_logger(), "j: " << j);
+        RCLCPP_INFO_STREAM(get_logger(), "map_(j*2): " << map_(j*2));
+        RCLCPP_INFO_STREAM(get_logger(), "map_(j*2 + 1): " << map_(j*2 + 1));
+        RCLCPP_INFO_STREAM(get_logger(), "x: " << x);
+        RCLCPP_INFO_STREAM(get_logger(), "y: " << y);
+        RCLCPP_INFO_STREAM(get_logger(), "map_: " << map_);
         z(1) =
           turtlelib::normalize_angle(
           std::atan2(
-            xi_(2 + j * 2 + 1) - xi_(1), xi_(2 + j * 2) - xi_(
+            map_(j*2+1) - xi_(1), map_(j*2) - xi_(
               0)) - xi_(2));
-        arma::colvec z_hat(2, arma::fill::zeros);
-        z_hat(0) = std::sqrt(std::pow(x - xi_(0), 2) + std::pow(y - xi_(1), 2));
         z_hat(1) = turtlelib::normalize_angle(std::atan2(y - xi_(1), x - xi_(0)) - xi_(2));
+        RCLCPP_INFO_STREAM(get_logger(), "K: " << K);
+        // RCLCPP_INFO_STREAM(get_logger(),"K * (z-z_hat): " <<  K * (z-z_hat) << " " << K << " " << z << " " << z_hat);
+        // RCLCPP_INFO_STREAM(get_logger(), "xi_ before: " << xi_);
         xi_ = xi_ + K * (z - z_hat);
+        // RCLCPP_INFO_STREAM(get_logger(), "xi_ after: " << xi_);
         sigma_ = (arma::eye(9, 9) - K * Hj) * sigma_;
       }
 

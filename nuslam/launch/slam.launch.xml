@@ -15,16 +15,4 @@
         <arg name="slam" value="true"/>
     </include>
     <node pkg="nuslam" exec="slam"/>
-    <!-- Launch the static_transform publisher --> 
-    <node pkg="tf2_ros" exec="static_transform_publisher" name="map_static_transform_publisher" args=
-        "--x 0
-        --y 0
-        --z 0
-        --yaw 0
-        --pitch 0
-        --roll 0
-        --frame-id nusim/world
-        --child-frame-id map"
-    />
-
 </launch>

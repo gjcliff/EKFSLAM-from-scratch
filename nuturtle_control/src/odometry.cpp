@@ -145,14 +145,14 @@ public:
 
     // create publishers
     odometry_publisher_ = create_publisher<nav_msgs::msg::Odometry>(
-      odom_id_, 10);
+      "odom", 10);
 
     path_publisher_ = create_publisher<nav_msgs::msg::Path>(
-      "~/path", 10);
+      "path", 10);
 
     // create subscribers
     joint_state_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
-      "joint_states", 10, std::bind(&Odometry::joint_state_callback, this, _1));
+      "/joint_states", 10, std::bind(&Odometry::joint_state_callback, this, _1));
 
     // create services
     initial_pose_service_ = create_service<nuturtle_control::srv::InitialPose>(

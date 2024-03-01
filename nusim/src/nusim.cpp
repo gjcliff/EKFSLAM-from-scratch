@@ -137,7 +137,7 @@ public:
     fake_obstacles_publisher_ = create_publisher<visualization_msgs::msg::MarkerArray>(
       "/fake_sensor", qos);
     sensor_data_publisher_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("sensor_data", 10);
-    path_publisher_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
+    path_publisher_ = create_publisher<nav_msgs::msg::Path>("path", 10);
     laser_scan_publisher_ = create_publisher<sensor_msgs::msg::LaserScan>("/scan", 10);
 
     // declare subscribers

@@ -42,27 +42,27 @@
             <arg name="config_file" value="$(find-pkg-share nusim)/config/nuturtle_control_world.yaml"/>
             <arg name="diff_params" value="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
         </include>
-        <node pkg="nuturtle_control" exec="odometry" >
+        <node pkg="nuturtle_control" exec="odometry" namespace="blue">
             <param name="body_id" value="blue/base_footprint"/>
             <param name="odom_id" value="blue/odom"/>
             <param name="wheel_left" value="wheel_left_joint"/>
             <param name="wheel_right" value="wheel_right_joint"/>
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
-            <remap from="joint_states" to="red/joint_states"/>
+            <!-- <remap from="joint_states" to="red/joint_states"/> -->
         </node>
-        <node pkg="nuturtle_control" exec="odometry" name="green_odom" if="$(eval '\'$(var slam)\' == \'true\'')">
+        <node pkg="nuturtle_control" exec="odometry" namespace="green" if="$(eval '\'$(var slam)\' == \'true\'')">
             <param name="body_id" value="green/base_footprint"/>
             <param name="odom_id" value="green/odom"/>
             <param name="wheel_left" value="wheel_left_joint"/>
             <param name="wheel_right" value="wheel_right_joint"/>
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
-            <remap from="joint_states" to="red/joint_states"/>
+            <!-- <remap from="joint_states" to="red/joint_states"/> -->
         </node>
         <node pkg="nuturtle_control" exec="turtle_control">
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
             <remap from="wheel_cmd" to="red/wheel_cmd"/>
             <remap from="sensor_data" to="red/sensor_data"/>
-            <remap from="joint_states" to="red/joint_states"/>
+            <!-- <remap from="joint_states" to="red/joint_states"/> -->
         </node>
     </group>
         
@@ -102,7 +102,7 @@
     </group>
 
     <!-- Launch the static_transform publisher --> 
-    <node pkg="tf2_ros" exec="static_transform_publisher" args=
+    <node pkg="tf2_ros" exec="static_transform_publisher" namespace="blue" args=
         "--x 0
         --y 0
         --z 0
@@ -112,5 +112,15 @@
         --frame-id nusim/world
         --child-frame-id blue/odom
         "
+    />
+    <node pkg="tf2_ros" exec="static_transform_publisher" namespace="green" args=
+        "--x 0
+        --y 0
+        --z 0
+        --yaw 0
+        --pitch 0
+        --roll 0
+        --frame-id nusim/world
+        --child-frame-id map"
     />
 </launch>

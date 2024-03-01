@@ -111,7 +111,7 @@ public:
     wheel_cmd_publisher_ = this->create_publisher<nuturtlebot_msgs::msg::WheelCommands>(
       "wheel_cmd", 10);
     my_joint_state_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>(
-      "joint_states", 10);
+      "/joint_states", 10);
 
     prev_encoder_tic_time_ = this->get_clock()->now();
 
