@@ -10,6 +10,7 @@ Panels:
         - /MarkerArray2/Topic1
         - /MarkerArray3
         - /MarkerArray3/Topic1
+        - /Path1
         - /LaserScan1/Topic1
       Splitter Ratio: 0.6600790619850159
     Tree Height: 719
@@ -262,6 +263,10 @@ Visualization Manager:
           Value: true
         green/odom:
           Value: true
+        green/wheel_left_link:
+          Value: true
+        green/wheel_right_link:
+          Value: true
         map:
           Value: true
         nusim/world:
@@ -279,8 +284,6 @@ Visualization Manager:
         red/wheel_left_link:
           Value: true
         red/wheel_right_link:
-          Value: true
-        world:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -302,6 +305,20 @@ Visualization Manager:
                   {}
                 blue/wheel_right_link:
                   {}
+          map:
+            green/odom:
+              green/base_footprint:
+                green/base_link:
+                  green/base_scan:
+                    {}
+                  green/caster_back_link:
+                    {}
+                  green/imu_link:
+                    {}
+                  green/wheel_left_link:
+                    {}
+                  green/wheel_right_link:
+                    {}
           red/base_footprint:
             red/base_link:
               red/base_scan:
@@ -394,7 +411,7 @@ Visualization Manager:
     - Alpha: 1
       Buffer Length: 10
       Class: rviz_default_plugins/Path
-      Color: 26; 95; 180
+      Color: 25; 255; 0
       Enabled: true
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
@@ -417,7 +434,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /odometry/path
+        Value: /green_odom/path
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -536,4 +553,4 @@ Window Geometry:
     collapsed: false
   Width: 1920
   X: 0
-  Y: 188
+  Y: 27

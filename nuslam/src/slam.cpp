@@ -44,7 +44,13 @@ class Slam : public rclcpp::Node
       tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
       tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
-      n_ = 0;
+      n_ = 3;
+      sigma_ = arma::zeros(9,9);
+      Qbar_ = arma::zeros(9,9);
+      A_ = arma::zeros(9,9);
+      H_ = arma::zeros(9,9);
+      xi_ = arma::zeros(9,1);
+      map_ = arma::zeros(6,1);
       Qfactor_ = 5.0;
       Rfactor_ = 5.0;
       R_ = arma::eye(2,2) * Rfactor_;
@@ -101,7 +107,7 @@ class Slam : public rclcpp::Node
 
     arma::mat calculate_A(turtlelib::Twist2D Vb)
     {
-      RCLCPP_INFO(this->get_logger(), "Calculating A");
+      // TODO: Clean this up
       arma::mat A;
       if (Vb.omega < 1e-3) {
         arma::mat tmp = {{0,0,0},
@@ -118,15 +124,13 @@ class Slam : public rclcpp::Node
         A = arma::join_horiz(tmp,arma::zeros(3+2*n_,2*n_));
         A = arma::eye(3+2*n_,3+2*n_) + A;
       }
-      RCLCPP_INFO(this->get_logger(), "done with A");
 
       return A;
     }
 
     arma::mat calc_Hj(double mx, double my, int j)
     {
-      // there already is noise from the sensor data here, so I don't need to
-      // add more do I?
+      // TODO: Clean this up
       double delta_x = mx - xi_(0);
       double delta_y = my - xi_(1);
       double d = std::pow(delta_x, 2) + std::pow(delta_y, 2);
@@ -147,11 +151,15 @@ class Slam : public rclcpp::Node
 
     arma::mat update_state(const turtlelib::Twist2D & Vb)
     {
-      RCLCPP_INFO(this->get_logger(), "Updating state");
-      RCLCPP_INFO_STREAM(get_logger(), "xi: " << xi_);
-      return xi_ + arma::join_vert(arma::colvec{Vb.omega,
-          -Vb.x/Vb.omega * std::sin(xi_(2)) + Vb.x/Vb.omega * std::sin(xi_(2) + Vb.omega),
-          Vb.x/Vb.omega * std::cos(xi_(2) - Vb.x/Vb.omega) * std::cos(xi_(2) + Vb.omega)}, arma::zeros(2*n_));
+      if (std::abs(Vb.omega) < 1e-3) {
+        return xi_ + arma::join_vert(arma::colvec{0.0,
+                                     Vb.x * std::cos(xi_(2)),
+                                     Vb.x * std::sin(xi_(2))}, arma::zeros(2*n_));
+      } else {
+        return xi_ + arma::join_vert(arma::colvec{Vb.omega,
+            -Vb.x/Vb.omega * std::sin(xi_(2)) + Vb.x/Vb.omega * std::sin(xi_(2) + Vb.omega),
+            Vb.x/Vb.omega * std::cos(xi_(2) - Vb.x/Vb.omega) * std::cos(xi_(2) + Vb.omega)}, arma::zeros(2*n_));
+      }
     }
 
 
@@ -161,10 +169,8 @@ class Slam : public rclcpp::Node
     {
       // initialize some variables we'll be using
 
-      RCLCPP_INFO(this->get_logger(), "Fake sensor callback");
+      // TODO: Clean this up
 
-      // if the map is empty, initialize it and the xi vector because it means
-      // it's the first time we're getting measurements
       if (map_.size() == 0 && A_.size() == 0) {
         initialize_map(msg);
         initialize_xi();
@@ -217,8 +223,6 @@ class Slam : public rclcpp::Node
       t.header.frame_id = "map";
       t.child_frame_id = "green/odom";
 
-      RCLCPP_INFO_STREAM(get_logger(), "xi: " << xi_);
-
       t.transform.translation.x = xi_(0);
       t.transform.translation.y = xi_(1);
       t.transform.translation.z = 0.0;
@@ -240,13 +244,9 @@ class Slam : public rclcpp::Node
 
     void odometry_callback(const nav_msgs::msg::Odometry & msg)
     {
-
       if (xi_.is_empty()) {
         return;
       }
-
-      RCLCPP_INFO(this->get_logger(), "Odometry callback");
-      RCLCPP_INFO_STREAM(this->get_logger(), "xi before: " << xi_);
 
       turtlelib::Twist2D Vb = turtlelib::Twist2D{msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z};
 
@@ -254,7 +254,6 @@ class Slam : public rclcpp::Node
       A_ = calculate_A(Vb);
       sigma_ = A_ * sigma_ * A_.t() + Qbar_;
 
-      RCLCPP_INFO_STREAM(this->get_logger(), "xi after: " << xi_);
       geometry_msgs::msg::TransformStamped t;
       t.header.stamp = get_clock()->now();
       t.header.frame_id = "map";
