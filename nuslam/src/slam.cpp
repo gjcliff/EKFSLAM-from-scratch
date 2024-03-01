@@ -51,7 +51,6 @@ class Slam : public rclcpp::Node
       Qfactor_ = 5.0;
       Rfactor_ = 5.0;
       R_ = arma::eye(2,2) * Rfactor_;
-      RCLCPP_INFO_STREAM(get_logger(), "Initialized sigma");
 
       noise_generator_ = std::normal_distribution<>(0, Rfactor_);
     }
@@ -92,10 +91,6 @@ class Slam : public rclcpp::Node
     //   map_(j) = q_(0) + r * std::cos(phi + q_(2));
     //   map_(j+1) = q_(1) + r * std::sin(phi + q_(2));
     // }
-
-    arma::mat calculate_z(double mx, double my) {
-      return {{std::sqrt(std::pow(mx - q_(0), 2) + std::pow(my - q_(1), 2)),std::atan2(my - q_(1), mx - q_(0)) - q_(2)}};
-    }
 
     /// @brief When a new obstacle estimate is received, update the current, previous,
     /// and delta configuration variables. Also update the map, and update the H matrix.
@@ -186,6 +181,40 @@ class Slam : public rclcpp::Node
 
     }
 
+    void odometry_callback(const nav_msgs::msg::Odometry & msg)
+    {
+      // BEGIN CITATION [29]
+      tf2::Quaternion tf2_quat;
+      tf2::Matrix3x3 m(tf2_quat);
+      double roll, pitch, yaw;
+      m.getRPY(roll, pitch, yaw);
+      // END CITATION [29]
+      q_(0) = msg.pose.pose.position.x;
+      q_(1) = msg.pose.pose.position.y;
+      q_(2) = yaw;
+
+      geometry_msgs::msg::TransformStamped t;
+      t.header.stamp = get_clock()->now();
+      t.header.frame_id = "map";
+      t.child_frame_id = "green/odom";
+
+      t.transform.translation.x = xi_hat(0);
+      t.transform.translation.y = xi_hat(1);
+      t.transform.translation.z = 0.0;
+
+      tf2::Quaternion q_tf2;
+      q_tf2.setRPY(0, 0, q_.at(2));
+
+      geometry_msgs::msg::Quaternion q = tf2::toMsg(q_tf2);
+
+      t.transform.rotation.x = q.x;
+      t.transform.rotation.y = q.y;
+      t.transform.rotation.z = q.z;
+      t.transform.rotation.w = q.w;
+
+      tf_broadcaster_->sendTransform(t);
+    }
+
     arma::mat measurement_model(double mx, double my, int j)
     {
       // there already is noise from the sensor data here, so I don't need to
@@ -208,19 +237,6 @@ class Slam : public rclcpp::Node
       return H;           
     }
     
-    void odometry_callback(const nav_msgs::msg::Odometry & msg)
-    {
-      // BEGIN CITATION [29]
-      tf2::Quaternion tf2_quat;
-      tf2::Matrix3x3 m(tf2_quat);
-      double roll, pitch, yaw;
-      m.getRPY(roll, pitch, yaw);
-      // END CITATION [29]
-      q_(0) = msg.pose.pose.position.x;
-      q_(1) = msg.pose.pose.position.y;
-      q_(2) = yaw;
-    }
-
     arma::mat initialize_Q()
     {
       arma::mat Q = arma::eye(3,3);
