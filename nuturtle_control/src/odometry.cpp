@@ -230,7 +230,7 @@ private:
     // END CITATION [23]
 
     robot_odometry_.header.frame_id = odom_id_;
-    robot_odometry_.child_frame_id = body_id;
+    robot_odometry_.child_frame_id = body_id_;
     robot_odometry_.pose.pose.orientation = geometry_quat;
     robot_odometry_.pose.pose.position.x = q_now.x;
     robot_odometry_.pose.pose.position.y = q_now.y;
