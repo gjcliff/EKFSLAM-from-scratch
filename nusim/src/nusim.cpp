@@ -35,7 +35,7 @@ class TurtleSimulation : public rclcpp::Node
 {
 public:
   TurtleSimulation()
-  : Node("nusim")
+  : Node("nusim"), count_(0)
   {
     // declare parameters
     declare_parameter("rate", 5);
@@ -139,7 +139,6 @@ public:
     sensor_data_publisher_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("sensor_data", 10);
     path_publisher_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
     laser_scan_publisher_ = create_publisher<sensor_msgs::msg::LaserScan>("/scan", 10);
-    annoying_publisher_ = create_publisher<visualization_msgs::msg::Marker>("~/annoying", qos);
 
     // declare subscribers
     wheel_commands_subscriber_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
@@ -166,9 +165,6 @@ public:
     timer_ = create_wall_timer(
       static_cast<std::chrono::milliseconds>(rate_),
       std::bind(&TurtleSimulation::timer_callback, this));
-    slow_timer_ = create_wall_timer(
-      200ms,
-      std::bind(&TurtleSimulation::slow_timer_callback, this));
 
     visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
     walls_publisher_->publish(wall_array);
@@ -218,7 +214,7 @@ private:
       }
   }
 
-  visualization_msgs::msg::MarkerArray construct_fake_obstacle_array(vector<double> marker_array_x, vector<double> marker_array_y, Color c)
+  visualization_msgs::msg::MarkerArray construct_fake_obstacle_array(Color c)
   {
     visualization_msgs::msg::MarkerArray arr;
     for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
@@ -228,8 +224,8 @@ private:
       marker.id = i;
       marker.type = visualization_msgs::msg::Marker::CYLINDER;
       marker.action = visualization_msgs::msg::Marker::ADD;
-      marker.pose.position.x = marker_array_x[i];
-      marker.pose.position.y = marker_array_y[i];
+      marker.pose.position.x = fake_obstacles_x_[i];
+      marker.pose.position.y = fake_obstacles_y_[i];
       marker.pose.position.z = obstacle_height_ / 2;
       marker.pose.orientation.x = 0;
       marker.pose.orientation.y = 0;
@@ -243,7 +239,7 @@ private:
       marker.color.g = c.g;
       marker.color.b = c.b;
 
-      double dist = turtlelib::magnitude({marker_array_x.at(i), marker_array_y.at(i)});
+      double dist = turtlelib::magnitude({fake_obstacles_x_.at(i), fake_obstacles_y_.at(i)});
       if (dist > max_range_) {
         marker.action = visualization_msgs::msg::Marker::DELETE;
       }
@@ -505,6 +501,16 @@ private:
       sensor_data_msg.stamp = get_clock()->now();
 
       sensor_data_publisher_->publish(sensor_data_msg);
+      if (count_%(200/rate_) == 0) {
+        // update the positions of the fake obstacles and publish them
+        update_fake_obstacles();
+        visualization_msgs::msg::MarkerArray relative_obstacle_array = construct_fake_obstacle_array(yellow);
+        fake_obstacles_publisher_->publish(relative_obstacle_array);
+
+        // publish simulated laser scan data
+        sensor_msgs::msg::LaserScan laser_scan = construct_laser_scan();
+        laser_scan_publisher_->publish(laser_scan);
+      }
     }
   }
 
@@ -686,20 +692,7 @@ private:
     }
   }
 
-  void slow_timer_callback()
-  {
-    // update the positions of the fake obstacles and publish them
-    update_fake_obstacles();
-    visualization_msgs::msg::MarkerArray relative_obstacle_array = construct_fake_obstacle_array(fake_obstacles_x_, fake_obstacles_y_, yellow);
-    fake_obstacles_publisher_->publish(relative_obstacle_array);
-
-    // publish simulated laser scan data
-    sensor_msgs::msg::LaserScan laser_scan = construct_laser_scan();
-    laser_scan_publisher_->publish(laser_scan);
-
-  }
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::TimerBase::SharedPtr slow_timer_;
   // publishers
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr walls_publisher_;
@@ -708,7 +701,6 @@ private:
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_publisher_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_publisher_;
   rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr laser_scan_publisher_;
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr annoying_publisher_;
   // subscribers
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheel_commands_subscriber_;
   // transform broadcaster
@@ -723,10 +715,7 @@ private:
   nav_msgs::msg::Path path_;
 
   Color red = {1.0, 0.0, 0.0};
-  Color green = {0.0, 1.0, 0.0};
-  Color blue = {0.0, 0.0, 1.0};
   Color yellow = {1.0, 1.0, 0.0};
-  Color purple = {1.0, 0.0, 1.0};
 
   std::normal_distribution<> input_noise_generator_;
   std::uniform_real_distribution<> slip_fraction_generator_;
@@ -780,6 +769,7 @@ private:
   double obstacle_radius_;
   double obstacle_height_ = 0.25;
   unsigned int current_timestep_ = 0;
+  int count_;
 };
 
 int main(int argc, char * argv[])

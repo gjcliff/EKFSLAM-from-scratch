@@ -12,11 +12,16 @@
         <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
             <arg name="use_rviz" value="false"/>
             <arg name="use_jsp" value="false"/>
+            <arg name="color" value="red"/>
+        </include>
+        <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+            <arg name="use_rviz" value="false"/>
+            <arg name="use_jsp" value="true"/>
             <arg name="color" value="blue"/>
         </include>
         <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py" if="$(eval '\'$(var slam)\' == \'true\'')">
             <arg name="use_rviz" value="false"/>
-            <arg name="use_jsp" value="false"/>
+            <arg name="use_jsp" value="true"/>
             <arg name="color" value="green"/>
         </include>
     </group>
@@ -43,7 +48,7 @@
             <param name="wheel_left" value="wheel_left_joint"/>
             <param name="wheel_right" value="wheel_right_joint"/>
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
-            <remap from="joint_states" to="blue/joint_states"/>
+            <remap from="joint_states" to="red/joint_states"/>
         </node>
         <node pkg="nuturtle_control" exec="odometry" name="green_odom" if="$(eval '\'$(var slam)\' == \'true\'')">
             <param name="body_id" value="green/base_footprint"/>
@@ -51,13 +56,13 @@
             <param name="wheel_left" value="wheel_left_joint"/>
             <param name="wheel_right" value="wheel_right_joint"/>
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
-            <remap from="joint_states" to="green/joint_states"/>
+            <remap from="joint_states" to="red/joint_states"/>
         </node>
         <node pkg="nuturtle_control" exec="turtle_control">
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
             <remap from="wheel_cmd" to="red/wheel_cmd"/>
             <remap from="sensor_data" to="red/sensor_data"/>
-            <remap from="joint_states" to="blue/joint_states"/>
+            <remap from="joint_states" to="red/joint_states"/>
         </node>
     </group>
         

@@ -36,9 +36,10 @@
             <param name="laser_variance" value="$(var laser_variance)"/>
             <remap from="wheel_cmd" to="red/wheel_cmd"/>
             <remap from="sensor_data" to="red/sensor_data"/>
+            <remap from="joint_states" to="red/joint_states"/>
         </node>
         
-        <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <include if="$(eval '\'$(var use_rviz)\' == \'true\'')" file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
             <arg name="use_rviz" value="false"/>
             <arg name="use_jsp" value="true"/>
             <arg name="color" value="red"/>
@@ -59,6 +60,7 @@
             <param name="max_range" value="3.0"/>
             <remap from="~/walls" to="nuwall/walls"/>
             <remap from="~/obstacles" to="nuwall/obstacles"/>
+            <remap from="joint_states" to="red/joint_states"/>
         </node>
     </group>
 
