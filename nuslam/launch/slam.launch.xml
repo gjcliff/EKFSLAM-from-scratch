@@ -3,24 +3,20 @@
     <arg name="robot" default="nusim" description="decides whether to control a real robot, a fake robot, or nothing"/>
 
     <include file="$(find-pkg-share nuturtle_control)/launch/start_robot.launch.xml" if="$(eval '\'$(var robot)\' == \'nusim\'')">
-        <arg name="cmd_src" value="$(val cmd_src)"/>
-        <arg name="robot" value="$(val robot)"/>
+        <arg name="cmd_src" value="$(var cmd_src)"/>
+        <arg name="robot" value="$(var robot)"/>
         <arg name="use_rviz" value="true"/>
         <arg name="slam" value="true"/>
     </include>
     <include file="$(find-pkg-share nuturtle_control)/launch/start_robot.launch.xml" if="$(eval '\'$(var robot)\' == \'turtlebotname\'')">
-        <arg name="cmd_src" value="$(val cmd_src)"/>
-        <arg name="robot" value="$(val robot)"/>
+        <arg name="cmd_src" value="$(var cmd_src)"/>
+        <arg name="robot" value="$(var robot)"/>
         <arg name="use_rviz" value="false"/>
         <arg name="slam" value="true"/>
     </include>
-    <node pkg="slam" exec="slam">
-        <param name="laser_angle_increment" value="0.01745329238474369"/>
-        <param name="laser_angle_min" value="0.0"/>
-        <param name="laser_angle_max" value="6.2657318115234375"/>
-    </node>
+    <node pkg="nuslam" exec="slam"/>
     <!-- Launch the static_transform publisher --> 
-    <node pkg="tf2_ros" exec="static_transform_publisher" args=
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="map_static_transform_publisher" args=
         "--x 0
         --y 0
         --z 0

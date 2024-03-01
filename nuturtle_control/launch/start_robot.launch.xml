@@ -45,7 +45,7 @@
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
             <remap from="joint_states" to="blue/joint_states"/>
         </node>
-        <node pkg="nuturtle_control" exec="odometry" if="$(eval '\'$(var slam)\' == \'true\'')">
+        <node pkg="nuturtle_control" exec="odometry" name="green_odom" if="$(eval '\'$(var slam)\' == \'true\'')">
             <param name="body_id" value="green/base_footprint"/>
             <param name="odom_id" value="green/odom"/>
             <param name="wheel_left" value="wheel_left_joint"/>
@@ -65,7 +65,7 @@
         <let name="use_rviz" value="false"/>
         <node pkg="nuturtle_control" exec="odometry">
             <param name="body_id" value="blue/base_footprint"/>
-            <param name="odom_id" value="odom"/>
+            <param name="odom_id" value="blue/odom"/>
             <param name="wheel_left" value="wheel_left_joint"/>
             <param name="wheel_right" value="wheel_right_joint"/>
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
@@ -105,7 +105,6 @@
         --pitch 0
         --roll 0
         --frame-id nusim/world
-        --child-frame-id odom"
+        --child-frame-id blue/odom"
     />
-
 </launch>
