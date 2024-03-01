@@ -42,13 +42,14 @@ public:
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
     n_ = 3;
+    correction_ = arma::zeros(9,1);
     sigma_ = arma::zeros(9, 9);
     Qbar_ = arma::zeros(9, 9);
     A_ = arma::zeros(9, 9);
     H_ = arma::zeros(9, 9);
     xi_ = arma::zeros(9, 1);
     map_ = arma::zeros(6, 1);
-    Qfactor_ = 0.01;
+    Qfactor_ = 1.0;
     Rfactor_ = 1000.0;
     R_ = arma::eye(2, 2) * Rfactor_;
 
@@ -67,7 +68,6 @@ private:
   }
   void initialize_map(const visualization_msgs::msg::MarkerArray & msg)
   {
-    RCLCPP_INFO(this->get_logger(), "Initializing map");
     map_.zeros(msg.markers.size() * 2, 1);
     n_ = msg.markers.size();
     for (int i = 0; i < static_cast<int>(msg.markers.size()); i++) {
@@ -79,14 +79,12 @@ private:
 
   void initialize_xi()
   {
-    RCLCPP_INFO(this->get_logger(), "Initializing xi");
     xi_ = arma::join_vert(arma::zeros(3, 1), map_);
     RCLCPP_INFO_STREAM(this->get_logger(), "xi: " << xi_);
   }
 
   void initialize_Q()
   {
-    RCLCPP_INFO(this->get_logger(), "Initializing Q");
     Qbar_ = arma::eye(3, 3);
     Qbar_ *= Qfactor_;
     Qbar_ = arma::join_vert(Qbar_, arma::zeros(2 * n_, 3));
@@ -157,7 +155,7 @@ private:
 
   arma::mat update_state(const turtlelib::Twist2D & Vb)
   {
-    if (std::abs(Vb.omega) < 1e-3) {
+    if (std::abs(Vb.omega) < 1e-10) {
       return xi_ + arma::join_vert(
         arma::colvec{0.0,
           Vb.x * std::cos(xi_(2)),
@@ -203,6 +201,7 @@ private:
 
       // perform the SLAM update
       // TODO: Clean this up
+      xi_minus_ = xi_;
       if (count_ == 0) {
         arma::mat sigma_minus = A_ * sigma_ * A_.t() + Qbar_;
         arma::mat K = sigma_minus * Hj.t() * arma::inv(Hj * sigma_minus * Hj.t() + R_);
@@ -229,51 +228,24 @@ private:
 
         arma::mat K = sigma_ * Hj.t() * arma::inv(Hj * sigma_ * Hj.t() + R_);
         arma::colvec z(2, arma::fill::zeros);
-        arma::colvec z_hat(2, arma::fill::zeros);
-        z_hat(0) = std::sqrt(std::pow(x - xi_(0), 2) + std::pow(y - xi_(1), 2));
         z(0) = std::sqrt(std::pow(map_(j*2) - xi_(0),2) + std::pow(map_(j*2 + 1) - xi_(1), 2));
-        RCLCPP_INFO_STREAM(get_logger(), "z: " << z);
-        RCLCPP_INFO_STREAM(get_logger(), "z_hat: " << z_hat);
-        RCLCPP_INFO_STREAM(get_logger(), "j: " << j);
-        RCLCPP_INFO_STREAM(get_logger(), "map_(j*2): " << map_(j*2));
-        RCLCPP_INFO_STREAM(get_logger(), "map_(j*2 + 1): " << map_(j*2 + 1));
-        RCLCPP_INFO_STREAM(get_logger(), "x: " << x);
-        RCLCPP_INFO_STREAM(get_logger(), "y: " << y);
-        RCLCPP_INFO_STREAM(get_logger(), "map_: " << map_);
         z(1) =
           turtlelib::normalize_angle(
           std::atan2(
             map_(j*2+1) - xi_(1), map_(j*2) - xi_(
               0)) - xi_(2));
-        z_hat(1) = turtlelib::normalize_angle(std::atan2(y - xi_(1), x - xi_(0)) - xi_(2));
-        RCLCPP_INFO_STREAM(get_logger(), "K: " << K);
-        // RCLCPP_INFO_STREAM(get_logger(),"K * (z-z_hat): " <<  K * (z-z_hat) << " " << K << " " << z << " " << z_hat);
-        // RCLCPP_INFO_STREAM(get_logger(), "xi_ before: " << xi_);
-        xi_ = xi_ + K * (z - z_hat);
-        // RCLCPP_INFO_STREAM(get_logger(), "xi_ after: " << xi_);
+        arma::colvec z_hat(2, arma::fill::zeros);
+        z_hat(0) = std::sqrt(std::pow(x, 2) + std::pow(y, 2));
+        z_hat(1) = turtlelib::normalize_angle(std::atan2(y, x) - xi_(2));
+        RCLCPP_INFO_STREAM(get_logger(), "xi_ before: " << xi_);
+        xi_ = xi_minus_ + K * (z - z_hat);
+
+        RCLCPP_INFO_STREAM(get_logger(), "xi_ after: " << xi_);
         sigma_ = (arma::eye(9, 9) - K * Hj) * sigma_;
       }
 
-      geometry_msgs::msg::TransformStamped t;
-      t.header.stamp = get_clock()->now();
-      t.header.frame_id = "map";
-      t.child_frame_id = "green/odom";
+      xi_.rows(3,8) = map_;
 
-      t.transform.translation.x = xi_(0);
-      t.transform.translation.y = xi_(1);
-      t.transform.translation.z = 0.0;
-
-      tf2::Quaternion q_tf2;
-      q_tf2.setRPY(0, 0, xi_(2));
-
-      geometry_msgs::msg::Quaternion q = tf2::toMsg(q_tf2);
-
-      t.transform.rotation.x = q.x;
-      t.transform.rotation.y = q.y;
-      t.transform.rotation.z = q.z;
-      t.transform.rotation.w = q.w;
-
-      tf_broadcaster_->sendTransform(t);
       count_++;
     }
   }
@@ -283,32 +255,48 @@ private:
     if (xi_.is_empty()) {
       return;
     }
+    tf2::Quaternion q(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
+      msg.pose.pose.orientation.z, msg.pose.pose.orientation.w);
+    tf2::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
 
     turtlelib::Twist2D Vb =
       turtlelib::Twist2D{msg.twist.twist.linear.x, msg.twist.twist.linear.y,
       msg.twist.twist.angular.z};
+    RCLCPP_INFO_STREAM(get_logger(), "Vb: " << Vb);
 
-    xi_ = update_state(Vb);
+    // RCLCPP_INFO_STREAM(get_logger(), "xi before: " << xi_);
+    xi_(0) = msg.pose.pose.position.x;
+    xi_(1) = msg.pose.pose.position.y;
+    xi_(2) = yaw;
+    // xi_ = update_state(Vb);
     A_ = calculate_A(Vb);
     sigma_ = A_ * sigma_ * A_.t() + Qbar_;
+
+    // RCLCPP_INFO_STREAM(get_logger(), "xi after: " << xi_);
 
     geometry_msgs::msg::TransformStamped t;
     t.header.stamp = get_clock()->now();
     t.header.frame_id = "map";
     t.child_frame_id = "green/odom";
+    
+    RCLCPP_INFO_STREAM(get_logger(), "xi_ size: " << xi_.n_rows << " " << xi_.n_cols);
+    RCLCPP_INFO_STREAM(get_logger(), "xi_minus_ size: " << xi_minus_.n_rows << " " << xi_minus_.n_cols);
 
-    t.transform.translation.x = xi_(0);
-    t.transform.translation.y = xi_(1);
+    arma::mat xi_diff = xi_ - xi_minus_;
+    t.transform.translation.x = xi_diff(0);
+    t.transform.translation.y = xi_diff(1);
 
-    tf2::Quaternion q_tf2;
-    q_tf2.setRPY(0, 0, xi_(2));
-
-    geometry_msgs::msg::Quaternion q = tf2::toMsg(q_tf2);
-
-    t.transform.rotation.x = q.x;
-    t.transform.rotation.y = q.y;
-    t.transform.rotation.z = q.z;
-    t.transform.rotation.w = q.w;
+    // tf2::Quaternion q_tf2;
+    // q_tf2.setRPY(0, 0, xi_(2));
+    //
+    // geometry_msgs::msg::Quaternion q_msg = tf2::toMsg(q_tf2);
+    //
+    // t.transform.rotation.x = q_msg.x;
+    // t.transform.rotation.y = q_msg.y;
+    // t.transform.rotation.z = q_msg.z;
+    // t.transform.rotation.w = q_msg.w;
 
     tf_broadcaster_->sendTransform(t);
   }
@@ -323,8 +311,11 @@ private:
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
+  arma::mat correction_;
+
   arma::mat map_;
   arma::mat xi_;
+  arma::mat xi_minus_;
   arma::mat sigma_;
   arma::mat Qbar_;
   arma::mat A_;
