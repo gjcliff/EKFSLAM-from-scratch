@@ -105,6 +105,7 @@
         --pitch 0
         --roll 0
         --frame-id nusim/world
-        --child-frame-id blue/odom"
+        --child-frame-id blue/odom
+        "
     />
 </launch>

@@ -136,7 +136,6 @@ class Slam : public rclcpp::Node
         // perform the SLAM update
         arma::mat xi_hat;
         if (count_ == 0) {
-          RCLCPP_INFO_STREAM(get_logger(), "count zero");
           arma::mat sigma_minus = A_ * sigma_ * A_.t() + Qbar_;
           arma::mat K = sigma_minus * Hj.t() * arma::inv(Hj * sigma_minus * Hj.t() + R_);
 
@@ -150,11 +149,8 @@ class Slam : public rclcpp::Node
           xi_hat = xi_ + K * (z - z_hat);
           sigma_ = (arma::eye(9,9) - K * Hj) * sigma_minus;
         } else {
-          RCLCPP_INFO_STREAM(get_logger(), "count not zero");
           arma::mat sigma_minus = A_ * sigma_ * A_.t() + Qbar_;
-          RCLCPP_INFO_STREAM(get_logger(), "hello1");
           arma::mat K = sigma_minus * Hj.t() * arma::inv(Hj * sigma_minus * Hj.t() + R_);
-          RCLCPP_INFO_STREAM(get_logger(), "hello2");
           arma::colvec z(2, arma::fill::zeros);
           z(0) = std::sqrt(std::pow(xi_(2 + j*2) - q_(0), 2) + std::pow(xi_(2 + j*2 + 1) - q_(1), 2));
           z(1) = turtlelib::normalize_angle(std::atan2(xi_(2+j*2+1) - q_(1), xi_(2 + j*2) - q_(0)) - q_(2));
@@ -162,9 +158,7 @@ class Slam : public rclcpp::Node
           z_hat(0) = std::sqrt(std::pow(x - q_(0), 2) + std::pow(y - q_(1), 2));
           z_hat(1) = turtlelib::normalize_angle(std::atan2(y - q_(1), x - q_(0)) - q_(2));
           xi_hat = xi_ + K * (z - z_hat);
-          RCLCPP_INFO_STREAM(get_logger(), "hello3");
           sigma_ = (arma::eye(9,9) - K * Hj) * sigma_minus;
-          RCLCPP_INFO_STREAM(get_logger(), "hello4");
         }
 
       geometry_msgs::msg::TransformStamped t;

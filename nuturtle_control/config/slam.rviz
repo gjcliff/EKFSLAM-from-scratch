@@ -8,6 +8,8 @@ Panels:
         - /Odometry1/Shape1
         - /MarkerArray1/Topic1
         - /MarkerArray2/Topic1
+        - /MarkerArray3
+        - /MarkerArray3/Topic1
         - /LaserScan1/Topic1
       Splitter Ratio: 0.6600790619850159
     Tree Height: 719
@@ -260,9 +262,9 @@ Visualization Manager:
           Value: true
         green/odom:
           Value: true
-        nusim/world:
+        map:
           Value: true
-        odom:
+        nusim/world:
           Value: true
         red/base_footprint:
           Value: true
@@ -278,6 +280,8 @@ Visualization Manager:
           Value: true
         red/wheel_right_link:
           Value: true
+        world:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -285,8 +289,19 @@ Visualization Manager:
       Show Names: false
       Tree:
         nusim/world:
-          odom:
-            {}
+          blue/odom:
+            blue/base_footprint:
+              blue/base_link:
+                blue/base_scan:
+                  {}
+                blue/caster_back_link:
+                  {}
+                blue/imu_link:
+                  {}
+                blue/wheel_left_link:
+                  {}
+                blue/wheel_right_link:
+                  {}
           red/base_footprint:
             red/base_link:
               red/base_scan:
@@ -370,8 +385,8 @@ Visualization Manager:
       Namespaces:
         "": true
       Topic:
-        Depth: 5
-        Durability Policy: Volatile
+        Depth: 10
+        Durability Policy: Transient Local
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /fake_sensor
