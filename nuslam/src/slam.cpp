@@ -179,7 +179,7 @@ private:
       // calculate the position of the robot based on current measurements
       arma::colvec z(2, arma::fill::zeros);
       z(0) = std::sqrt(std::pow(m.x - xi_(1),2) + std::pow(m.y - xi_(2), 2));
-      z(1) = turtlelib::normalize_angle(std::atan2(m.y, m.x) - xi_(0));
+      z(1) = turtlelib::normalize_angle(std::atan2(m.y - xi_(2), m.x - xi_(1)) - xi_(0));
 
       // calculate the position of the robot based on previous measurements
       arma::colvec z_hat(2, arma::fill::zeros);
@@ -190,6 +190,10 @@ private:
       correction_ = K * (z - z_hat);
       turtlelib::Transform2D map_to_odom_new{{correction_(1), correction_(2)}, correction_(0)};
       map_to_odom_ = map_to_odom_new * map_to_odom_;
+
+      RCLCPP_INFO_STREAM(get_logger(), "xi_(0): " << xi_(0) << " xi_(1): " << xi_(1) << " xi_(2): " << xi_(2));
+      RCLCPP_INFO_STREAM(get_logger(), "correction_(0): " << correction_(0) << " correction_(1): " << correction_(1) << " correction_(2): " << correction_(2));
+      RCLCPP_INFO_STREAM(get_logger(), "m: " << m.x << " " << m.y);
 
       // don't think this matters at all, but ok!
       xi_ = xi_ + correction_;
@@ -236,6 +240,7 @@ private:
     // RCLCPP_INFO_STREAM(get_logger(), "xi before: " << xi_);
     odom_to_robot_ = turtlelib::Transform2D{{msg.pose.pose.position.x, msg.pose.pose.position.y}, yaw};
     map_to_robot_ = map_to_odom_ * odom_to_robot_;
+    RCLCPP_INFO_STREAM(get_logger(), "\nmap_to_robot: " << map_to_robot_ << "\n");
     xi_(0) = map_to_robot_.rotation();
     xi_(1) = map_to_robot_.translation().x;
     xi_(2) = map_to_robot_.translation().y;
