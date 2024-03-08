@@ -177,8 +177,6 @@ private:
   rclcpp::Time prev_encoder_tic_time_;
   double prev_left_rad_ = 0.0;
   double prev_right_rad_ = 0.0;
-  int original_left_encoder_;
-  int original_right_encoder_;
   double wheel_radius_;
   double track_width_;
   int motor_cmd_max_;

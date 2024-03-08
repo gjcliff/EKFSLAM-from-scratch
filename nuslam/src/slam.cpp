@@ -33,9 +33,6 @@ public:
     fake_sensor_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
       "/fake_sensor", 10, std::bind(&Slam::fake_sensor_callback, this, _1));
 
-    // declare static transform broadcaster
-    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-
     // initialize the transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
@@ -49,9 +46,13 @@ public:
     H_ = arma::zeros(9, 9);
     xi_ = arma::zeros(9, 1);
     map_ = arma::zeros(6, 1);
-    Qfactor_ = 1.0;
+    Qfactor_ = 2.0;
     Rfactor_ = 1000.0;
     R_ = arma::eye(2, 2) * Rfactor_;
+    
+    initialize_xi();
+    initialize_Q();
+    initialize_sigma();
 
     noise_generator_ = std::normal_distribution<>(0, Rfactor_);
   }
@@ -66,21 +67,10 @@ private:
     // same object every time get_random is called
     return mt;
   }
-  void initialize_map(const visualization_msgs::msg::MarkerArray & msg)
-  {
-    map_.zeros(msg.markers.size() * 2, 1);
-    n_ = msg.markers.size();
-    for (int i = 0; i < static_cast<int>(msg.markers.size()); i++) {
-      map_(2 * i) = msg.markers.at(i).pose.position.x;
-      map_(2 * i + 1) = msg.markers.at(i).pose.position.y;
-      map_ids_.push_back(msg.markers.at(i).id);
-    }
-  }
 
   void initialize_xi()
   {
     xi_ = arma::join_vert(arma::zeros(3, 1), map_);
-    RCLCPP_INFO_STREAM(this->get_logger(), "xi: " << xi_);
   }
 
   void initialize_Q()
@@ -106,23 +96,21 @@ private:
     arma::mat A;
     if (Vb.omega < 1e-3) {
       arma::mat tmp = {{0, 0, 0},
-        {-Vb.x * std::sin(xi_(2)), 0, 0},
-        {Vb.x * std::cos(xi_(2)), 0, 0}};
+        {-Vb.x * std::sin(xi_(0)), 0, 0},
+        {Vb.x * std::cos(xi_(0)), 0, 0}};
       tmp = arma::join_vert(tmp, arma::zeros(2 * n_, 3));
       A = arma::join_horiz(tmp, arma::zeros(3 + 2 * n_, 2 * n_));
       A = arma::eye(3 + 2 * n_, 3 + 2 * n_) + A;
     } else {
       arma::mat tmp = {{0, 0, 0},
-        {-Vb.x / Vb.omega * std::cos(xi_(2)) + Vb.x / Vb.omega *
+        {-Vb.x / Vb.omega * std::cos(xi_(0)) + Vb.x / Vb.omega *
           std::cos(
             turtlelib::normalize_angle(
-              xi_(
-                2) + Vb.omega)), 0, 0},
-        {-Vb.x / Vb.omega * std::sin(xi_(2)) + Vb.x / Vb.omega *
+              xi_(0) + Vb.omega)), 0, 0},
+        {-Vb.x / Vb.omega * std::sin(xi_(0)) + Vb.x / Vb.omega *
           std::sin(
             turtlelib::normalize_angle(
-              xi_(
-                2) + Vb.omega)), 0, 0}};
+              xi_(0) + Vb.omega)), 0, 0}};
       tmp = arma::join_vert(tmp, arma::zeros(2 * n_, 3));
       A = arma::join_horiz(tmp, arma::zeros(3 + 2 * n_, 2 * n_));
       A = arma::eye(3 + 2 * n_, 3 + 2 * n_) + A;
@@ -134,8 +122,9 @@ private:
   arma::mat calc_Hj(double mx, double my, int j)
   {
     // TODO: Clean this up
-    double delta_x = mx - xi_(0);
-    double delta_y = my - xi_(1);
+    // xi_minus_?
+    double delta_x = mx - xi_(1);
+    double delta_y = my - xi_(2);
     double d = std::pow(delta_x, 2) + std::pow(delta_y, 2);
 
     arma::mat block1{{0, -delta_x / std::sqrt(d), -delta_y / std::sqrt(d)},
@@ -153,152 +142,108 @@ private:
     return H;
   }
 
-  arma::mat update_state(const turtlelib::Twist2D & Vb)
+  void initialize_map(const visualization_msgs::msg::MarkerArray & msg)
   {
-    if (std::abs(Vb.omega) < 1e-10) {
-      return xi_ + arma::join_vert(
-        arma::colvec{0.0,
-          Vb.x * std::cos(xi_(2)),
-          Vb.x * std::sin(xi_(2))}, arma::zeros(2 * n_));
-    } else {
-      return xi_ + arma::join_vert(
-        arma::colvec{Vb.omega,
-          -Vb.x / Vb.omega * std::sin(xi_(2)) + Vb.x / Vb.omega *
-          std::sin(turtlelib::normalize_angle(xi_(2) + Vb.omega)),
-          Vb.x / Vb.omega * std::cos(xi_(2)) - Vb.x / Vb.omega *
-          std::cos(turtlelib::normalize_angle(xi_(2) + Vb.omega))}, arma::zeros(2 * n_));
+    for (int j = 0; j < static_cast<int>(msg.markers.size()); j++) {
+      turtlelib::Point2D m = map_to_robot_(turtlelib::Point2D{msg.markers.at(j).pose.position.x,
+        msg.markers.at(j).pose.position.y});
+      map_ids_.push_back(msg.markers.at(j).id);
+      map_(j*2) = m.x;
+      map_(j*2+1) = m.y;
     }
-  }
-
+  } 
 
   /// @brief When a new obstacle estimate is received, update the current, previous,
   /// and delta configuration variables. Also update the map, and update the H matrix.
   void fake_sensor_callback(const visualization_msgs::msg::MarkerArray & msg)
   {
-    // initialize some variables we'll be using
-
-    // TODO: Clean this up
-
-    // if (map_.size() == 0 && A_.size() == 0) {
     if (count_ == 0) {
       initialize_map(msg);
-      initialize_xi();
-      initialize_Q();
-      initialize_sigma();
     }
-    //   return;
-    // } else if (A_.size() == 0) {
-    //   return;
-    // }
 
+    // TODO: Clean this up
     for (int j = 0; j < static_cast<int>(msg.markers.size()); j++) {
       // make some useful variables
-      double x = msg.markers.at(j).pose.position.x;
-      double y = msg.markers.at(j).pose.position.y;
+      // this is the location of the marker in the robot's frame
+      turtlelib::Point2D m = map_to_robot_(turtlelib::Point2D{msg.markers.at(j).pose.position.x,
+        msg.markers.at(j).pose.position.y});
 
       // update the measurement model
-      arma::mat Hj = calc_Hj(x, y, j);
+      arma::mat Hj = calc_Hj(m.x, m.y, j);
 
       // perform the SLAM update
-      // TODO: Clean this up
-      xi_minus_ = xi_;
-      if (count_ == 0) {
-        arma::mat sigma_minus = A_ * sigma_ * A_.t() + Qbar_;
-        arma::mat K = sigma_minus * Hj.t() * arma::inv(Hj * sigma_minus * Hj.t() + R_);
-        arma::colvec z(2, arma::fill::zeros);
-        z(0) =
-          std::sqrt(
-          std::pow(
-            map_(j*2) - xi_(0),
-            2) + std::pow(map_(j*2+1) - xi_(1), 2));
-        z(1) =
-          turtlelib::normalize_angle(
-          std::atan2(
-            map_(j*2+1) - xi_(1), map_(j*2) - xi_(
-              0)) - xi_(2));
-        arma::colvec z_hat(2, arma::fill::zeros);
-        z_hat(0) = std::sqrt(std::pow(x - xi_(0), 2) + std::pow(y - xi_(1), 2));
-        z_hat(1) = turtlelib::normalize_angle(std::atan2(y - xi_(1), x - xi_(0)) - xi_(2));
 
-        // print the number of rows and columns in the matrices
+      // calculate the Kalman gain
+      arma::mat K = sigma_ * Hj.t() * arma::inv(Hj * sigma_ * Hj.t() + R_);
 
-        xi_ = xi_ + K * (z - z_hat);
-        sigma_ = (arma::eye(9, 9) - K * Hj) * sigma_minus;
-      } else {
+      // calculate the position of the robot based on current measurements
+      arma::colvec z(2, arma::fill::zeros);
+      z(0) = std::sqrt(std::pow(m.x - xi_(1),2) + std::pow(m.y - xi_(2), 2));
+      z(1) = turtlelib::normalize_angle(std::atan2(m.y, m.x) - xi_(0));
 
-        arma::mat K = sigma_ * Hj.t() * arma::inv(Hj * sigma_ * Hj.t() + R_);
-        arma::colvec z(2, arma::fill::zeros);
-        z(0) = std::sqrt(std::pow(map_(j*2) - xi_(0),2) + std::pow(map_(j*2 + 1) - xi_(1), 2));
-        z(1) =
-          turtlelib::normalize_angle(
-          std::atan2(
-            map_(j*2+1) - xi_(1), map_(j*2) - xi_(
-              0)) - xi_(2));
-        arma::colvec z_hat(2, arma::fill::zeros);
-        z_hat(0) = std::sqrt(std::pow(x, 2) + std::pow(y, 2));
-        z_hat(1) = turtlelib::normalize_angle(std::atan2(y, x) - xi_(2));
-        RCLCPP_INFO_STREAM(get_logger(), "xi_ before: " << xi_);
-        xi_ = xi_minus_ + K * (z - z_hat);
+      // calculate the position of the robot based on previous measurements
+      arma::colvec z_hat(2, arma::fill::zeros);
+      z_hat(0) = std::sqrt(std::pow(map_(j*2) - xi_(1), 2) + std::pow(map_(j*2+1) - xi_(2), 2));
+      z_hat(1) = turtlelib::normalize_angle(std::atan2(map_(j*2+1) - xi_(2), map_(j*2) - xi_(1)) - xi_(0));
 
-        RCLCPP_INFO_STREAM(get_logger(), "xi_ after: " << xi_);
-        sigma_ = (arma::eye(9, 9) - K * Hj) * sigma_;
-      }
+      // calculate the correction to the robot's position
+      correction_ = K * (z - z_hat);
+      turtlelib::Transform2D map_to_odom_new{{correction_(1), correction_(2)}, correction_(0)};
+      map_to_odom_ = map_to_odom_new * map_to_odom_;
 
+      // don't think this matters at all, but ok!
+      xi_ = xi_ + correction_;
+
+      // compute the posterior covariance
+      sigma_ = (arma::eye(9, 9) - K * Hj) * sigma_;
+
+      // why is the map drifting?
       xi_.rows(3,8) = map_;
+
+      // correct the position of the robot in the map frame by updating
+      // the transform from map to odom
+      geometry_msgs::msg::TransformStamped t;
+      t.header.stamp = get_clock()->now();
+      t.header.frame_id = "map";
+      t.child_frame_id = "green/odom";
+
+      tf2::Quaternion q_correct;
+      q_correct.setRPY(0, 0, correction_(0));
+
+      t.transform.translation.x = correction_(1);
+      t.transform.translation.y = correction_(2);
+      t.transform.rotation = tf2::toMsg(q_correct);
+
+      tf_broadcaster_->sendTransform(t);
 
       count_++;
     }
+
   }
 
   void odometry_callback(const nav_msgs::msg::Odometry & msg)
   {
-    if (xi_.is_empty()) {
-      return;
-    }
     tf2::Quaternion q(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
       msg.pose.pose.orientation.z, msg.pose.pose.orientation.w);
     tf2::Matrix3x3 m(q);
     double roll, pitch, yaw;
     m.getRPY(roll, pitch, yaw);
 
-    turtlelib::Twist2D Vb =
-      turtlelib::Twist2D{msg.twist.twist.linear.x, msg.twist.twist.linear.y,
-      msg.twist.twist.angular.z};
-    RCLCPP_INFO_STREAM(get_logger(), "Vb: " << Vb);
+    Vb_ = turtlelib::Twist2D{msg.twist.twist.linear.x,
+                             msg.twist.twist.linear.y,
+                             msg.twist.twist.angular.z};
 
     // RCLCPP_INFO_STREAM(get_logger(), "xi before: " << xi_);
-    xi_(0) = msg.pose.pose.position.x;
-    xi_(1) = msg.pose.pose.position.y;
-    xi_(2) = yaw;
-    // xi_ = update_state(Vb);
-    A_ = calculate_A(Vb);
+    odom_to_robot_ = turtlelib::Transform2D{{msg.pose.pose.position.x, msg.pose.pose.position.y}, yaw};
+    map_to_robot_ = map_to_odom_ * odom_to_robot_;
+    xi_(0) = map_to_robot_.rotation();
+    xi_(1) = map_to_robot_.translation().x;
+    xi_(2) = map_to_robot_.translation().y;
+
+    A_ = calculate_A(Vb_);
     sigma_ = A_ * sigma_ * A_.t() + Qbar_;
 
     // RCLCPP_INFO_STREAM(get_logger(), "xi after: " << xi_);
-
-    geometry_msgs::msg::TransformStamped t;
-    t.header.stamp = get_clock()->now();
-    t.header.frame_id = "map";
-    t.child_frame_id = "green/odom";
-    
-    RCLCPP_INFO_STREAM(get_logger(), "xi_ size: " << xi_.n_rows << " " << xi_.n_cols);
-    RCLCPP_INFO_STREAM(get_logger(), "xi_minus_ size: " << xi_minus_.n_rows << " " << xi_minus_.n_cols);
-
-    arma::mat xi_diff = xi_ - xi_minus_;
-    t.transform.translation.x = xi_diff(0);
-    t.transform.translation.y = xi_diff(1);
-
-    // tf2::Quaternion q_tf2;
-    // q_tf2.setRPY(0, 0, xi_(2));
-    //
-    // geometry_msgs::msg::Quaternion q_msg = tf2::toMsg(q_tf2);
-    //
-    // t.transform.rotation.x = q_msg.x;
-    // t.transform.rotation.y = q_msg.y;
-    // t.transform.rotation.z = q_msg.z;
-    // t.transform.rotation.w = q_msg.w;
-
-    tf_broadcaster_->sendTransform(t);
   }
 
 
@@ -315,12 +260,16 @@ private:
 
   arma::mat map_;
   arma::mat xi_;
-  arma::mat xi_minus_;
   arma::mat sigma_;
   arma::mat Qbar_;
   arma::mat A_;
   arma::mat H_;
   arma::mat R_;
+  turtlelib::Twist2D Vb_;
+  turtlelib::Twist2D Vb_minus_;
+  turtlelib::Transform2D map_to_robot_; // map is always at (0,0) for us
+  turtlelib::Transform2D odom_to_robot_;
+  turtlelib::Transform2D map_to_odom_;
   double Qfactor_;
   double Rfactor_;
 

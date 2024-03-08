@@ -158,8 +158,8 @@ public:
     initial_pose_service_ = create_service<nuturtle_control::srv::InitialPose>(
       "initial_pose", std::bind(&Odometry::initial_pose_callback, this, _1, _2));
 
-    timer_ = this->create_wall_timer(
-      10ms, std::bind(&Odometry::timer_callback, this));
+    // timer_ = this->create_wall_timer(
+    //   10ms, std::bind(&Odometry::timer_callback, this));
 
     robot_odometry_.header.frame_id = odom_id_;
     robot_odometry_.child_frame_id = body_id_;
@@ -206,11 +206,11 @@ private:
   /// @param msg - the joint positions of the turtlebot's wheels
   void joint_state_callback(const sensor_msgs::msg::JointState & msg)
   {
-    double phi_l = msg.position.at(0);
-    double phi_r = msg.position.at(1);
+    const double phi_l = msg.position.at(0);
+    const double phi_r = msg.position.at(1);
 
-    double phi_delta_l = phi_l - phi_l_prev_;
-    double phi_delta_r = phi_r - phi_r_prev_;
+    const double phi_delta_l = phi_l - phi_l_prev_;
+    const double phi_delta_r = phi_r - phi_r_prev_;
 
     phi_l_prev_ = phi_l;
     phi_r_prev_ = phi_r;
@@ -239,11 +239,7 @@ private:
     robot_odometry_.twist.twist.linear.y = Vb.y;
 
     odometry_publisher_->publish(robot_odometry_);
-  }
 
-  /// @brief broadcast the position of the turtlebot's base frame in the odom frame
-  void timer_callback()
-  {
     geometry_msgs::msg::TransformStamped transform_body;
 
     transform_body.header.stamp = get_clock()->now();
@@ -251,17 +247,15 @@ private:
     transform_body.child_frame_id = body_id_;
     transform_body.transform.translation.x = x_;
     transform_body.transform.translation.y = y_;
-    transform_body.transform.rotation.z = theta_;
+    transform_body.transform.rotation = geometry_quat;
 
     tf_broadcaster_->sendTransform(transform_body);
 
     path_.poses.push_back(construct_path_msg());
     path_.header.stamp = get_clock()->now();
     path_publisher_->publish(path_);
-
   }
 
-  rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_publisher_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_publisher_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;

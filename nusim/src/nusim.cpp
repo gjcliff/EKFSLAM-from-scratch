@@ -21,6 +21,7 @@
 #include "visualization_msgs/msg/marker.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 
 #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
@@ -130,6 +131,7 @@ public:
     auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local();
 
     // declare publishers
+    red_jsp_ = create_publisher<sensor_msgs::msg::JointState>("red/joint_states", qos);
     timestep_publisher_ = create_publisher<std_msgs::msg::UInt64>("~/timestep", qos);
     walls_publisher_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/walls", qos);
     obstacles_publisher_ = create_publisher<visualization_msgs::msg::MarkerArray>(
@@ -141,11 +143,10 @@ public:
     laser_scan_publisher_ = create_publisher<sensor_msgs::msg::LaserScan>("/scan", 10);
 
     // declare subscribers
+    joint_states_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
+      "/joint_states", 10, std::bind(&TurtleSimulation::joint_states_callback, this, _1));
     wheel_commands_subscriber_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
       "wheel_cmd", 10, std::bind(&TurtleSimulation::wheel_commands_callback, this, _1));
-
-    // declare static transform broadcaster
-    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
     // declare services
     reset_service_ =
@@ -175,6 +176,7 @@ public:
     og_theta_ = theta_;
     max_arena_dist_ = std::sqrt(std::pow(arena_x_length_, 2) + std::pow(arena_y_length_, 2));
 
+    path_.header.frame_id = "nusim/world";
   }
 
 private:
@@ -195,9 +197,10 @@ private:
     return mt;
   }
 
+
   geometry_msgs::msg::TransformStamped get_transform(
-    std::string toFrameRel,
-    std::string fromFrameRel)
+    std::string fromFrameRel,
+    std::string toFrameRel)
   {
     geometry_msgs::msg::TransformStamped t;
 
@@ -205,7 +208,7 @@ private:
     // and send velocity commands for turtle2 to reach target_frame
     try {
       t = tf_buffer_->lookupTransform(
-        toFrameRel, fromFrameRel,
+        fromFrameRel, toFrameRel,
         tf2::TimePointZero);
       return t;
     } catch (const tf2::TransformException & ex) {
@@ -407,20 +410,6 @@ private:
     world_to_robot_ = turtlelib::Transform2D({x_, y_}, theta_);
   }
 
-  void wheel_commands_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
-  {
-    left_wheel_velocity_no_noise = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
-    right_wheel_velocity_no_noise = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
-
-    left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) +
-      input_noise_generator_(get_random());
-    right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) +
-      input_noise_generator_(get_random());
-
-    left_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
-    right_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
-  }
-
   /// @brief This function checks if the red robot is in collision with an
   /// obstacle. If so, it returns updated coordinates so that the collision
   /// radius of the robot is tangent with the collisoin radius of the obstacle.
@@ -434,13 +423,32 @@ private:
       double dist = turtlelib::magnitude({obstacles_x_.at(i) - x_, obstacles_y_.at(i) - y_});
       if (dist < collision_radius_ + obstacle_radius_) {
         turtlelib::Vector2D v = turtlelib::normalize_vector(
-          {x_ - obstacles_x_.at(
-              i), y_ - obstacles_y_.at(i)});
+            {x_ - obstacles_x_.at(
+                i), y_ - obstacles_y_.at(i)});
         x_new += (collision_radius_ + obstacle_radius_ - dist) * v.x;
         y_new += (collision_radius_ + obstacle_radius_ - dist) * v.y;
       }
     }
     return {x_new, y_new};
+  }
+
+  void joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
+  {
+    red_jsp_->publish(*msg);
+  }
+
+  void wheel_commands_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
+  {
+    left_wheel_velocity_no_noise = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+    right_wheel_velocity_no_noise = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+
+    left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) +
+      input_noise_generator_(get_random());
+    right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) +
+      input_noise_generator_(get_random());
+
+    left_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
+    right_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
   }
 
   void timer_callback()
@@ -477,6 +485,21 @@ private:
         red);
       obstacles_publisher_->publish(obstacle_array);
 
+      // calculate the current encoder ticks
+      left_encoder_ticks_ += left_wheel_velocity_ * encoder_ticks_per_rad_;
+      right_encoder_ticks_ += right_wheel_velocity_ * encoder_ticks_per_rad_;
+
+      int rounded_left_encoder_ticks_ = static_cast<int>(std::round(left_encoder_ticks_));
+      int rounded_right_encoder_ticks_ = static_cast<int>(std::round(right_encoder_ticks_));
+
+      // publish the encoder data
+      nuturtlebot_msgs::msg::SensorData sensor_data_msg;
+      sensor_data_msg.left_encoder = rounded_left_encoder_ticks_;
+      sensor_data_msg.right_encoder = rounded_right_encoder_ticks_;
+      sensor_data_msg.stamp = get_clock()->now();
+
+      sensor_data_publisher_->publish(sensor_data_msg);
+
       // get the body twist
       turtlelib::Twist2D Vb = turtlebot_.FK(
         left_wheel_velocity_no_noise,
@@ -503,21 +526,6 @@ private:
       path_.poses.push_back(construct_path_msg());
       path_.header.stamp = get_clock()->now();
       path_publisher_->publish(path_);
-
-      // calculate the current encoder ticks
-      left_encoder_ticks_ += left_wheel_velocity_ * encoder_ticks_per_rad_;
-      right_encoder_ticks_ += right_wheel_velocity_ * encoder_ticks_per_rad_;
-
-      int rounded_left_encoder_ticks_ = static_cast<int>(std::round(left_encoder_ticks_));
-      int rounded_right_encoder_ticks_ = static_cast<int>(std::round(right_encoder_ticks_));
-
-      // publish the encoder data
-      nuturtlebot_msgs::msg::SensorData sensor_data_msg;
-      sensor_data_msg.left_encoder = rounded_left_encoder_ticks_;
-      sensor_data_msg.right_encoder = rounded_right_encoder_ticks_;
-      sensor_data_msg.stamp = get_clock()->now();
-
-      sensor_data_publisher_->publish(sensor_data_msg);
       if (count_ % (200 / rate_) == 0) {
         // update the positions of the fake obstacles and publish them
         update_fake_obstacles();
@@ -546,9 +554,6 @@ private:
     for (int i = 0; i < static_cast<int>(std::round(laser_angle_max_ / laser_angle_increment_));
       i++)
     {
-      // need to pick an arbitrary point outside the arena, I'm going to choose
-      // one that follows the vector v, that has a length of the diagonal of the
-      // arena.
       double current_angle = laser_angle_increment_ * i;
 
       turtlelib::Vector2D v = {
@@ -556,7 +561,6 @@ private:
         laser_max_range_ * std::sin(current_angle)
       };
 
-      // check if the laser can see one of the obstacles
       int sgn = 0;
       v.y < 0 ? sgn = -1 : sgn = 1;
 
@@ -568,9 +572,9 @@ private:
         turtlelib::Transform2D scan_to_obstacle = scan_to_world * world_to_obstacle;
         turtlelib::Transform2D obstacle_to_scan = scan_to_obstacle.inv();
 
-        turtlelib::Vector2D v_world = world_to_scan(v);
-        turtlelib::Vector2D v_dir = {obstacles_x_.at(j), obstacles_y_.at(j)};
-        if (turtlelib::dot(v_world, v_dir) < 0) {
+        turtlelib::Vector2D v_obs = scan_to_obstacle.translation();
+
+        if (turtlelib::dot(v, v_obs) < 0) {
           continue;
         }
 
@@ -750,6 +754,7 @@ private:
 
   rclcpp::TimerBase::SharedPtr timer_;
   // publishers
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr red_jsp_;
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr walls_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_publisher_;
@@ -759,6 +764,7 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr laser_scan_publisher_;
   // subscribers
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheel_commands_subscriber_;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_states_subscriber_;
   // transform broadcaster
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};

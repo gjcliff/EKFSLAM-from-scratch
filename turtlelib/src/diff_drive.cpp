@@ -53,8 +53,8 @@ Twist2D DiffDrive::FK(double phi_l_p, double phi_r_p)
 
   // calculate Vb based on the pseudo inverse of the H matrix
   // and the input controls
-  for (int i = 0; i < (int)H_pseudo.size(); i++) {
-    for (int j = 0; j < (int)H_pseudo.at(0).size(); j++) {
+  for (int i = 0; i < H_pseudo.size(); i++) {
+    for (int j = 0; j < H_pseudo.at(0).size(); j++) {
       Vb_mat[i] += H_pseudo[i][j] * u[j];
     }
   }
@@ -94,8 +94,8 @@ vector<double> DiffDrive::IK(Twist2D twist)
   }
 
   // multiple the H matrix by the body twist to find the new wheel velocities
-  for (int i = 0; i < (int)H.size(); i++) {
-    for (int j = 0; j < (int)H.at(0).size(); j++) {
+  for (int i = 0; i < H.size(); i++) {
+    for (int j = 0; j < H.at(0).size(); j++) {
       phi_delta[i] += H[i][j] * Vb[j];
     }
   }
@@ -130,8 +130,8 @@ vector<vector<double>> DiffDrive::construct_H_matrix()
   vector<vector<double>> H_tmp = {{-rd.D, 1, 0},
     {rd.D, 1, 0}};
 
-  for (int i = 0; i < (int)H_tmp.size(); i++) {
-    for (int j = 0; j < (int)H_tmp.at(0).size(); j++) {
+  for (int i = 0; i < H_tmp.size(); i++) {
+    for (int j = 0; j < H_tmp.at(0).size(); j++) {
       H_tmp[i][j] *= 1 / rd.r; // r/3???
     }
   }
@@ -146,8 +146,8 @@ vector<vector<double>> DiffDrive::construct_H_pseudo_matrix()
   // libraries.
   vector<vector<double>> H_pseudo_tmp = {{-1 / rd.D, 1 / rd.D}, {1, 1}, {0, 0}};
 
-  for (int i = 0; i < (int)H_pseudo_tmp.size(); i++) {
-    for (int j = 0; j < (int)H_pseudo_tmp.at(0).size(); j++) {
+  for (int i = 0; i < H_pseudo_tmp.size(); i++) {
+    for (int j = 0; j < H_pseudo_tmp.at(0).size(); j++) {
       H_pseudo_tmp[i][j] *= rd.r / 2;
     }
   }

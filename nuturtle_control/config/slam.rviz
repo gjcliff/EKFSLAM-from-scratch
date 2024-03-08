@@ -4,6 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /TF1/Frames1
         - /TF1/Tree1
         - /Odometry1/Shape1
         - /MarkerArray1/Topic1
@@ -232,53 +233,57 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
-        All Enabled: true
+        All Enabled: false
         blue/base_footprint:
-          Value: true
+          Value: false
         blue/base_link:
-          Value: true
+          Value: false
         blue/base_scan:
-          Value: true
+          Value: false
         blue/caster_back_link:
-          Value: true
+          Value: false
         blue/imu_link:
-          Value: true
-        blue/odometry/odom:
-          Value: true
+          Value: false
+        blue/odom:
+          Value: false
         blue/wheel_left_link:
-          Value: true
+          Value: false
         blue/wheel_right_link:
-          Value: true
+          Value: false
         green/base_footprint:
-          Value: true
+          Value: false
         green/base_link:
-          Value: true
+          Value: false
         green/base_scan:
-          Value: true
+          Value: false
         green/caster_back_link:
-          Value: true
+          Value: false
         green/imu_link:
-          Value: true
-        green/odometry/odom:
+          Value: false
+        green/odom:
           Value: true
         green/wheel_left_link:
-          Value: true
+          Value: false
         green/wheel_right_link:
-          Value: true
+          Value: false
         map:
           Value: true
         nusim/world:
-          Value: true
+          Value: false
         red/base_footprint:
-          Value: true
+          Value: false
         red/base_link:
-          Value: true
+          Value: false
         red/base_scan:
-          Value: true
+          Value: false
         red/caster_back_link:
-          Value: true
+          Value: false
         red/imu_link:
-          Value: true
+          Value: false
+        red/wheel_left_link:
+          Value: false
+        red/wheel_right_link:
+          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -286,7 +291,7 @@ Visualization Manager:
       Show Names: false
       Tree:
         nusim/world:
-          blue/odometry/odom:
+          blue/odom:
             blue/base_footprint:
               blue/base_link:
                 blue/base_scan:
@@ -300,7 +305,7 @@ Visualization Manager:
                 blue/wheel_right_link:
                   {}
           map:
-            green/odometry/odom:
+            green/odom:
               green/base_footprint:
                 green/base_link:
                   green/base_scan:
@@ -320,6 +325,10 @@ Visualization Manager:
               red/caster_back_link:
                 {}
               red/imu_link:
+                {}
+              red/wheel_left_link:
+                {}
+              red/wheel_right_link:
                 {}
       Update Interval: 0
       Value: true
@@ -413,9 +422,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1.5228875875473022
+      Max Intensity: 1.5000001192092896
       Min Color: 0; 0; 0
-      Min Intensity: -1.5229780673980713
+      Min Intensity: -1.5
       Name: LaserScan
       Position Transformer: XYZ
       Selectable: true
@@ -486,7 +495,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /nusim/path
+        Value: /red/path
       Value: true
     - Alpha: 1
       Buffer Length: 1
@@ -562,7 +571,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.103924512863159
+      Distance: 4.152395725250244
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -577,10 +586,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5702028274536133
+      Pitch: 0.6402037143707275
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.958581447601318
+      Yaw: 5.828583717346191
     Saved: ~
 Window Geometry:
   Displays:
@@ -599,4 +608,4 @@ Window Geometry:
     collapsed: false
   Width: 1920
   X: 0
-  Y: 188
+  Y: 27
