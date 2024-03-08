@@ -9,6 +9,8 @@
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "nav_msgs/msg/path.hpp"
+#include "std_msgs/msg/header.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
@@ -30,6 +32,9 @@ public:
     odometry_sub_ = create_subscription<nav_msgs::msg::Odometry>(
       "/green/odom", 10, std::bind(&Slam::odometry_callback, this, _1));
 
+    path_publisher_ = create_publisher<nav_msgs::msg::Path>(
+      "slam_path", 10);
+
     fake_sensor_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
       "/fake_sensor", 10, std::bind(&Slam::fake_sensor_callback, this, _1));
 
@@ -46,8 +51,8 @@ public:
     H_ = arma::zeros(9, 9);
     xi_ = arma::zeros(9, 1);
     map_ = arma::zeros(6, 1);
-    Qfactor_ = 2.0;
-    Rfactor_ = 1000.0;
+    Qfactor_ = 10.0;
+    Rfactor_ = 100.0;
     R_ = arma::eye(2, 2) * Rfactor_;
     
     initialize_xi();
@@ -55,9 +60,25 @@ public:
     initialize_sigma();
 
     noise_generator_ = std::normal_distribution<>(0, Rfactor_);
+    path_.header.frame_id = "nusim/world";
   }
 
 private:
+  geometry_msgs::msg::PoseStamped construct_path_msg()
+  {
+    geometry_msgs::msg::PoseStamped pose;
+    pose.header.stamp = get_clock()->now();
+    pose.header.frame_id = "nusim/world";
+    pose.pose.position.x = xi_(1);
+    pose.pose.position.y = xi_(2);
+
+    tf2::Quaternion q_tf2;
+    q_tf2.setRPY(0, 0, xi_(0));
+    pose.pose.orientation = tf2::toMsg(q_tf2);
+
+    return pose;
+  }
+
   std::mt19937 & get_random()
   {
     // static variables inside a function are created once and persist for the remainder of the program
@@ -157,6 +178,10 @@ private:
   /// and delta configuration variables. Also update the map, and update the H matrix.
   void fake_sensor_callback(const visualization_msgs::msg::MarkerArray & msg)
   {
+    std_msgs::msg::Header header;
+    header.stamp = get_clock()->now();
+    builtin_interfaces::msg::Time time = get_clock()->now();
+
     if (count_ == 0) {
       initialize_map(msg);
     }
@@ -189,14 +214,27 @@ private:
       // calculate the correction to the robot's position
       correction_ = K * (z - z_hat);
       turtlelib::Transform2D map_to_odom_new{{correction_(1), correction_(2)}, correction_(0)};
-      map_to_odom_ = map_to_odom_new * map_to_odom_;
+      RCLCPP_INFO_STREAM(get_logger(), "j: " << j);
+      RCLCPP_INFO_STREAM(get_logger(), "j: " << j);
+      RCLCPP_INFO_STREAM(get_logger(), "obstacle id: " << msg.markers.at(j).id);
+      RCLCPP_INFO_STREAM(get_logger(), "map_to_odom_new: " << map_to_odom_new);
+      RCLCPP_INFO_STREAM(get_logger(), "z: \n" << z.t());
+      RCLCPP_INFO_STREAM(get_logger(), "z_hat: \n" << z_hat.t());
+      RCLCPP_INFO_STREAM(get_logger(), "std::atan2(m.y - xi_(2), m.x - xi_(1)): " << std::atan2(m.y - xi_(2), m.x - xi_(1)));
+      RCLCPP_INFO_STREAM(get_logger(), "turtlelib::normalize_angle(std::atan2(m.y - xi_(2), m.x - xi_(1)) - xi_(0)): " << turtlelib::normalize_angle(std::atan2(m.y - xi_(2), m.x - xi_(1)) - xi_(0)));
+      RCLCPP_INFO_STREAM(get_logger(), "std::atan2(map_(j*2+1) - xi_(2), map_(j*2) - xi_(1)): " << std::atan2(map_(j*2+1) - xi_(2), map_(j*2) - xi_(1)));
+      RCLCPP_INFO_STREAM(get_logger(), "turtlelib::normalize_angle(std::atan2(map_(j*2+1) - xi_(2), map_(j*2) - xi_(1)) - xi_(0)): " << turtlelib::normalize_angle(std::atan2(map_(j*2+1) - xi_(2), map_(j*2) - xi_(1)) - xi_(0)));
+      RCLCPP_INFO_STREAM(get_logger(), "correction: \n" << correction_.t());
 
-      RCLCPP_INFO_STREAM(get_logger(), "xi_(0): " << xi_(0) << " xi_(1): " << xi_(1) << " xi_(2): " << xi_(2));
-      RCLCPP_INFO_STREAM(get_logger(), "correction_(0): " << correction_(0) << " correction_(1): " << correction_(1) << " correction_(2): " << correction_(2));
-      RCLCPP_INFO_STREAM(get_logger(), "m: " << m.x << " " << m.y);
+      RCLCPP_INFO_STREAM(get_logger(), "xi_: \n" << xi_.t());
+      RCLCPP_INFO_STREAM(get_logger(), "m: " << m.x << ", " << m.y);
+
+      map_to_odom_ = map_to_odom_new * map_to_odom_;
 
       // don't think this matters at all, but ok!
       xi_ = xi_ + correction_;
+
+      RCLCPP_INFO_STREAM(get_logger(), "xi_ after: \n" << xi_.t());
 
       // compute the posterior covariance
       sigma_ = (arma::eye(9, 9) - K * Hj) * sigma_;
@@ -207,7 +245,7 @@ private:
       // correct the position of the robot in the map frame by updating
       // the transform from map to odom
       geometry_msgs::msg::TransformStamped t;
-      t.header.stamp = get_clock()->now();
+      t.header.stamp = time;
       t.header.frame_id = "map";
       t.child_frame_id = "green/odom";
 
@@ -220,8 +258,14 @@ private:
 
       tf_broadcaster_->sendTransform(t);
 
+      path_.poses.push_back(construct_path_msg());
+      path_.header.stamp = time;
+      path_publisher_->publish(path_);
+
       count_++;
     }
+
+    RCLCPP_INFO_STREAM(get_logger(), "\n\n\n\n");
 
   }
 
@@ -237,10 +281,8 @@ private:
                              msg.twist.twist.linear.y,
                              msg.twist.twist.angular.z};
 
-    // RCLCPP_INFO_STREAM(get_logger(), "xi before: " << xi_);
     odom_to_robot_ = turtlelib::Transform2D{{msg.pose.pose.position.x, msg.pose.pose.position.y}, yaw};
     map_to_robot_ = map_to_odom_ * odom_to_robot_;
-    RCLCPP_INFO_STREAM(get_logger(), "\nmap_to_robot: " << map_to_robot_ << "\n");
     xi_(0) = map_to_robot_.rotation();
     xi_(1) = map_to_robot_.translation().x;
     xi_(2) = map_to_robot_.translation().y;
@@ -248,18 +290,19 @@ private:
     A_ = calculate_A(Vb_);
     sigma_ = A_ * sigma_ * A_.t() + Qbar_;
 
-    // RCLCPP_INFO_STREAM(get_logger(), "xi after: " << xi_);
   }
 
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr fake_sensor_sub_;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_publisher_;
 
   // transform broadcaster
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+  nav_msgs::msg::Path path_;
 
   arma::mat correction_;
 

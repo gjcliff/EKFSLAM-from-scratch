@@ -162,13 +162,9 @@ public:
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-    tf_broadcaster_->sendTransform(construct_transform_msg(x_, y_, theta_));
     timer_ = create_wall_timer(
       static_cast<std::chrono::milliseconds>(rate_),
       std::bind(&TurtleSimulation::timer_callback, this));
-
-    visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
-    walls_publisher_->publish(wall_array);
 
     // set miscellaneous variables
     og_x_ = x_;
@@ -219,13 +215,13 @@ private:
     }
   }
 
-  visualization_msgs::msg::MarkerArray construct_fake_obstacle_array(Color c)
+  visualization_msgs::msg::MarkerArray construct_fake_obstacle_array(Color c, builtin_interfaces::msg::Time current_time)
   {
     visualization_msgs::msg::MarkerArray arr;
     for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
       visualization_msgs::msg::Marker marker;
       marker.header.frame_id = "red/base_footprint";
-      marker.header.stamp = get_clock()->now();
+      marker.header.stamp = current_time;
       marker.id = i;
       marker.type = visualization_msgs::msg::Marker::CYLINDER;
       marker.action = visualization_msgs::msg::Marker::ADD;
@@ -258,13 +254,14 @@ private:
   visualization_msgs::msg::MarkerArray construct_obstacle_array(
     vector<double> marker_array_x,
     vector<double> marker_array_y,
-    Color c)
+    Color c,
+    builtin_interfaces::msg::Time current_time)
   {
     visualization_msgs::msg::MarkerArray arr;
     for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
       visualization_msgs::msg::Marker marker;
       marker.header.frame_id = "nusim/world";
-      marker.header.stamp = get_clock()->now();
+      marker.header.stamp = current_time;
       marker.id = i;
       marker.type = visualization_msgs::msg::Marker::CYLINDER;
       marker.action = visualization_msgs::msg::Marker::ADD;
@@ -291,11 +288,11 @@ private:
   visualization_msgs::msg::Marker construct_marker(
     double pos_x, double pos_y, double scale_x,
     double scale_y, int id,
-    Color c)
+    Color c, builtin_interfaces::msg::Time current_time)
   {
     visualization_msgs::msg::Marker marker;
     marker.header.frame_id = "nusim/world";
-    marker.header.stamp = get_clock()->now();
+    marker.header.stamp = current_time;
     marker.id = id;
     marker.type = visualization_msgs::msg::Marker::CUBE;
     marker.action = visualization_msgs::msg::Marker::ADD;
@@ -316,7 +313,7 @@ private:
     return marker;
   }
 
-  visualization_msgs::msg::MarkerArray construct_wall_array(Color c)
+  visualization_msgs::msg::MarkerArray construct_wall_array(Color c, builtin_interfaces::msg::Time current_time)
   {
     visualization_msgs::msg::MarkerArray wall_array;
 
@@ -326,28 +323,28 @@ private:
     wall_array.markers.push_back(
       construct_marker(
         arena_x_length_ / 2 + wall_thickness_ / 2, 0.0, wall_thickness_,
-        x_length, 0, c));
+        x_length, 0, c, current_time));
     wall_array.markers.push_back(
       construct_marker(
         0.0, arena_y_length_ / 2 + wall_thickness_ / 2, y_length,
-        wall_thickness_, 1, c));
+        wall_thickness_, 1, c, current_time));
     wall_array.markers.push_back(
       construct_marker(
         -arena_x_length_ / 2 - wall_thickness_ / 2, 0.0, wall_thickness_,
-        x_length, 2, c));
+        x_length, 2, c, current_time));
     wall_array.markers.push_back(
       construct_marker(
         0.0, -arena_y_length_ / 2 - wall_thickness_ / 2, y_length,
-        wall_thickness_, 3, c));
+        wall_thickness_, 3, c, current_time));
 
     return wall_array;
   }
 
-  geometry_msgs::msg::TransformStamped construct_transform_msg(double x, double y, double theta)
+  geometry_msgs::msg::TransformStamped construct_transform_msg(double x, double y, double theta, builtin_interfaces::msg::Time current_time)
   {
     geometry_msgs::msg::TransformStamped t;
 
-    t.header.stamp = get_clock()->now();
+    t.header.stamp = current_time;
     t.header.frame_id = "nusim/world";
     t.child_frame_id = "red/base_footprint";
 
@@ -368,10 +365,10 @@ private:
     return t;
   }
 
-  geometry_msgs::msg::PoseStamped construct_path_msg()
+  geometry_msgs::msg::PoseStamped construct_path_msg(builtin_interfaces::msg::Time current_time)
   {
     geometry_msgs::msg::PoseStamped pose;
-    pose.header.stamp = get_clock()->now();
+    pose.header.stamp = current_time;
     pose.header.frame_id = "nusim/world";
     pose.pose.position.x = x_;
     pose.pose.position.y = y_;
@@ -389,7 +386,7 @@ private:
   {
     geometry_msgs::msg::TransformStamped t = construct_transform_msg(
       request->x, request->y,
-      request->theta);
+      request->theta, get_clock()->now());
 
     tf_broadcaster_->sendTransform(t);
 
@@ -439,20 +436,26 @@ private:
 
   void wheel_commands_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
   {
-    left_wheel_velocity_no_noise = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
-    right_wheel_velocity_no_noise = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+    left_wheel_velocity_no_noise_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
+    right_wheel_velocity_no_noise_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_);
 
-    left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) +
-      input_noise_generator_(get_random());
-    right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) +
-      input_noise_generator_(get_random());
+    if (msg.left_velocity !=0){
+      left_wheel_velocity_ = msg.left_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) +
+        input_noise_generator_(get_random());
+      right_wheel_velocity_ = msg.right_velocity * motor_cmd_per_rad_sec_ / (1000.0 / rate_) +
+        input_noise_generator_(get_random());
 
-    left_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
-    right_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
+      left_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
+      right_wheel_velocity_ *= (1 + slip_fraction_generator_(get_random()));
+    } else {
+      left_wheel_velocity_ = 0.0;
+      right_wheel_velocity_ = 0.0;
+    }
   }
 
   void timer_callback()
   {
+    builtin_interfaces::msg::Time current_time = get_clock()->now();
     if (draw_only_) {
       // keep track of the current timestep
       current_timestep_ += 1;
@@ -460,13 +463,13 @@ private:
       timestep_message.data = current_timestep_;
       timestep_publisher_->publish(timestep_message);
 
-      visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
+      visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red, current_time);
       walls_publisher_->publish(wall_array);
 
       visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array(
         obstacles_x_,
         obstacles_y_,
-        red);
+        red, current_time);
       obstacles_publisher_->publish(obstacle_array);
     } else {
       // keep track of the current timestep
@@ -476,18 +479,18 @@ private:
       timestep_publisher_->publish(timestep_message);
 
       // add the walls and obstacles to the world
-      visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red);
+      visualization_msgs::msg::MarkerArray wall_array = construct_wall_array(red, current_time);
       walls_publisher_->publish(wall_array);
 
       visualization_msgs::msg::MarkerArray obstacle_array = construct_obstacle_array(
         obstacles_x_,
         obstacles_y_,
-        red);
+        red, current_time);
       obstacles_publisher_->publish(obstacle_array);
 
       // calculate the current encoder ticks
-      left_encoder_ticks_ += left_wheel_velocity_ * encoder_ticks_per_rad_;
-      right_encoder_ticks_ += right_wheel_velocity_ * encoder_ticks_per_rad_;
+      left_encoder_ticks_ += left_wheel_velocity_no_noise_ * encoder_ticks_per_rad_;
+      right_encoder_ticks_ += right_wheel_velocity_no_noise_ * encoder_ticks_per_rad_;
 
       int rounded_left_encoder_ticks_ = static_cast<int>(std::round(left_encoder_ticks_));
       int rounded_right_encoder_ticks_ = static_cast<int>(std::round(right_encoder_ticks_));
@@ -502,8 +505,8 @@ private:
 
       // get the body twist
       turtlelib::Twist2D Vb = turtlebot_.FK(
-        left_wheel_velocity_no_noise,
-        right_wheel_velocity_no_noise);
+        left_wheel_velocity_,
+        right_wheel_velocity_);
 
       // update the configuration of the red robot in the world frame
       turtlelib::Configuration qv = turtlebot_.update_configuration(Vb);
@@ -519,31 +522,32 @@ private:
       world_to_robot_ = turtlelib::Transform2D({x_, y_}, theta_);
 
       // broadcast the position of the red robot in the world frame
-      geometry_msgs::msg::TransformStamped t = construct_transform_msg(x_, y_, theta_);
+      geometry_msgs::msg::TransformStamped t = construct_transform_msg(x_, y_, theta_, current_time);
       tf_broadcaster_->sendTransform(t);
 
       // publish the path of the red robot
-      path_.poses.push_back(construct_path_msg());
+      path_.poses.push_back(construct_path_msg(current_time));
       path_.header.stamp = get_clock()->now();
       path_publisher_->publish(path_);
       if (count_ % (200 / rate_) == 0) {
         // update the positions of the fake obstacles and publish them
         update_fake_obstacles();
         visualization_msgs::msg::MarkerArray relative_obstacle_array =
-          construct_fake_obstacle_array(yellow);
+          construct_fake_obstacle_array(yellow, current_time);
         fake_obstacles_publisher_->publish(relative_obstacle_array);
 
         // publish simulated laser scan data
-        sensor_msgs::msg::LaserScan laser_scan = construct_laser_scan();
+        sensor_msgs::msg::LaserScan laser_scan = construct_laser_scan(current_time);
         laser_scan_publisher_->publish(laser_scan);
       }
+      count_++;
     }
   }
 
   /// @brief This function calculates the range of the laser scan
   vector<float> find_ranges()
   {
-    vector<float> ranges;
+    vector<float> ranges(static_cast<int>(std::round(laser_angle_max_ / laser_angle_increment_)), 0.0);
 
     geometry_msgs::msg::TransformStamped t = get_transform("nusim/world", "red/base_scan");
     double scan_x = t.transform.translation.x;
@@ -611,16 +615,24 @@ private:
           double range2 = turtlelib::magnitude(scan_to_obstacle(v2));
 
           if (range1 > laser_max_range_ || range1 < laser_min_range_) {
-            ranges.push_back(0.0);
+            ranges.at(i) = 0.0;
             continue;
           } else if (range2 > laser_max_range_ || range2 < laser_min_range_) {
-            ranges.push_back(0.0);
+            ranges.at(i) = 0.0;
             continue;
           }
+          
+          double closer_range;
+          range1 > range2 ? closer_range = range2 : closer_range = range1;
+          if (ranges.at(i) != 0.0){
+            closer_range < ranges.at(i) ? ranges.at(i) = closer_range : 0;
+          } else {
+            ranges.at(i) = closer_range;
+          }
 
-          range1 > range2 ? ranges.push_back(range2) : ranges.push_back(range1);
           hit_obstacle = true;
           continue;
+
         } else if (delta > -1e-5 && delta <= 1e-5) {
           double xi =
             ((D * d_y + sgn * d_x * std::sqrt(delta)) / std::pow(d_r, 2)) + laser_noise_generator_(
@@ -633,7 +645,7 @@ private:
           // move the obstacle to the world frame
 
           double range = turtlelib::magnitude(scan_to_obstacle.inv()(v));
-          ranges.push_back(range);
+          ranges.at(i) = range;
           hit_obstacle = true;
           continue;
         }
@@ -694,7 +706,7 @@ private:
           x += laser_noise_generator_(get_random());
           y += laser_noise_generator_(get_random());
           double range = turtlelib::magnitude(turtlelib::Vector2D{x, y});
-          ranges.push_back(range);
+          ranges.at(i) = range;
           hit_wall = true;
           continue;
         }
@@ -705,15 +717,15 @@ private:
       }
 
       // if neither an obstacle or a wall was hit, then scan is 0.0
-      ranges.push_back(0.0);
+      ranges.at(i) = 0.0;
     }
     return ranges;
   }
 
-  sensor_msgs::msg::LaserScan construct_laser_scan()
+  sensor_msgs::msg::LaserScan construct_laser_scan(builtin_interfaces::msg::Time current_time)
   {
     sensor_msgs::msg::LaserScan laser_scan;
-    laser_scan.header.stamp = get_clock()->now();
+    laser_scan.header.stamp = current_time;
     laser_scan.header.frame_id = "red/base_scan";
     laser_scan.angle_min = laser_angle_min_;
     laser_scan.angle_max = laser_angle_max_;
@@ -822,8 +834,8 @@ private:
   double right_encoder_ticks_;
   double left_wheel_velocity_;
   double right_wheel_velocity_;
-  double left_wheel_velocity_no_noise;
-  double right_wheel_velocity_no_noise;
+  double left_wheel_velocity_no_noise_;
+  double right_wheel_velocity_no_noise_;
   std::vector<double> obstacles_x_;
   std::vector<double> obstacles_y_;
   std::vector<double> fake_obstacles_x_;
