@@ -212,10 +212,10 @@ private:
       t.child_frame_id = "green/odom";
 
       tf2::Quaternion q_correct;
-      q_correct.setRPY(0, 0, correction_(0));
+      q_correct.setRPY(0, 0, map_to_odom_.rotation());
 
-      t.transform.translation.x = correction_(1);
-      t.transform.translation.y = correction_(2);
+      t.transform.translation.x = map_to_odom_.translation().x;
+      t.transform.translation.y = map_to_odom_.translation().y;
       t.transform.rotation = tf2::toMsg(q_correct);
 
       tf_broadcaster_->sendTransform(t);
