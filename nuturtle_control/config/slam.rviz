@@ -11,7 +11,6 @@ Panels:
         - /MarkerArray2/Topic1
         - /MarkerArray3/Topic1
         - /LaserScan1/Topic1
-        - /Path1
       Splitter Ratio: 0.6600790619850159
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -350,7 +349,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 1
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -371,7 +370,7 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /blue/odom
-      Value: true
+      Value: false
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
       Name: MarkerArray
@@ -423,9 +422,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1.5196971893310547
+      Max Intensity: 1.5025367736816406
       Min Color: 0; 0; 0
-      Min Intensity: -1.5308599472045898
+      Min Intensity: -1.502791166305542
       Name: LaserScan
       Position Transformer: XYZ
       Selectable: true

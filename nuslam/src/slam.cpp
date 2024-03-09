@@ -10,6 +10,7 @@
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "nav_msgs/msg/path.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 #include "std_msgs/msg/header.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "tf2/LinearMath/Quaternion.h"
@@ -51,7 +52,7 @@ public:
     H_ = arma::zeros(9, 9);
     xi_ = arma::zeros(9, 1);
     map_ = arma::zeros(6, 1);
-    Qfactor_ = 10.0;
+    Qfactor_ = 0.5;
     Rfactor_ = 100.0;
     R_ = arma::eye(2, 2) * Rfactor_;
     
@@ -186,7 +187,6 @@ private:
       initialize_map(msg);
     }
 
-    // TODO: Clean this up
     for (int j = 0; j < static_cast<int>(msg.markers.size()); j++) {
       // make some useful variables
       // this is the location of the marker in the robot's frame
@@ -251,8 +251,6 @@ private:
 
       count_++;
     }
-
-    RCLCPP_INFO_STREAM(get_logger(), "\n\n\n\n");
 
   }
 

@@ -15,12 +15,14 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(turtlelib REQUIRED)
 find_package(Armadillo REQUIRED)
 
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 add_executable(slam src/slam.cpp)
+add_executable(landmarks src/landmarks.cpp)
 
 target_link_libraries(slam ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
 
@@ -36,9 +38,15 @@ ament_target_dependencies(
     Armadillo
 )
 
+ament_target_dependencies(
+    landmarks
+    rclcpp
+    sensor_msgs
+)
 
 install(TARGETS
   slam
+  landmarks
   DESTINATION lib/${PROJECT_NAME}
 )
 

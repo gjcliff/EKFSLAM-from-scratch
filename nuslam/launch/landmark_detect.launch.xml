@@ -1,0 +1,9 @@
+<launch>
+    <arg name="cmd_src" default="teleop" description="decides what control method to use for the robot"/>
+    <arg name="robot" default="nusim" description="decides whether to control a real robot, a fake robot, or nothing"/>
+    <include file="$(find-pkg-share nuslam)/launch/slam.launch.xml">
+        <arg name="use_rviz" value="$(var use_rviz)"/>
+        <arg name="cmd_src" value="$(var cmd_src)"/>
+    </include>
+    <node pkg="nuslam" exec="landmark"/>
+</launch>

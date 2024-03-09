@@ -42,11 +42,17 @@ Task F.2: Complete 2/9/2024
 Task F.5: Complete 2/9/2024
 Task F.6: Complete 2/18/2024
 
-Task L.1: 
-Task L.2: 
+Task L.1: Complete 3/8/2024
+Task L.2: Complete 3/8/2024
+Task L.3:
+Task L.4:
 
 Task V.1: Complete 2/18/2024
 Task V.2: Complete 2/22/2024
 Task V.3: Complete 2/22/2024
 Task V.4: Complete 2/25/2024
+
+Task S.1: 
+Task S.2:
+
 
