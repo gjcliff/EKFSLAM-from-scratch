@@ -211,30 +211,17 @@ private:
       z_hat(0) = std::sqrt(std::pow(map_(j*2) - xi_(1), 2) + std::pow(map_(j*2+1) - xi_(2), 2));
       z_hat(1) = turtlelib::normalize_angle(std::atan2(map_(j*2+1) - xi_(2), map_(j*2) - xi_(1)) - xi_(0));
 
+      arma::mat z_diff = arma::zeros(2, 1);
+      z_diff(0) = z(0) - z_hat(0);
+      z_diff(1) = turtlelib::normalize_angle(z(1) - z_hat(1));
+
       // calculate the correction to the robot's position
-      correction_ = K * (z - z_hat);
+      correction_ = K * (z_diff);
       turtlelib::Transform2D map_to_odom_new{{correction_(1), correction_(2)}, correction_(0)};
-      RCLCPP_INFO_STREAM(get_logger(), "j: " << j);
-      RCLCPP_INFO_STREAM(get_logger(), "j: " << j);
-      RCLCPP_INFO_STREAM(get_logger(), "obstacle id: " << msg.markers.at(j).id);
-      RCLCPP_INFO_STREAM(get_logger(), "map_to_odom_new: " << map_to_odom_new);
-      RCLCPP_INFO_STREAM(get_logger(), "z: \n" << z.t());
-      RCLCPP_INFO_STREAM(get_logger(), "z_hat: \n" << z_hat.t());
-      RCLCPP_INFO_STREAM(get_logger(), "std::atan2(m.y - xi_(2), m.x - xi_(1)): " << std::atan2(m.y - xi_(2), m.x - xi_(1)));
-      RCLCPP_INFO_STREAM(get_logger(), "turtlelib::normalize_angle(std::atan2(m.y - xi_(2), m.x - xi_(1)) - xi_(0)): " << turtlelib::normalize_angle(std::atan2(m.y - xi_(2), m.x - xi_(1)) - xi_(0)));
-      RCLCPP_INFO_STREAM(get_logger(), "std::atan2(map_(j*2+1) - xi_(2), map_(j*2) - xi_(1)): " << std::atan2(map_(j*2+1) - xi_(2), map_(j*2) - xi_(1)));
-      RCLCPP_INFO_STREAM(get_logger(), "turtlelib::normalize_angle(std::atan2(map_(j*2+1) - xi_(2), map_(j*2) - xi_(1)) - xi_(0)): " << turtlelib::normalize_angle(std::atan2(map_(j*2+1) - xi_(2), map_(j*2) - xi_(1)) - xi_(0)));
-      RCLCPP_INFO_STREAM(get_logger(), "correction: \n" << correction_.t());
-
-      RCLCPP_INFO_STREAM(get_logger(), "xi_: \n" << xi_.t());
-      RCLCPP_INFO_STREAM(get_logger(), "m: " << m.x << ", " << m.y);
-
       map_to_odom_ = map_to_odom_new * map_to_odom_;
 
       // don't think this matters at all, but ok!
       xi_ = xi_ + correction_;
-
-      RCLCPP_INFO_STREAM(get_logger(), "xi_ after: \n" << xi_.t());
 
       // compute the posterior covariance
       sigma_ = (arma::eye(9, 9) - K * Hj) * sigma_;

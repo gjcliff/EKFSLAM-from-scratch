@@ -1,5 +1,4 @@
 #include "turtlelib/geometry2d.hpp"
-#include <iosfwd> // contains forward definitions for iostream objects
 #include <iostream>
 
 namespace turtlelib
@@ -8,9 +7,9 @@ double normalize_angle(double rad)
 {
   while (rad > PI || rad <= -PI) {
     if (rad > PI) {
-      rad -= PI;
+      rad -= 2*PI;
     } else if (rad <= -PI) {
-      rad += PI;
+      rad += 2*PI;
     }
   }
   return rad;
@@ -31,27 +30,19 @@ std::istream & operator>>(std::istream & is, Point2D & p)
   }
 
   is >> p.x >> p.y;
+  is.ignore();
 
   return is;
 }
 
 Vector2D operator-(const Point2D & head, const Point2D & tail)
 {
-  Vector2D vec;
-  vec.x = head.x - tail.x;
-  vec.y = head.y - tail.y;
-
-  return vec;
+  return {head.x - tail.x, head.y - tail.y};
 }
 
 Point2D operator+(const Point2D & tail, const Vector2D & disp)
 {
-  Point2D head;
-  head.x = tail.x + disp.x;
-  head.y = tail.y + disp.y;
-
-  return head;
-
+  return {tail.x + disp.x, tail.y + disp.y};
 }
 
 Point2D operator*(Point2D lhs, const double & rhs)
@@ -60,8 +51,6 @@ Point2D operator*(Point2D lhs, const double & rhs)
   lhs.y *= rhs;
   return lhs;
 }
-
-// here
 
 Vector2D & operator*=(Vector2D & lhs, const double & rhs)
 {
@@ -74,7 +63,6 @@ Vector2D operator*(Vector2D lhs, const double & rhs)
 {
   return lhs *= rhs;
 }
-
 
 Vector2D & operator+=(Vector2D & lhs, Vector2D rhs)
 {
@@ -104,26 +92,23 @@ Vector2D operator-(Vector2D lhs, Vector2D rhs)
 
 double dot(Vector2D lhs, Vector2D rhs)
 {
-  double dot = lhs.x * rhs.x + lhs.y * rhs.y;
-  return dot;
+  return lhs.x * rhs.x + lhs.y * rhs.y;
 }
 
 double magnitude(Vector2D v)
 {
-  double mag = std::sqrt(std::pow(v.x, 2) + std::pow(v.y, 2));
-  return mag;
+  return std::sqrt(std::pow(v.x, 2) + std::pow(v.y, 2));
 }
 
 double angle(Vector2D lhs, Vector2D rhs)
 {
-  double radians = std::acos(dot(lhs, rhs) / magnitude(lhs) / magnitude(rhs));
-  return radians;
+  return std::acos(dot(lhs, rhs) / magnitude(lhs) / magnitude(rhs));
+
 }
 
 std::ostream & operator<<(std::ostream & os, const Vector2D & v)
 {
-  os << "[" << v.x << " " << v.y << "]";
-  return os;
+  return os << "[" << v.x << " " << v.y << "]";
 }
 
 std::istream & operator>>(std::istream & is, Vector2D & v)
