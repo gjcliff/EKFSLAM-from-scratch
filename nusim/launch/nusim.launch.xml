@@ -7,10 +7,10 @@
     <arg name="obstacles/r" default="0.038" description="the default radius of all column obstacles"/>
     <arg name="use_rviz" default="false" description="use rviz or not"/>
     <arg name="draw_only" default="false" description="draw only or not"/>
-    <arg name="input_noise" default="0.001" description="the variance to use when generating wheel noise for odometry slipping"/>
-    <arg name="slip_fraction" default="0.001" description="a percentage that the wheel slips each time the wheel positions are updated"/>
-    <arg name="basic_sensor_variance" default="0.001" description="the variance to use when generating noise for the obstacle positions"/>
-    <arg name="laser_variance" default="0.01" description="the variance to use when generating noise for the laser"/>
+    <arg name="input_noise" default="0.00" description="the variance to use when generating wheel noise for odometry slipping"/>
+    <arg name="slip_fraction" default="0.00" description="a percentage that the wheel slips each time the wheel positions are updated"/>
+    <arg name="basic_sensor_variance" default="0.00" description="the variance to use when generating noise for the obstacle positions"/>
+    <arg name="laser_variance" default="0.00" description="the variance to use when generating noise for the laser"/>
 
     <group if="$(eval '\'$(var draw_only)\' == \'false\'')">
         <node pkg="rviz2" exec="rviz2" if="$(eval '\'$(var use_rviz)\' == \'true\'')" args="-d $(find-pkg-share nusim)/config/nusim.rviz"/>

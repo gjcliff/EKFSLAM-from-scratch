@@ -63,9 +63,9 @@ class Landmarks : public rclcpp::Node
     {
       std::vector<std::vector<double>> clusters;
       for (unsigned int i = 0; i < msg.ranges.size(); i++) {
-        if (msg.ranges.at(i) > -1e-5 && msg.ranges.at(i) < 1e-5) {
-          continue;
-        }
+        // if (msg.ranges.at(i) > -1e-5 && msg.ranges.at(i) < 1e-5) {
+        //   continue;
+        // }
         if (clusters.size() == 0) {
           clusters.push_back({msg.ranges.at(i) * std::cos(i * msg.angle_increment),
                               msg.ranges.at(i) * std::sin(i * msg.angle_increment)});
@@ -85,6 +85,10 @@ class Landmarks : public rclcpp::Node
             // BEGIN CITATION [32]
             clusters.at(clusters.size()-1).insert(clusters.at(clusters.size()-1).end(), clusters.at(0).begin(), clusters.at(0).end());
             // END CITATION [32]
+          } else {
+            if (clusters.back().size() < 8) {
+              clusters.erase(clusters.end()-1);
+            }
           }
 
         } else {
@@ -102,12 +106,13 @@ class Landmarks : public rclcpp::Node
           }
         }
       }
-      // for (unsigned int i = 0; i < clusters.size(); i ++){
-      //   for (unsigned int j = 0; j < clusters.at(i).size(); j++) {
-      //     RCLCPP_INFO_STREAM(get_logger(), "cluster " << i << ": " << clusters.at(i).at(j));
-      //   }
-      //   RCLCPP_INFO_STREAM(get_logger(), "");
-      // }
+      for (unsigned int i = 0; i < clusters.size(); i ++){
+        // for (unsigned int j = 0; j < clusters.at(i).size(); j++) {
+        //   RCLCPP_INFO_STREAM(get_logger(), "cluster " << i << ": " << clusters.at(i).at(j));
+        // }
+        // RCLCPP_INFO_STREAM(get_logger(), "cluser size: " << clusters.at(i).size());
+      }
+      // RCLCPP_INFO_STREAM(get_logger(), "");
       return clusters;
     }
 
@@ -115,16 +120,16 @@ class Landmarks : public rclcpp::Node
     {
       // find the centroid of the laser scan cluseters
       for (unsigned int i = 0; i < clusters.size(); i++) {
+        int n = clusters.at(i).size()/2;
         double x_hat = 0;
         double y_hat = 0;
         // find the centroid of the cluster
-        for (unsigned int j = 0; j < clusters.at(i).size()/2; j++) {
-          x_hat += clusters.at(i).at(j*2);
-          y_hat += clusters.at(i).at(j*2+1);
+        for (int j = 0; j < n; j++) {
+          x_hat += clusters.at(i).at(j*2)/n;
+          y_hat += clusters.at(i).at(j*2+1)/n;
         }
         // shift the coordinates so that the centroid is at the origin
         std::vector<double> shifted_cluster = clusters.at(i);
-        int n = shifted_cluster.size()/2; // the number of data points in the cluster
         double z_bar = 0;
         for (int j = 0; j < n; j++) {
           shifted_cluster.at(j*2) -= x_hat;
@@ -166,19 +171,36 @@ class Landmarks : public rclcpp::Node
         double a = -A(1)/(2*A(0));
         double b = -A(2)/(2*A(0));
         double R = std::sqrt((std::pow(A(1),2) + std::pow(A(2),2) - 4*A(0)*A(3))/(4*std::pow(A(0),2)));
+
+        geometry_msgs::msg::TransformStamped t = get_transform("map", "green/base_footprint");
         double x_coord = a + x_hat;
         double y_coord = b + y_hat;
-        RCLCPP_INFO_STREAM(get_logger(), "R: " << R);
-        RCLCPP_INFO_STREAM(get_logger(), "x: " << x_coord);
-        RCLCPP_INFO_STREAM(get_logger(), "y: " << y_coord);
 
-        if (R <= 0.5) {
-          geometry_msgs::msg::TransformStamped t = get_transform("map", "green/base_footprint");
-          // double x_coord = a + x_hat;
-          // double y_coord = b + y_hat;
-          RCLCPP_INFO_STREAM(get_logger(), "R: " << R);
-          RCLCPP_INFO_STREAM(get_logger(), "x: " << x_coord);
-          RCLCPP_INFO_STREAM(get_logger(), "y: " << y_coord);
+        // now we will determine if this cluster is really a circle or not using
+        // law of cosines and the inscribed angle theorem
+        std::vector<double> angles;
+        double mean = 0;
+        double stdev = 0;
+        for (int j = 1; j < n-1; j++) {
+          double c = turtlelib::magnitude({shifted_cluster.at(0) - shifted_cluster.at(n*2-2), shifted_cluster.at(1) - shifted_cluster.at(n*2-1)});
+          double a = turtlelib::magnitude({shifted_cluster.at(0) - shifted_cluster.at(j*2), shifted_cluster.at(1) - shifted_cluster.at(j*2+1)});
+          double b = turtlelib::magnitude({shifted_cluster.at(n*2-2) - shifted_cluster.at(j*2), shifted_cluster.at(n*2-1) - shifted_cluster.at(j*2+1)});
+
+          double C = std::acos((std::pow(a,2) + std::pow(b,2) - std::pow(c,2))/(2*a*b));
+          angles.push_back(C);
+          mean += C/(n-2);
+        }
+        for (int j = 0; j < n-2; j++) {
+          stdev += std::pow(angles.at(j) - mean, 2)/(n-2);
+        }
+        stdev = std::sqrt(stdev);
+
+        if (stdev < 0.15 && turtlelib::deg2rad(90.0) < mean && mean < turtlelib::deg2rad(135.0)) {
+          RCLCPP_INFO_STREAM(get_logger(), "circle found at: " << x_coord << " " << y_coord);
+          RCLCPP_INFO_STREAM(get_logger(), "circle radius: " << R);
+          RCLCPP_INFO_STREAM(get_logger(), "circle stdev: " << stdev);
+          RCLCPP_INFO_STREAM(get_logger(), "circle mean: " << mean);
+          RCLCPP_INFO_STREAM(get_logger(), "circle n: " << n);
         }
       }
     }
