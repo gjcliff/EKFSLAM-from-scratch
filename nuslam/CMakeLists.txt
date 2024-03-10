@@ -25,6 +25,7 @@ add_executable(slam src/slam.cpp)
 add_executable(landmarks src/landmarks.cpp)
 
 target_link_libraries(slam ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
+target_link_libraries(landmarks ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
 
 ament_target_dependencies(
     slam 
@@ -42,6 +43,9 @@ ament_target_dependencies(
     landmarks
     rclcpp
     sensor_msgs
+    tf2_ros
+    turtlelib
+    Armadillo
 )
 
 install(TARGETS

@@ -27,3 +27,5 @@
 [28] https://mathworld.wolfram.com/Line-LineIntersection.html
 [29] https://answers.ros.org/question/339528/quaternion-to-rpy-ros2/
 [30] https://arma.sourceforge.net/docs.html#join
+[31] https://stackoverflow.com/questions/14275291/how-can-i-get-a-field-from-the-last-element-of-a-vector-in-c
+[32] https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
