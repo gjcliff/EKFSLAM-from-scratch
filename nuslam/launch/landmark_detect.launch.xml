@@ -1,9 +1,11 @@
 <launch>
     <arg name="cmd_src" default="teleop" description="decides what control method to use for the robot"/>
     <arg name="robot" default="nusim" description="decides whether to control a real robot, a fake robot, or nothing"/>
+    <arg name="use_fake_sensors" default="true" description="decides whether to use fake sensors or not"/>
     <include file="$(find-pkg-share nuslam)/launch/slam.launch.xml">
         <arg name="robot" value="$(var robot)"/>
         <arg name="cmd_src" value="$(var cmd_src)"/>
+        <arg name="use_fake_sensors" value="$(var use_fake_sensors)"/>
     </include>
     <node pkg="nuslam" exec="landmarks"/>
 </launch>

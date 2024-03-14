@@ -11,6 +11,8 @@ Panels:
         - /MarkerArray2/Topic1
         - /MarkerArray3/Topic1
         - /LaserScan1/Topic1
+        - /MarkerArray4
+        - /MarkerArray4/Topic1
       Splitter Ratio: 0.6600790619850159
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -399,7 +401,7 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Topic:
         Depth: 10
         Durability Policy: Transient Local
@@ -422,9 +424,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1.5025367736816406
+      Max Intensity: 1.5000001192092896
       Min Color: 0; 0; 0
-      Min Intensity: -1.502791166305542
+      Min Intensity: -1.5000001192092896
       Name: LaserScan
       Position Transformer: XYZ
       Selectable: true
@@ -525,6 +527,18 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /blue/path
       Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /landmark_markers
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -571,7 +585,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 4.152395725250244
+      Distance: 4.399556636810303
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -586,10 +600,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6402037143707275
+      Pitch: 1.3602030277252197
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.828583717346191
+      Yaw: 5.92357063293457
     Saved: ~
 Window Geometry:
   Displays:
@@ -608,4 +622,4 @@ Window Geometry:
     collapsed: false
   Width: 1920
   X: 0
-  Y: 27
+  Y: 188

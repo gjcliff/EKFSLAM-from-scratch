@@ -11,10 +11,13 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 #include "turtlelib/geometry2d.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
+#include "nuslam/msg/circle.hpp"
+#include "nuslam/msg/landmarks.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -26,15 +29,14 @@ class Landmarks : public rclcpp::Node
 {
   public:
     Landmarks()
-    : Node("landmarks"), count_(0)
+    : Node("landmarks")
     {
       scan_subscriber_ = create_subscription<sensor_msgs::msg::LaserScan>(
           "scan", 10, std::bind(&Landmarks::scan_callback, this, _1));
+      landmarks_publisher = create_publisher<nuslam::msg::Landmarks>("landmarks", 10);
       tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
       tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
       tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-      timer_ = create_wall_timer(
-      500ms, std::bind(&Landmarks::timer_callback, this));
     }
 
   private:
@@ -119,6 +121,7 @@ class Landmarks : public rclcpp::Node
     void fit_circles(std::vector<std::vector<double>> clusters) const
     {
       // find the centroid of the laser scan cluseters
+      nuslam::msg::Landmarks landmarks;
       for (unsigned int i = 0; i < clusters.size(); i++) {
         int n = clusters.at(i).size()/2;
         double x_hat = 0;
@@ -172,7 +175,6 @@ class Landmarks : public rclcpp::Node
         double b = -A(2)/(2*A(0));
         double R = std::sqrt((std::pow(A(1),2) + std::pow(A(2),2) - 4*A(0)*A(3))/(4*std::pow(A(0),2)));
 
-        geometry_msgs::msg::TransformStamped t = get_transform("map", "green/base_footprint");
         double x_coord = a + x_hat;
         double y_coord = b + y_hat;
 
@@ -196,13 +198,19 @@ class Landmarks : public rclcpp::Node
         stdev = std::sqrt(stdev);
 
         if (stdev < 0.15 && turtlelib::deg2rad(90.0) < mean && mean < turtlelib::deg2rad(135.0)) {
-          RCLCPP_INFO_STREAM(get_logger(), "circle found at: " << x_coord << " " << y_coord);
-          RCLCPP_INFO_STREAM(get_logger(), "circle radius: " << R);
-          RCLCPP_INFO_STREAM(get_logger(), "circle stdev: " << stdev);
-          RCLCPP_INFO_STREAM(get_logger(), "circle mean: " << mean);
-          RCLCPP_INFO_STREAM(get_logger(), "circle n: " << n);
+          // RCLCPP_INFO_STREAM(get_logger(), "circle found at: " << x_coord << " " << y_coord);
+          // RCLCPP_INFO_STREAM(get_logger(), "circle radius: " << R);
+          // RCLCPP_INFO_STREAM(get_logger(), "circle stdev: " << stdev);
+          // RCLCPP_INFO_STREAM(get_logger(), "circle mean: " << mean);
+          // RCLCPP_INFO_STREAM(get_logger(), "circle n: " << n);
+          nuslam::msg::Circle circle;
+          circle.x = x_coord;
+          circle.y = y_coord;
+          circle.radius = R;
+          landmarks.landmarks.push_back(circle);
         }
       }
+      landmarks_publisher->publish(landmarks);
     }
 
     void scan_callback(const sensor_msgs::msg::LaserScan & msg) const
@@ -219,18 +227,14 @@ class Landmarks : public rclcpp::Node
       
       std::vector<std::vector<double>> clusters = find_clusters(msg);
       fit_circles(clusters);
-      RCLCPP_INFO_STREAM(get_logger(), "");
+      // RCLCPP_INFO_STREAM(get_logger(), "");
 
     }
-    void timer_callback()
-    {
-    }
-    rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_subscriber_;
+    rclcpp::Publisher<nuslam::msg::Landmarks>::SharedPtr landmarks_publisher;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-    size_t count_;
 };
 
 int main(int argc, char * argv[])

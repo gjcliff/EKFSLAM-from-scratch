@@ -1,12 +1,14 @@
 <launch>
     <arg name="cmd_src" default="teleop" description="decides what control method to use for the robot"/>
     <arg name="robot" default="nusim" description="decides whether to control a real robot, a fake robot, or nothing"/>
+    <arg name="use_fake_sensors" default="true" description="decides whether to use fake sensors or not"/>
 
     <include file="$(find-pkg-share nuturtle_control)/launch/start_robot.launch.xml" if="$(eval '\'$(var robot)\' == \'nusim\'')">
         <arg name="cmd_src" value="$(var cmd_src)"/>
         <arg name="robot" value="$(var robot)"/>
         <arg name="use_rviz" value="true"/>
         <arg name="slam" value="true"/>
+        <arg name="use_fake_sensors" value="$(var use_fake_sensors)"/>
     </include>
     <include file="$(find-pkg-share nuturtle_control)/launch/start_robot.launch.xml" if="$(eval '\'$(var robot)\' == \'localhost\'')">
         <arg name="cmd_src" value="$(var cmd_src)"/>
@@ -14,5 +16,7 @@
         <arg name="use_rviz" value="false"/>
         <arg name="slam" value="true"/>
     </include>
-    <node pkg="nuslam" exec="slam"/>
+    <node pkg="nuslam" exec="slam">
+        <param name="use_fake_sensors" value="$(var use_fake_sensors)"/>
+    </node>
 </launch>

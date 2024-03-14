@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(nuslam)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -18,14 +20,14 @@ find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(turtlelib REQUIRED)
 find_package(Armadillo REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
 
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 add_executable(slam src/slam.cpp)
 add_executable(landmarks src/landmarks.cpp)
 
-target_link_libraries(slam ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
-target_link_libraries(landmarks ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
 
 ament_target_dependencies(
     slam 
@@ -44,9 +46,31 @@ ament_target_dependencies(
     rclcpp
     sensor_msgs
     tf2_ros
+    visualization_msgs
     turtlelib
     Armadillo
 )
+
+# begin custom mesage stuff
+
+set(msg_files
+    "msg/Circle.msg"
+    "msg/Landmarks.msg"
+)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+    ${msg_files}
+)
+
+rosidl_get_typesupport_target(cpp_typesupport_target
+    ${PROJECT_NAME} rosidl_typesupport_cpp)
+
+target_link_libraries(slam "${cpp_typesupport_target}" ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
+target_link_libraries(landmarks "${cpp_typesupport_target}" ${ARMADILLO_LIBRARIES} turtlelib::turtlelib)
+
+ament_export_dependencies(rosidl_default_runtime)
+
+# end custom message stuff
 
 install(TARGETS
   slam
