@@ -143,6 +143,7 @@ public:
 
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
+    auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local();
     // create publishers
     odometry_publisher_ = create_publisher<nav_msgs::msg::Odometry>(
       "odom", 10);
@@ -171,7 +172,7 @@ private:
   geometry_msgs::msg::PoseStamped construct_path_msg()
   {
     geometry_msgs::msg::PoseStamped pose;
-    pose.header.stamp = get_clock()->now();
+    pose.header.stamp = time_;
     pose.header.frame_id = "nusim/world";
     pose.pose.position.x = x_;
     pose.pose.position.y = y_;
@@ -242,7 +243,8 @@ private:
 
     geometry_msgs::msg::TransformStamped transform_body;
 
-    transform_body.header.stamp = get_clock()->now();
+    time_ = msg.header.stamp;
+    transform_body.header.stamp = time_;
     transform_body.header.frame_id = odom_id_;
     transform_body.child_frame_id = body_id_;
     transform_body.transform.translation.x = x_;
@@ -251,8 +253,11 @@ private:
 
     tf_broadcaster_->sendTransform(transform_body);
 
+    if (path_.poses.size() > 1000) {
+      path_.poses.erase(path_.poses.begin());
+    }
     path_.poses.push_back(construct_path_msg());
-    path_.header.stamp = get_clock()->now();
+    path_.header.stamp = time_;
     path_publisher_->publish(path_);
   }
 
@@ -279,6 +284,7 @@ private:
   double x_;
   double y_;
   double theta_;
+  builtin_interfaces::msg::Time time_;
 };
 
 int main(int argc, char * argv[])

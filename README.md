@@ -21,11 +21,7 @@ type in the following command:
 $ ros2 launch nuslam slam.launch.py
 ```
 
-Comments on SLAM: There's something wrong with my algorithm, but its a decent chunk of the way there. I think by the end of the day tomorrow it will be in working order.
-I notice that the green and blue robots are pretty tightly coupled but there doesn't seem to be any updates to the robot happening. Also the green odom frame is only getting
-adjusting in the x direction; something to look in to. Lastly, the path messages are all messed up right now but I'm very tired and can't figure out what the problem is.
-I'll still put a picture for now even though things are messed up:
-![pic of sad](hw3.png)
+Pic of SLAM here (with fake obstacles):
 
 Video:
 

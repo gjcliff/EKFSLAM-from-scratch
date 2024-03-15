@@ -499,7 +499,7 @@ private:
       nuturtlebot_msgs::msg::SensorData sensor_data_msg;
       sensor_data_msg.left_encoder = rounded_left_encoder_ticks_;
       sensor_data_msg.right_encoder = rounded_right_encoder_ticks_;
-      sensor_data_msg.stamp = get_clock()->now();
+      sensor_data_msg.stamp = current_time;
 
       sensor_data_publisher_->publish(sensor_data_msg);
 
@@ -526,8 +526,11 @@ private:
       tf_broadcaster_->sendTransform(t);
 
       // publish the path of the red robot
+      if (path_.poses.size() > 1000) {
+        path_.poses.erase(path_.poses.begin());
+      }
       path_.poses.push_back(construct_path_msg(current_time));
-      path_.header.stamp = get_clock()->now();
+      path_.header.stamp = current_time;
       path_publisher_->publish(path_);
       if (count_ % (200 / rate_) == 0) {
         // update the positions of the fake obstacles and publish them

@@ -37,6 +37,8 @@ class Landmarks : public rclcpp::Node
       tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
       tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
       tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+      timer_ = this->create_wall_timer(
+      200ms, std::bind(&Landmarks::timer_callback, this));
     }
 
   private:
@@ -197,7 +199,13 @@ class Landmarks : public rclcpp::Node
         }
         stdev = std::sqrt(stdev);
 
-        if (stdev < 0.15 && turtlelib::deg2rad(90.0) < mean && mean < turtlelib::deg2rad(135.0)) {
+        // RCLCPP_INFO_STREAM(get_logger(), "circle found at: " << x_coord << " " << y_coord);
+        // RCLCPP_INFO_STREAM(get_logger(), "circle radius: " << R);
+        // RCLCPP_INFO_STREAM(get_logger(), "circle stdev: " << stdev);
+        // RCLCPP_INFO_STREAM(get_logger(), "circle mean: " << mean);
+        // RCLCPP_INFO_STREAM(get_logger(), "");
+        if (stdev < 0.15 && turtlelib::deg2rad(65.0) < mean && mean < turtlelib::deg2rad(160.0) && R < 0.09) {
+          // RCLCPP_INFO_STREAM(get_logger(), "YES");
           // RCLCPP_INFO_STREAM(get_logger(), "circle found at: " << x_coord << " " << y_coord);
           // RCLCPP_INFO_STREAM(get_logger(), "circle radius: " << R);
           // RCLCPP_INFO_STREAM(get_logger(), "circle stdev: " << stdev);
@@ -210,10 +218,11 @@ class Landmarks : public rclcpp::Node
           landmarks.landmarks.push_back(circle);
         }
       }
+      RCLCPP_INFO_STREAM(get_logger(), "");
       landmarks_publisher->publish(landmarks);
     }
 
-    void scan_callback(const sensor_msgs::msg::LaserScan & msg) const
+    void scan_callback(const sensor_msgs::msg::LaserScan & msg)
     {
       // get a scan, and start with the first point. As long as the next point
       // is within a certain distance threshold, add it to the current cluster.
@@ -225,16 +234,24 @@ class Landmarks : public rclcpp::Node
       // later, in L.3. I think in this is just figuring out if something is
       // a landmakr or not, and not associating it with previous measuremnets
       
-      std::vector<std::vector<double>> clusters = find_clusters(msg);
-      fit_circles(clusters);
+      scan = msg;
+      // std::vector<std::vector<double>> clusters = find_clusters(msg);
+      // fit_circles(clusters);
       // RCLCPP_INFO_STREAM(get_logger(), "");
 
     }
+    void timer_callback()
+    {
+      std::vector<std::vector<double>> clusters = find_clusters(scan);
+      fit_circles(clusters);
+    }
+    rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_subscriber_;
     rclcpp::Publisher<nuslam::msg::Landmarks>::SharedPtr landmarks_publisher;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+    sensor_msgs::msg::LaserScan scan;
 };
 
 int main(int argc, char * argv[])

@@ -102,18 +102,18 @@ public:
     turtlebot_.set_robot_dimensions(rd);
 
     // create subscriber
-    cmd_subscriber_ = this->create_subscription<geometry_msgs::msg::Twist>(
+    cmd_subscriber_ = create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10, std::bind(&TurtleControl::cmd_callback, this, _1));
-    sensor_data_subscriber_ = this->create_subscription<nuturtlebot_msgs::msg::SensorData>(
+    sensor_data_subscriber_ = create_subscription<nuturtlebot_msgs::msg::SensorData>(
       "sensor_data", 10, std::bind(&TurtleControl::sensor_data_callback, this, _1));
 
     // create publisher
-    wheel_cmd_publisher_ = this->create_publisher<nuturtlebot_msgs::msg::WheelCommands>(
+    wheel_cmd_publisher_ = create_publisher<nuturtlebot_msgs::msg::WheelCommands>(
       "wheel_cmd", 10);
-    my_joint_state_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>(
+    my_joint_state_publisher_ = create_publisher<sensor_msgs::msg::JointState>(
       "/joint_states", 10);
 
-    prev_encoder_tic_time_ = this->get_clock()->now();
+    prev_encoder_tic_time_ = get_clock()->now();
 
   }
 
@@ -156,7 +156,7 @@ private:
     prev_right_rad_ = phi_r;
 
     sensor_msgs::msg::JointState joint_state;
-    joint_state.header.stamp = get_clock()->now();
+    joint_state.header.stamp = msg.stamp;
     joint_state.name = {"wheel_left_joint", "wheel_right_joint"};
     joint_state.position = {phi_l, phi_r};
     joint_state.velocity = {left_wheel_velocity, right_wheel_velocity};
