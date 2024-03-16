@@ -25,7 +25,7 @@
             <param name="slip_fraction" value="$(var slip_fraction)"/>
             <param name="input_noise" value="$(var input_noise)"/>
             <param name="basic_sensor_variance" value="$(var basic_sensor_variance)"/>
-            <param name="max_range" value="0.5"/>
+            <param name="max_range" value="3.5"/>
             <param name="laser_min_angle" value="0.0"/>
             <param name="laser_max_angle" value="6.2657318115234375"/>
             <param name="laser_angle_increment" value="0.01745329238474369"/>

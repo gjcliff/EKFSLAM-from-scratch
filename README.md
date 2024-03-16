@@ -26,3 +26,8 @@ Pic of SLAM here (with fake obstacles):
 Video:
 
 https://github.com/ME495-Navigation/slam-project-gjcliff/assets/94981561/89174fed-dee4-4afa-9876-2d2973e20900
+
+HW4 L3:
+Final pose error between actual robot position and odometry: −0.0030845; 0.212529; 0 (xyz in m)
+Final pose error between actual robot position and SLAM: 0.0165087; -0.0201479; 0 (xyz in m)
+

@@ -257,10 +257,10 @@ private:
   void landmark_callback(const nuslam::msg::Landmarks & msg)
   {
     time = get_clock()->now();
-    RCLCPP_INFO_STREAM(get_logger(), "Received " << msg.landmarks.size() << " landmarks");
+    // RCLCPP_INFO_STREAM(get_logger(), "Received " << msg.landmarks.size() << " landmarks");
     for (int i = 0; i < static_cast<int>(msg.landmarks.size()); i++) {
-      RCLCPP_INFO_STREAM(get_logger(), "Landmark " << i << " at: " << msg.landmarks.at(i).x << ", " << msg.landmarks.at(i).y);
-      RCLCPP_INFO_STREAM(get_logger(), "Landmark " << i << " has radius: " << msg.landmarks.at(i).radius);
+      // RCLCPP_INFO_STREAM(get_logger(), "Landmark " << i << " at: " << msg.landmarks.at(i).x << ", " << msg.landmarks.at(i).y);
+      // RCLCPP_INFO_STREAM(get_logger(), "Landmark " << i << " has radius: " << msg.landmarks.at(i).radius);
     }
     // let's perform SLAM
     if(!use_fake_sensors) {
@@ -272,7 +272,7 @@ private:
 
       for (int j = 0; j < static_cast<int>(msg.landmarks.size()); j++) {
         int map_index = calculate_mahalanobis_distance(msg.landmarks.at(j));
-        RCLCPP_INFO_STREAM(get_logger(), "map_index: " << map_index);
+        // RCLCPP_INFO_STREAM(get_logger(), "map_index: " << map_index);
         publish_landmark(msg.landmarks.at(j), map_index/2);
         // this is the location of the marker in the robot's frame
         turtlelib::Point2D m = map_to_robot_(turtlelib::Point2D{msg.landmarks.at(j).x,
@@ -280,23 +280,23 @@ private:
 
         // update the measurement model
         arma::mat Hj = calc_H(m.x, m.y, j);
-        RCLCPP_INFO_STREAM(get_logger(), "Hj: " << Hj);
+        // RCLCPP_INFO_STREAM(get_logger(), "Hj: " << Hj);
 
         // perform the SLAM update
 
         // calculate the Kalman gain
         arma::mat K = sigma_ * Hj.t() * arma::inv(Hj * sigma_ * Hj.t() + R_);
-        RCLCPP_INFO_STREAM(get_logger(), "K: " << K);
+        // RCLCPP_INFO_STREAM(get_logger(), "K: " << K);
 
         // calculate the position of the robot based on current measurements
         arma::colvec z = get_range_bearing_measurement(m.x, m.y);
-        RCLCPP_INFO_STREAM(get_logger(), "z: " << z);
+        // RCLCPP_INFO_STREAM(get_logger(), "z: " << z);
 
         // calculate the position of the robot based on previous measurements
         
         // RCLCPP_INFO_STREAM(get_logger(), "map_index: " << map_index);
         arma::colvec z_hat = get_range_bearing_measurement(map_(map_index), map_(map_index+1));
-        RCLCPP_INFO_STREAM(get_logger(), "z_hat: " << z_hat);
+        // RCLCPP_INFO_STREAM(get_logger(), "z_hat: " << z_hat);
 
         arma::mat z_diff = arma::zeros(2, 1);
         z_diff(0) = z(0) - z_hat(0);
@@ -320,7 +320,7 @@ private:
         // correct the position of the robot in the map frame by updating
         // the transform from map to odom
 
-        RCLCPP_INFO_STREAM(get_logger(), "updating position of green robot");
+        // RCLCPP_INFO_STREAM(get_logger(), "updating position of green robot");
         geometry_msgs::msg::TransformStamped t;
         t.header.stamp = time;
         t.header.frame_id = "map";
