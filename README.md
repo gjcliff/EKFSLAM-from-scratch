@@ -38,7 +38,7 @@ $ ros2 launch nuslam pc_bringup.launch.py
 ```
 
 Video of SLAM with simulated obstacles and known data association:
-
+https://github.com/ME495-Navigation/slam-project-gjcliff/assets/94981561/656a9a15-3c76-4bc7-a421-519ba0cd3e8f
 
 Video of SLAM with simulated LIDAR and unknown data association:
 https://github.com/ME495-Navigation/slam-project-gjcliff/assets/94981561/89174fed-dee4-4afa-9876-2d2973e20900
