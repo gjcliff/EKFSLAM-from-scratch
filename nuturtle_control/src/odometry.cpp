@@ -253,7 +253,7 @@ private:
 
     tf_broadcaster_->sendTransform(transform_body);
 
-    if (path_.poses.size() > 1000) {
+    if (path_.poses.size() > 5000) {
       path_.poses.erase(path_.poses.begin());
     }
     path_.poses.push_back(construct_path_msg());

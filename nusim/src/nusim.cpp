@@ -526,7 +526,7 @@ private:
       tf_broadcaster_->sendTransform(t);
 
       // publish the path of the red robot
-      if (path_.poses.size() > 1000) {
+      if (path_.poses.size() > 5000) {
         path_.poses.erase(path_.poses.begin());
       }
       path_.poses.push_back(construct_path_msg(current_time));
@@ -750,18 +750,18 @@ private:
       for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
         turtlelib::Transform2D world_to_obstacle({obstacles_x_.at(i), obstacles_y_.at(i)});
         turtlelib::Transform2D robot_to_obstacle = world_to_robot_.inv() * world_to_obstacle;
-        fake_obstacles_x_.at(i) = robot_to_obstacle.translation().x + laser_noise_generator_(
+        fake_obstacles_x_.at(i) = robot_to_obstacle.translation().x + sensor_variance_generator_(
           get_random());
-        fake_obstacles_y_.at(i) = robot_to_obstacle.translation().y + laser_noise_generator_(
+        fake_obstacles_y_.at(i) = robot_to_obstacle.translation().y + sensor_variance_generator_(
           get_random());
       }
     } else {
       for (int i = 0; i < static_cast<int>(obstacles_x_.size()); i++) {
         turtlelib::Transform2D world_to_obstacle({obstacles_x_.at(i), obstacles_y_.at(i)});
         turtlelib::Transform2D robot_to_obstacle = world_to_robot_.inv() * world_to_obstacle;
-        fake_obstacles_x_.at(i) = robot_to_obstacle.translation().x + laser_noise_generator_(
+        fake_obstacles_x_.at(i) = robot_to_obstacle.translation().x + sensor_variance_generator_(
           get_random());
-        fake_obstacles_y_.at(i) = robot_to_obstacle.translation().y + laser_noise_generator_(
+        fake_obstacles_y_.at(i) = robot_to_obstacle.translation().y + sensor_variance_generator_(
           get_random());
       }
     }

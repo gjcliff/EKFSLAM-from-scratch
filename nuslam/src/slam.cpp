@@ -56,13 +56,6 @@ public:
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
     n_ = 0;
-    // correction_ = arma::zeros(9,1);
-    // sigma_ = arma::zeros(9, 9);
-    // Qbar_ = arma::zeros(9, 9);
-    // A_ = arma::zeros(9, 9);
-    // H_ = arma::zeros(9, 9);
-    // xi_ = arma::zeros(9, 1);
-    // map_ = arma::zeros(2, 1);
     Qfactor_ = 2.0;
     Rfactor_ = 100.0;
     sigma_diag_ = 10000000.0;
@@ -78,7 +71,6 @@ public:
 private:
   void publish_landmark(const nuslam::msg::Circle & landmark, int id)
   {
-    // RCLCPP_INFO_STREAM(get_logger(), "Received " << msg.landmarks.size() << " landmarks");
     visualization_msgs::msg::MarkerArray landmark_markers;
     visualization_msgs::msg::Marker landmark_marker;
     landmark_marker.header.stamp = time;
@@ -105,6 +97,8 @@ private:
   int calculate_mahalanobis_distance(const nuslam::msg::Circle & landmark)
     // returns the map index of the landmark we are closest to
   {
+    // I'M LEAVING THESE IN because I want to come back in the spring quarter
+    // and fix a bug that occurs like 10% of the time.
     // RCLCPP_INFO_STREAM(get_logger(), "map_: " << map_);
     // if the map's empty, just add the landmark to the map. We have nothing
     // to compare it to anyways
@@ -153,7 +147,6 @@ private:
         min_distance = mahalanobis_distances.at(j);
         map_index = j*2;
       }
-      // RCLCPP_INFO_STREAM(get_logger(), "mahalanobis_distances.at(j): " << mahalanobis_distances.at(j));
 
       if (mahalanobis_distances.at(j) < 0.01) {
         is_new_landmark = false;
@@ -257,22 +250,10 @@ private:
   void landmark_callback(const nuslam::msg::Landmarks & msg)
   {
     time = get_clock()->now();
-    // RCLCPP_INFO_STREAM(get_logger(), "Received " << msg.landmarks.size() << " landmarks");
-    for (int i = 0; i < static_cast<int>(msg.landmarks.size()); i++) {
-      // RCLCPP_INFO_STREAM(get_logger(), "Landmark " << i << " at: " << msg.landmarks.at(i).x << ", " << msg.landmarks.at(i).y);
-      // RCLCPP_INFO_STREAM(get_logger(), "Landmark " << i << " has radius: " << msg.landmarks.at(i).radius);
-    }
-    // let's perform SLAM
     if(!use_fake_sensors) {
-      // RCLCPP_INFO_STREAM(get_logger(), "use_fake_sensors is false");
-
-      // if (msg.landmarks.size() != map_.size()/2) {
-      //     adjust_matrices(msg);
-      // }
 
       for (int j = 0; j < static_cast<int>(msg.landmarks.size()); j++) {
         int map_index = calculate_mahalanobis_distance(msg.landmarks.at(j));
-        // RCLCPP_INFO_STREAM(get_logger(), "map_index: " << map_index);
         publish_landmark(msg.landmarks.at(j), map_index/2);
         // this is the location of the marker in the robot's frame
         turtlelib::Point2D m = map_to_robot_(turtlelib::Point2D{msg.landmarks.at(j).x,
@@ -280,23 +261,17 @@ private:
 
         // update the measurement model
         arma::mat Hj = calc_H(m.x, m.y, j);
-        // RCLCPP_INFO_STREAM(get_logger(), "Hj: " << Hj);
 
         // perform the SLAM update
 
         // calculate the Kalman gain
         arma::mat K = sigma_ * Hj.t() * arma::inv(Hj * sigma_ * Hj.t() + R_);
-        // RCLCPP_INFO_STREAM(get_logger(), "K: " << K);
 
         // calculate the position of the robot based on current measurements
         arma::colvec z = get_range_bearing_measurement(m.x, m.y);
-        // RCLCPP_INFO_STREAM(get_logger(), "z: " << z);
 
         // calculate the position of the robot based on previous measurements
-        
-        // RCLCPP_INFO_STREAM(get_logger(), "map_index: " << map_index);
         arma::colvec z_hat = get_range_bearing_measurement(map_(map_index), map_(map_index+1));
-        // RCLCPP_INFO_STREAM(get_logger(), "z_hat: " << z_hat);
 
         arma::mat z_diff = arma::zeros(2, 1);
         z_diff(0) = z(0) - z_hat(0);
@@ -312,15 +287,12 @@ private:
         // compute the posterior covariance
         sigma_ = (arma::eye(xi_.size(), xi_.size()) - K * Hj) * sigma_;
 
-        // why is the map drifting?
-        // xi_.rows(3,8) = map_;
         xi_.shed_rows(3,xi_.size()-1);
         xi_ = arma::join_vert(xi_, map_);
 
         // correct the position of the robot in the map frame by updating
         // the transform from map to odom
 
-        // RCLCPP_INFO_STREAM(get_logger(), "updating position of green robot");
         geometry_msgs::msg::TransformStamped t;
         t.header.stamp = time;
         t.header.frame_id = "map";
@@ -416,30 +388,19 @@ private:
   {
     double delta_x = mx - xi_(1);
     double delta_y = my - xi_(2);
-    RCLCPP_INFO_STREAM(get_logger(), "delta_x: " << delta_x);
-    RCLCPP_INFO_STREAM(get_logger(), "delta_y: " << delta_y);
     double d = std::pow(delta_x, 2) + std::pow(delta_y, 2);
 
     arma::mat block1{{0, -delta_x / std::sqrt(d), -delta_y / std::sqrt(d)},
       {-1, delta_y / d, -delta_x / d}};
-    RCLCPP_INFO_STREAM(get_logger(), "block1: " << block1);
     arma::mat block2 = arma::join_vert(arma::zeros(1, 2 * (j)), arma::zeros(1, 2 * (j)));
-    RCLCPP_INFO_STREAM(get_logger(), "block2: " << block2);
     arma::mat block3{{delta_x / std::sqrt(d), delta_y / std::sqrt(d)},
       {-delta_y / d, delta_x / d}};
-    RCLCPP_INFO_STREAM(get_logger(), "block3: " << block3);
-    RCLCPP_INFO_STREAM(get_logger(), "n_: " << n_);
-    RCLCPP_INFO_STREAM(get_logger(), "j: " << j);
     arma::mat block4 =
       arma::join_vert(arma::zeros(1, 2 * n_ - 2 * (j + 1)), arma::zeros(1, 2 * n_ - 2 * (j + 1)));
-    RCLCPP_INFO_STREAM(get_logger(), "block4: " << block4);
 
     arma::mat block12 = arma::join_horiz(block1, block2);
-    RCLCPP_INFO_STREAM(get_logger(), "block12: " << block12);
     arma::mat block34 = arma::join_horiz(block3, block4);
-    RCLCPP_INFO_STREAM(get_logger(), "block34: " << block34);
     arma::mat H = arma::join_horiz(block12, block34);
-    RCLCPP_INFO_STREAM(get_logger(), "H: " << H);
 
     return H;
   }
@@ -463,10 +424,8 @@ private:
       header.stamp = time;
 
       if (msg.markers.size() != map_.size()/2) {
-        RCLCPP_INFO_STREAM(get_logger(), "adjusting matrices");
         adjust_matrices(msg);
       }
-      RCLCPP_INFO_STREAM(get_logger(), "map: " << map_);
 
       for (int j = 0; j < static_cast<int>(msg.markers.size()); j++) {
         // this is the location of the marker in the robot's frame
@@ -553,8 +512,6 @@ private:
 
     A_ = calculate_A(Vb_);
     sigma_ = A_ * sigma_ * A_.t() + Qbar_;
-    // RCLCPP_INFO_STREAM(get_logger(), "A: " << A_);
-
   }
 
 
