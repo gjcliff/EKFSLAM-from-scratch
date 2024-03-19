@@ -22,9 +22,6 @@
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
-/* This example creates a subclass of Node and uses std::bind() to register a
-* member function as a callback from the timer. */
-
 class Landmarks : public rclcpp::Node
 {
   public:
@@ -48,8 +45,6 @@ class Landmarks : public rclcpp::Node
     {
       geometry_msgs::msg::TransformStamped t;
 
-      // Look up for the transformation between target_frame and turtle2 frames
-      // and send velocity commands for turtle2 to reach target_frame
       try {
         t = tf_buffer_->lookupTransform(
           fromFrameRel, toFrameRel,
@@ -110,13 +105,6 @@ class Landmarks : public rclcpp::Node
           }
         }
       }
-      for (unsigned int i = 0; i < clusters.size(); i ++){
-        // for (unsigned int j = 0; j < clusters.at(i).size(); j++) {
-        //   RCLCPP_INFO_STREAM(get_logger(), "cluster " << i << ": " << clusters.at(i).at(j));
-        // }
-        // RCLCPP_INFO_STREAM(get_logger(), "cluser size: " << clusters.at(i).size());
-      }
-      // RCLCPP_INFO_STREAM(get_logger(), "");
       return clusters;
     }
 
@@ -149,7 +137,7 @@ class Landmarks : public rclcpp::Node
         }
         // form the moment matrix
         arma::mat M = (1.0/n) * Z.t() * Z;
-        // form the constraint matrix for the "hyperaccurate algebraic fit", huh?
+        // form the constraint matrix for the "hyperaccurate algebraic fit", yes I know what that means
         arma::mat H = {{8*z_bar, 0, 0, 2}, {0, 1, 0, 0},{0, 0, 1, 0}, {2, 0, 0, 0}};
         // compute the inverse of H
         arma::mat H_inv = {{0, 0, 0, 0.5}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0.5, 0, 0, -2 * z_bar}};
@@ -198,19 +186,7 @@ class Landmarks : public rclcpp::Node
           stdev += std::pow(angles.at(j) - mean, 2)/(n-2);
         }
         stdev = std::sqrt(stdev);
-
-        // RCLCPP_INFO_STREAM(get_logger(), "circle found at: " << x_coord << " " << y_coord);
-        // RCLCPP_INFO_STREAM(get_logger(), "circle radius: " << R);
-        // RCLCPP_INFO_STREAM(get_logger(), "circle stdev: " << stdev);
-        // RCLCPP_INFO_STREAM(get_logger(), "circle mean: " << mean);
-        // RCLCPP_INFO_STREAM(get_logger(), "");
-        if (stdev < 0.15 && turtlelib::deg2rad(65.0) < mean && mean < turtlelib::deg2rad(160.0) && R < 0.09) {
-          // RCLCPP_INFO_STREAM(get_logger(), "YES");
-          // RCLCPP_INFO_STREAM(get_logger(), "circle found at: " << x_coord << " " << y_coord);
-          // RCLCPP_INFO_STREAM(get_logger(), "circle radius: " << R);
-          // RCLCPP_INFO_STREAM(get_logger(), "circle stdev: " << stdev);
-          // RCLCPP_INFO_STREAM(get_logger(), "circle mean: " << mean);
-          // RCLCPP_INFO_STREAM(get_logger(), "circle n: " << n);
+        if (stdev < 0.15 && turtlelib::deg2rad(75.0) < mean && mean < turtlelib::deg2rad(150.0) && R < 0.07) {
           nuslam::msg::Circle circle;
           circle.x = x_coord;
           circle.y = y_coord;
@@ -218,27 +194,12 @@ class Landmarks : public rclcpp::Node
           landmarks.landmarks.push_back(circle);
         }
       }
-      RCLCPP_INFO_STREAM(get_logger(), "");
       landmarks_publisher->publish(landmarks);
     }
 
     void scan_callback(const sensor_msgs::msg::LaserScan & msg)
     {
-      // get a scan, and start with the first point. As long as the next point
-      // is within a certain distance threshold, add it to the current cluster.
-      // As a final step, check if the final point is close to the first point,
-      // and if it is then combine the final cluster and the first cluster.
-      // 
-      // discard any clusters with fewer than 3 points
-      // I think here is where we would want to calculate the mahalanobis distance
-      // later, in L.3. I think in this is just figuring out if something is
-      // a landmakr or not, and not associating it with previous measuremnets
-      
       scan = msg;
-      // std::vector<std::vector<double>> clusters = find_clusters(msg);
-      // fit_circles(clusters);
-      // RCLCPP_INFO_STREAM(get_logger(), "");
-
     }
     void timer_callback()
     {

@@ -74,7 +74,7 @@ private:
     visualization_msgs::msg::MarkerArray landmark_markers;
     visualization_msgs::msg::Marker landmark_marker;
     landmark_marker.header.stamp = time;
-    landmark_marker.header.frame_id = "green/base_footprint";
+    landmark_marker.header.frame_id = "red/base_footprint";
     landmark_marker.id = id;
     landmark_marker.type = visualization_msgs::msg::Marker::CYLINDER;
     landmark_marker.action = visualization_msgs::msg::Marker::ADD;
@@ -103,8 +103,6 @@ private:
     // if the map's empty, just add the landmark to the map. We have nothing
     // to compare it to anyways
     // RCLCPP_INFO_STREAM(get_logger(), "map_.size(): " << map_.size());
-    // RCLCPP_INFO_STREAM(get_logger(), "msg.landmarks.size(): " << msg.landmarks.size());
-    // RCLCPP_INFO_STREAM(get_logger(), "i: " << i);
     // RCLCPP_INFO_STREAM(get_logger(), "landmark.x: " << landmark.x);
     // RCLCPP_INFO_STREAM(get_logger(), "landmark.y: " << landmark.y);
     // put the landmark's postiion into the map frame
@@ -119,21 +117,12 @@ private:
     for (unsigned int j = 0; j < map_.size()/2; j++) {
       // int n_tmp = n_ + 1;
       arma::mat H_k = calc_H(m.x, m.y, j, n_);
-      // RCLCPP_INFO_STREAM(get_logger(), "H_k: " << H_k);
       arma::mat sigma_tmp = sigma_;
-      // RCLCPP_INFO_STREAM(get_logger(), "sigma_tmp: " << sigma_tmp);
-      // sigma_tmp = arma::join_horiz(sigma_tmp, arma::zeros(sigma_.n_rows, 2 * (3+n_tmp - sigma_.n_cols)));
-      // sigma_tmp = arma::join_vert(sigma_tmp, arma::join_horiz(arma::zeros(2 * (3+n_tmp - sigma_.n_rows),sigma_.n_cols),arma::eye(2*(3+n_tmp-sigma_.n_rows),2*(3+n_tmp-sigma_.n_cols))*sigma_diag_));
       arma::mat sigma_k = H_k * sigma_ * H_k.t() + R_;
-      // RCLCPP_INFO_STREAM(get_logger(), "map: " << map_);
-      // RCLCPP_INFO_STREAM(get_logger(), "j: " << j);
       arma::mat z_j = get_range_bearing_measurement(m.x, m.y);
-      // RCLCPP_INFO_STREAM(get_logger(), "j: " << j);
-      // RCLCPP_INFO_STREAM(get_logger(), "z_j: \n" << z_j);
       arma::mat z_hat_k = get_range_bearing_measurement(map_(j*2), map_(j*2+1));
-      // RCLCPP_INFO_STREAM(get_logger(), "z_hat_k: \n" << z_hat_k);
-      // RCLCPP_INFO_STREAM(get_logger(), "");
       arma::mat d_k = (z_j - z_hat_k).t() * arma::inv(sigma_k) * (z_j - z_hat_k);
+      // RCLCPP_INFO_STREAM(get_logger(), "d_k: " << d_k(0,0));
       mahalanobis_distances.push_back(d_k(0,0));
     }
 
@@ -153,19 +142,19 @@ private:
       }
 
       // check the euclidean distance
-      if (std::sqrt(std::pow(m.x - map_(j*2), 2) + std::pow(m.y - map_(j*2+1), 2)) < 0.1) {
+      if (std::sqrt(std::pow(m.x - map_(j*2), 2) + std::pow(m.y - map_(j*2+1), 2)) < 0.05) {
         is_new_landmark = false;
       }
     }
 
     // if it's a new landmark, add it to the map
     if (is_new_landmark) {
-      // RCLCPP_INFO_STREAM(get_logger(), "New landmark detected at: " << m.x << ", " << m.y);
+      RCLCPP_INFO_STREAM(get_logger(), "New landmark detected at: " << m.x << ", " << m.y);
       map_ = arma::join_vert(map_, tmp);
       adjust_matrices(map_.size()/2);
       map_index = 2*(map_.size()/2-1);
     }
-    // RCLCPP_INFO_STREAM(get_logger(), "");
+    RCLCPP_INFO_STREAM(get_logger(), "");
     return map_index;
   }
 
@@ -192,6 +181,7 @@ private:
 
   void adjust_matrices(const int n) {
     n_ = n;
+    // RCLCPP_INFO_STREAM(get_logger(), "n_ is: " << n_);
 
     // adjust xi
     if (xi_.size() > 3) {
@@ -253,14 +243,21 @@ private:
     if(!use_fake_sensors) {
 
       for (int j = 0; j < static_cast<int>(msg.landmarks.size()); j++) {
+        // RCLCPP_INFO_STREAM(get_logger(), "msg.landmarks.size(): " << msg.landmarks.size());
+        // RCLCPP_INFO_STREAM(get_logger(), "landmark: " << msg.landmarks.at(j).x << ", " << msg.landmarks.at(j).y);
         int map_index = calculate_mahalanobis_distance(msg.landmarks.at(j));
+        // RCLCPP_INFO_STREAM(get_logger(), "map_index: " << map_index);
         publish_landmark(msg.landmarks.at(j), map_index/2);
+        // RCLCPP_INFO_STREAM(get_logger(), "published landmark");
         // this is the location of the marker in the robot's frame
         turtlelib::Point2D m = map_to_robot_(turtlelib::Point2D{msg.landmarks.at(j).x,
             msg.landmarks.at(j).y});
 
         // update the measurement model
+        // RCLCPP_INFO_STREAM(get_logger(), "calculating Hj");
         arma::mat Hj = calc_H(m.x, m.y, j);
+        // RCLCPP_INFO_STREAM(get_logger(), "done calculating Hj");
+
 
         // perform the SLAM update
 
@@ -386,17 +383,24 @@ private:
 
   arma::mat calc_H(double mx, double my, int j)
   {
+    // RCLCPP_INFO_STREAM(get_logger(), "j in H: " << j);
+    // RCLCPP_INFO_STREAM(get_logger(), "n in H: " << n_);
+    // RCLCPP_INFO_STREAM(get_logger(), "map_: " << map_);
     double delta_x = mx - xi_(1);
     double delta_y = my - xi_(2);
     double d = std::pow(delta_x, 2) + std::pow(delta_y, 2);
 
     arma::mat block1{{0, -delta_x / std::sqrt(d), -delta_y / std::sqrt(d)},
       {-1, delta_y / d, -delta_x / d}};
+    // RCLCPP_INFO_STREAM(get_logger(), "block1: " << block1);
     arma::mat block2 = arma::join_vert(arma::zeros(1, 2 * (j)), arma::zeros(1, 2 * (j)));
+    // RCLCPP_INFO_STREAM(get_logger(), "block2: " << block2);
     arma::mat block3{{delta_x / std::sqrt(d), delta_y / std::sqrt(d)},
       {-delta_y / d, delta_x / d}};
+    // RCLCPP_INFO_STREAM(get_logger(), "block3: " << block3);
     arma::mat block4 =
       arma::join_vert(arma::zeros(1, 2 * n_ - 2 * (j + 1)), arma::zeros(1, 2 * n_ - 2 * (j + 1)));
+    // RCLCPP_INFO_STREAM(get_logger(), "block4: " << block4);
 
     arma::mat block12 = arma::join_horiz(block1, block2);
     arma::mat block34 = arma::join_horiz(block3, block4);
