@@ -1,6 +1,4 @@
-# ME495 Sensing, Navigation and Machine Learning For Robotics
-* Graham Clifford
-* Winter 2024
+# Extended Kalman Filter SLAM From Scratch
 # Package List
 This repository consists of several ROS packages
 - **nuturtle_description** - This package contains urdf files and basic debugging, testing, and visualization code for turtlebot3s.
@@ -15,13 +13,13 @@ This repository consists of several ROS packages
 This repository also consists of a custom c++ library:
 - **turtlelib** - This library contains functions for performing geometry operations in se(2) space and displaying these operations in svg files for testing. This is a C++ library with unit tests for confirming functionality.
 
-**To run SLAM**:  
+**To run SLAM with simulated landmark data**:  
 type in the following command:
 ```bash
 $ ros2 launch nuslam slam.launch.py
 ```
 
-**To run SLAM with unknown data association**:
+**To run SLAM with unknown data association from LIDAR**:
 ```bash
 $ ros2 launch nuslam unknown_data_assoc.launch.xml
 ```
@@ -37,17 +35,5 @@ on your computer:
 $ ros2 launch nuslam pc_bringup.launch.py
 ```
 
-Video of SLAM with simulated obstacles and known data association:
-https://github.com/ME495-Navigation/slam-project-gjcliff/assets/94981561/656a9a15-3c76-4bc7-a421-519ba0cd3e8f
-
-Video of SLAM with simulated LIDAR and unknown data association:
-https://github.com/ME495-Navigation/slam-project-gjcliff/assets/94981561/89174fed-dee4-4afa-9876-2d2973e20900
-
-Video of SLAM with real LIDAR and unknown data association:
-
-HW4 L3:  
-Final pose error between actual robot position and odometry: −0.0030845; 0.212529; 0 (xyz in m)  
-Final pose error between actual robot position and SLAM: 0.0165087; -0.0201479; 0 (xyz in m)  
-Video of this run:  
-https://github.com/ME495-Navigation/slam-project-gjcliff/assets/94981561/b3232b91-bb63-4ab1-a6a2-3c6decc60769
-
+Also check out the post on my website about this project that explains a little
+more of what it's about: https://graham-clifford.com/SLAM-from-scratch/
